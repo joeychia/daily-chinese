@@ -123,17 +123,17 @@ function MainContent() {
           </div>
           {showQuiz && <QuizPanel quizzes={reading.quizzes} />}
           {wordBank.length > 0 && (
-            <div className="wordBank">
+            <div className="word-bank">
               <h2>生词本</h2>
-              <div className="wordList">
+              <div className="word-list">
                 {wordBank.map((word, index) => (
-                  <div key={index} className="bankWord">
-                    <div className="bankCharacter">{word.characters}</div>
-                    <div className="bankPinyin">{word.pinyin.join(' ')}</div>
+                  <div key={index} className="word-card">
+                    <div className="character">{word.characters}</div>
+                    <div className="pinyin">{word.pinyin.join(' ')}</div>
                   </div>
                 ))}
               </div>
-              <button className="printButton" onClick={handlePrint}>
+              <button className="home-button" onClick={handlePrint}>
                 打印生词卡
               </button>
             </div>

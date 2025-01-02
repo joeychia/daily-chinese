@@ -3,24 +3,24 @@ import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { articleService, Article } from '../services/articleService';
-import { geminiService, GeneratedArticle } from '../services/geminiService';
+import { geminiService } from '../services/geminiService';
 
 SyntaxHighlighter.registerLanguage('json', json);
 
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [generationPrompt, setGenerationPrompt] = useState('');
-  const [maxLength, setMaxLength] = useState<number>(300);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [maxLength, setMaxLength] = useState(300);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedArticle, setGeneratedArticle] = useState<GeneratedArticle | null>(null);
+  const [generatedArticle, setGeneratedArticle] = useState<Article | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   const [sourceText, setSourceText] = useState('');
-  const [isTextMode, setIsTextMode] = useState(false);
+  const [generationMode, setGenerationMode] = useState<'prompt' | 'text'>('prompt');
 
   useEffect(() => {
     loadArticles();
@@ -28,40 +28,34 @@ const Articles = () => {
 
   const loadArticles = async () => {
     try {
-      setIsLoading(true);
-      const data = await articleService.getAllArticles();
-      setArticles(data);
+      const loadedArticles = await articleService.getAllArticles();
+      setArticles(loadedArticles);
       setError(null);
     } catch (err) {
       setError('Failed to load articles');
       console.error('Error loading articles:', err);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const handleGenerate = async () => {
-    if (isTextMode) {
-      if (!sourceText.trim()) {
-        setError('Please enter some text');
-        return;
-      }
-    } else {
-      if (!generationPrompt.trim()) {
-        setError('Please enter a prompt');
-        return;
-      }
-    }
-
+    setIsGenerating(true);
+    setError(null);
     try {
-      setIsGenerating(true);
-      setError(null);
+      const article = generationMode === 'prompt'
+        ? await geminiService.generateArticle(prompt, { maxLength })
+        : await geminiService.generateFromText(sourceText, { maxLength });
       
-      const generated = isTextMode
-        ? await geminiService.generateFromText(sourceText, { maxLength })
-        : await geminiService.generateArticle(generationPrompt, { maxLength });
+      const newArticle: Article = {
+        ...article,
+        id: `article-${Date.now()}`,
+        author: "AI生成",
+        isGenerated: true,
+        generatedDate: new Date().toISOString().split('T')[0],
+      };
       
-      setGeneratedArticle(generated);
+      setGeneratedArticle(newArticle);
       setShowConfirmation(true);
     } catch (err) {
       setError('Failed to generate article');
@@ -71,256 +65,219 @@ const Articles = () => {
     }
   };
 
-  const handleConfirmSave = async () => {
+  const handleConfirm = async () => {
     if (!generatedArticle) return;
-
+    
     try {
-      const newArticle: Article = {
-        id: `article-${Date.now()}`,
-        title: generatedArticle.title,
-        author: "AI生成",
-        content: generatedArticle.content,
-        tags: generatedArticle.tags,
-        quizzes: generatedArticle.quizzes,
-        isGenerated: true,
-        generatedDate: new Date().toISOString().split('T')[0]
-      };
-
-      await articleService.saveArticle(newArticle);
-      await loadArticles();
-      setGenerationPrompt('');
-      setGeneratedArticle(null);
+      await articleService.saveArticle(generatedArticle);
+      setArticles([generatedArticle, ...articles]);
       setShowConfirmation(false);
-      setExpandedId(newArticle.id);
+      setGeneratedArticle(null);
+      setPrompt('');
+      setSourceText('');
+      setError(null);
     } catch (err) {
       setError('Failed to save article');
       console.error('Error saving article:', err);
     }
   };
 
-  const handleCancelSave = () => {
-    setGeneratedArticle(null);
-    setShowConfirmation(false);
-    if (isTextMode) {
-      setSourceText('');
-    } else {
-      setGenerationPrompt('');
-    }
+  const handleEdit = (article: Article) => {
+    setEditingId(article.id);
+    setEditingContent(JSON.stringify(article, null, 2));
   };
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      loadArticles();
-      return;
-    }
-
+  const handleSaveEdit = async (id: string) => {
     try {
-      setIsLoading(true);
-      let results = await articleService.searchByTag(searchTerm);
-      if (results.length === 0) {
-        results = await articleService.searchByTitle(searchTerm);
-      }
-      setArticles(results);
+      const updatedArticle = JSON.parse(editingContent);
+      await articleService.saveArticle(updatedArticle);
+      setArticles(articles.map(a => a.id === id ? updatedArticle : a));
+      setEditingId(null);
+      setEditingContent('');
       setError(null);
     } catch (err) {
-      setError('Search failed');
-      console.error('Error searching articles:', err);
-    } finally {
-      setIsLoading(false);
+      setError('Failed to save changes');
+      console.error('Error saving changes:', err);
     }
   };
 
-  const handleCopy = async (text: string, id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy text:', err);
-    }
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditingContent('');
   };
 
-  const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
-
-  const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === '') {
-      setMaxLength(300); // Reset to default
-      return;
-    }
-    setMaxLength(parseInt(value));
-  };
+  const filteredArticles = articles.filter(article =>
+    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
-    <div className="app">
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6">Reading Samples</h1>
-        
-        <div className="generation-form mb-8">
-          <div className="generation-mode">
-            <button
-              onClick={() => setIsTextMode(false)}
-              className={`mode-button ${!isTextMode ? 'active' : ''}`}
-            >
-              输入主题
-            </button>
-            <button
-              onClick={() => setIsTextMode(true)}
-              className={`mode-button ${isTextMode ? 'active' : ''}`}
-            >
-              从文本生成
-            </button>
+    <div className="articles-page">
+      <div className="articles-container">
+        <div className="articles-header">
+          <h1>Reading Samples</h1>
+          <p className="articles-subtitle">Generate and manage Chinese reading articles</p>
+        </div>
+
+        <div className="articles-generation-panel">
+          <div className="articles-panel-header">
+            <h2>Generate New Article</h2>
           </div>
-          <div className="input-group">
-            {isTextMode ? (
-              <textarea
-                value={sourceText}
-                onChange={(e) => setSourceText(e.target.value)}
-                placeholder="粘贴原文内容..."
-                className="source-text-input"
+          <div className="articles-generation-content">
+            <div className="articles-generation-mode">
+              <button
+                className={`articles-mode-button ${generationMode === 'prompt' ? 'active' : ''}`}
+                onClick={() => setGenerationMode('prompt')}
+              >
+                Generate from Prompt
+              </button>
+              <button
+                className={`articles-mode-button ${generationMode === 'text' ? 'active' : ''}`}
+                onClick={() => setGenerationMode('text')}
+              >
+                Generate from Text
+              </button>
+            </div>
+
+            {generationMode === 'prompt' ? (
+              <input
+                type="text"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Enter a topic or prompt for the article..."
+                className="articles-search-input"
                 disabled={isGenerating || showConfirmation}
               />
             ) : (
-              <input
-                type="text"
-                value={generationPrompt}
-                onChange={(e) => setGenerationPrompt(e.target.value)}
-                placeholder="输入主题来生成新文章..."
-                className="search-input"
+              <textarea
+                value={sourceText}
+                onChange={(e) => setSourceText(e.target.value)}
+                placeholder="Paste the source text here..."
+                className="articles-source-text-input"
                 disabled={isGenerating || showConfirmation}
               />
             )}
-            <div className="length-input-group">
+
+            <div className="articles-generation-controls">
               <input
                 type="number"
                 value={maxLength}
-                onChange={handleLengthChange}
+                onChange={(e) => setMaxLength(parseInt(e.target.value))}
                 min="100"
                 max="1000"
                 step="50"
-                className="length-input-simple"
+                className="articles-length-input"
                 disabled={isGenerating || showConfirmation}
               />
-              <span className="length-label">字</span>
+              <button
+                className="articles-primary-button"
+                onClick={handleGenerate}
+                disabled={isGenerating || showConfirmation || (!prompt && !sourceText)}
+              >
+                {isGenerating ? 'Generating...' : 'Generate'}
+              </button>
             </div>
-            <button 
-              onClick={handleGenerate}
-              className="actionButton"
-              disabled={isGenerating || showConfirmation}
-            >
-              {isGenerating ? '生成中...' : '生成文章'}
-            </button>
           </div>
         </div>
 
-        {/* Confirmation Dialog */}
         {showConfirmation && generatedArticle && (
-          <div className="confirmation-dialog">
-            <h2 className="dialog-title">预览生成的文章</h2>
-            <div className="preview-content">
+          <div className="articles-preview-panel">
+            <div className="articles-panel-header">
+              <h2>Preview Generated Article</h2>
+            </div>
+            <div className="articles-generation-content">
               <SyntaxHighlighter
                 language="json"
                 style={atomOneDark}
-                customStyle={{
-                  margin: 0,
-                  borderRadius: '0.5rem',
-                  padding: '1.5rem',
-                  fontSize: '0.9rem',
-                  backgroundColor: '#1e1e1e'
-                }}
+                customStyle={{ margin: 0, borderRadius: '0.5rem' }}
               >
                 {JSON.stringify(generatedArticle, null, 2)}
               </SyntaxHighlighter>
-            </div>
-            <div className="dialog-actions">
-              <button onClick={handleConfirmSave} className="actionButton">
-                保存文章
-              </button>
-              <button onClick={handleCancelSave} className="actionButton cancel">
-                取消
-              </button>
+              <div className="articles-generation-controls">
+                <button className="articles-secondary-button" onClick={() => setShowConfirmation(false)}>
+                  Cancel
+                </button>
+                <button className="articles-primary-button" onClick={handleConfirm}>
+                  Save Article
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="search-bar mb-6">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="搜索标题或标签..."
-            className="search-input"
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-          />
-          <button onClick={handleSearch} className="actionButton">
-            搜索
-          </button>
-        </div>
+        <div className="articles-list-panel">
+          <div className="articles-panel-header">
+            <h2>Saved Articles</h2>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by title or tag..."
+              className="articles-search-input"
+            />
+          </div>
 
-        {isLoading && <div className="loading">Loading...</div>}
-        {error && <div className="error">{error}</div>}
-        
-        <div className="grid gap-4">
-          {articles.map((article) => (
-            <div 
-              key={article.id} 
-              className="article-card"
-              onClick={() => toggleExpand(article.id)}
-            >
-              <div className="article-header">
-                <div className="article-info">
-                  <h2 className="article-title">{article.title}</h2>
-                  {article.generatedDate && (
-                    <span className="article-date">{article.generatedDate}</span>
+          {loading && <div className="articles-loading">Loading articles...</div>}
+          {error && <div className="articles-error-message">{error}</div>}
+
+          <div className="articles-grid">
+            {filteredArticles.map((article) => (
+              <div key={article.id} className="articles-card">
+                <div className="articles-panel-header">
+                  <div>
+                    <h2 className="articles-title">{article.title}</h2>
+                    <div className="articles-tags">
+                      {article.tags.map((tag, index) => (
+                        <span key={index} className="articles-tag">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="articles-actions">
+                    {editingId === article.id ? (
+                      <>
+                        <button
+                          className="articles-secondary-button small"
+                          onClick={handleCancelEdit}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="articles-primary-button small"
+                          onClick={() => handleSaveEdit(article.id)}
+                        >
+                          Save
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="articles-secondary-button small"
+                        onClick={() => handleEdit(article)}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="articles-content">
+                  {editingId === article.id ? (
+                    <textarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      className="articles-json-editor"
+                    />
+                  ) : (
+                    <SyntaxHighlighter
+                      language="json"
+                      style={atomOneDark}
+                      customStyle={{ margin: 0, borderRadius: '0.5rem' }}
+                    >
+                      {JSON.stringify(article, null, 2)}
+                    </SyntaxHighlighter>
                   )}
                 </div>
-                <div className="article-tags">
-                  {article.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="tag"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSearchTerm(tag);
-                        handleSearch();
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
               </div>
-              
-              {expandedId === article.id && (
-                <div className="article-content">
-                  <div className="article-actions">
-                    <button
-                      onClick={(e) => handleCopy(JSON.stringify(article, null, 2), article.id, e)}
-                      className="actionButton"
-                    >
-                      {copiedId === article.id ? '已复制!' : '复制 JSON'}
-                    </button>
-                  </div>
-                  <SyntaxHighlighter
-                    language="json"
-                    style={atomOneDark}
-                    customStyle={{
-                      margin: 0,
-                      borderRadius: '0.5rem',
-                      padding: '1.5rem',
-                      fontSize: '0.9rem',
-                      backgroundColor: '#1e1e1e'
-                    }}
-                  >
-                    {JSON.stringify(article, null, 2)}
-                  </SyntaxHighlighter>
-                </div>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
