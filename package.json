@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
+    "@google/generative-ai": "^0.21.0",
     "@types/prismjs": "^1.26.5",
     "@types/react-router-dom": "^5.3.3",
     "@types/react-syntax-highlighter": "^15.5.13",

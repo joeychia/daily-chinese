@@ -393,3 +393,27 @@ code {
   justify-content: flex-end;
   margin-bottom: 1rem;
 }
+
+/* Generation form styles */
+.generation-form {
+  background: var(--theme-card-bg);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--theme-card-border);
+  margin-bottom: 2rem;
+}
+
+.input-group {
+  display: flex;
+  gap: 1rem;
+}
+
+.actionButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.actionButton:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
