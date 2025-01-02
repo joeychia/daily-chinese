@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { ChineseText } from './components/ChineseText'
 import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
 import { QuizPanel } from './components/QuizPanel'
+import Articles from './components/Articles'
 import { ChineseWord } from './data/sampleText'
 import { themes } from './config/themes'
 import { processChineseText } from './utils/textProcessor'
 import { Reading } from './types/reading'
 import sampleReading from './data/readings/sample.json'
+import { initializeDatabase } from './scripts/initializeDb'
 import './App.css'
 
-function App() {
+function MainContent() {
   const [processedText, setProcessedText] = useState<ChineseWord[]>([]);
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,13 +61,8 @@ function App() {
     setShowQuiz(prev => !prev);
   };
 
-  // Get current theme object
   const theme = themes.find(t => t.id === currentTheme) || themes[0];
-
-  // Count actual Chinese characters (excluding punctuation)
-  const wordCount = processedText.filter(word => 
-    /[\u4e00-\u9fa5]/.test(word.characters)
-  ).length;
+  const wordCount = processedText.filter(word => /[\u4e00-\u9fa5]/.test(word.characters)).length;
 
   return (
     <div className="app" style={{
@@ -76,6 +74,10 @@ function App() {
       '--theme-card-border': theme.colors.cardBorder,
       '--theme-highlight': theme.colors.highlight,
     } as React.CSSProperties}>
+      <nav className="navigation">
+        <Link to="/">阅读</Link>
+        <Link to="/articles">文章列表</Link>
+      </nav>
       <div className="header">
         <h1>{reading.title}</h1>
         <button 
@@ -149,7 +151,22 @@ function App() {
         onThemeChange={handleThemeChange}
       />
     </div>
-  )
+  );
+}
+
+function App() {
+  useEffect(() => {
+    initializeDatabase();
+  }, []);
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainContent />} />
+        <Route path="/articles" element={<Articles />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App

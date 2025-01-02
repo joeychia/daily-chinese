@@ -12,10 +12,16 @@
   },
   "dependencies": {
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
+    "@types/prismjs": "^1.26.5",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "firebase": "^11.1.0",
     "pinyin-pro": "^3.26.0",
+    "prismjs": "^1.29.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1",
+    "react-syntax-highlighter": "^15.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -31,4 +37,4 @@
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5"
   }
-} 
+}
