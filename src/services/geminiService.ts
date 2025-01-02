@@ -23,16 +23,16 @@ export const geminiService = {
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
       
       const lengthInstruction = options.maxLength 
-        ? `The content should be about ${options.maxLength} characters long.`
-        : "The content should be about 200-300 characters long.";
+        ? `文章长度大约${options.maxLength}个汉字`
+        : "文章长度大约300个汉字";
       
-      const systemPrompt = `Generate a Chinese reading article with the following format:
-      1. A title in Chinese
-      2. Main content in Chinese (${lengthInstruction})
-      3. 3-5 relevant tags in Chinese
-      4. 3 multiple choice questions about the content
-      
-      Format the response as a valid JSON object with the following structure:
+      const systemPrompt = `请生成一篇中文阅读文章，要求如下：
+      1. 中文标题
+      2. 正文内容（${lengthInstruction}）
+      3. 3-5个相关标签
+      4. 3个与内容相关的选择题
+
+      请按以下JSON格式返回：
       {
         "title": "标题",
         "content": "正文内容...",
@@ -46,7 +46,9 @@ export const geminiService = {
         ]
       }
       
-      The content should be about: ${prompt}`;
+      文章主题：${prompt}
+      文章必须适合小学生阅读水平，汉字应该使用常用汉字，风格要好玩，幽默，内容属于正向价值观。
+      注意：请确保文章长度接近${options.maxLength || 300}个汉字。`;
 
       const result = await model.generateContent(systemPrompt);
       const response = result.response;

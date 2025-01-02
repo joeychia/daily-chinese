@@ -127,6 +127,15 @@ const Articles = () => {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setMaxLength(300); // Reset to default
+      return;
+    }
+    setMaxLength(parseInt(value));
+  };
+
   return (
     <div className="app">
       <div className="container mx-auto p-4">
@@ -142,15 +151,19 @@ const Articles = () => {
               className="search-input"
               disabled={isGenerating || showConfirmation}
             />
-            <input
-              type="number"
-              value={maxLength}
-              onChange={(e) => setMaxLength(Math.max(50, Math.min(1000, parseInt(e.target.value) || 300)))}
-              className="length-input"
-              min="50"
-              max="1000"
-              disabled={isGenerating || showConfirmation}
-            />
+            <div className="length-input-group">
+              <input
+                type="number"
+                value={maxLength}
+                onChange={handleLengthChange}
+                min="100"
+                max="1000"
+                step="50"
+                className="length-input-simple"
+                disabled={isGenerating || showConfirmation}
+              />
+              <span className="length-label">字</span>
+            </div>
             <button 
               onClick={handleGenerate}
               className="actionButton"
