@@ -1,4 +1,4 @@
-import { Theme, themes } from '../config/themes';
+import { themes } from '../config/themes';
 import styles from './ThemeSelector.module.css';
 
 interface ThemeSelectorProps {

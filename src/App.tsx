@@ -4,7 +4,7 @@ import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
 import { QuizPanel } from './components/QuizPanel'
 import { ChineseWord } from './data/sampleText'
-import { Theme, themes } from './config/themes'
+import { themes } from './config/themes'
 import { processChineseText } from './utils/textProcessor'
 import { Reading } from './types/reading'
 import sampleReading from './data/readings/sample.json'
@@ -18,7 +18,7 @@ function App() {
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<string>('candy');
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
-  const [reading, setReading] = useState<Reading>(sampleReading);
+  const [reading, _setReading] = useState<Reading>(sampleReading);
   const [showQuiz, setShowQuiz] = useState(false);
 
   useEffect(() => {
