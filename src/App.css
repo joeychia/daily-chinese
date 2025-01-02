@@ -7,13 +7,45 @@
 .app {
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  transition: all 0.3s ease;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.themeButton {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 2px solid var(--theme-card-border);
+  background: var(--theme-card-bg);
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.themeButton:hover {
+  transform: translateY(-50%) scale(1.1);
+  border-color: var(--theme-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
   font-size: 2.8rem;
-  color: #2c3e50;
-  margin-bottom: 2rem;
+  color: var(--theme-text);
   text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.5);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   position: relative;
@@ -27,16 +59,16 @@ h1::after {
   left: 10%;
   width: 80%;
   height: 4px;
-  background: linear-gradient(90deg, #ffd995, #fcb69f);
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
   border-radius: 2px;
 }
 
 .wordCount {
   font-size: 1rem;
-  color: #7f8c8d;
+  color: var(--theme-text);
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--theme-card-bg);
   border-radius: 20px;
   display: inline-block;
   backdrop-filter: blur(4px);
@@ -45,14 +77,14 @@ h1::after {
 .wordBank {
   margin: 2rem auto;
   max-width: 800px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--theme-card-bg);
   border-radius: 16px;
   padding: 1rem;
-  box-shadow: 0 4px 16px rgba(255, 166, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .wordBank h2 {
-  color: #2c3e50;
+  color: var(--theme-text);
   font-size: 1.5rem;
   margin-bottom: 1rem;
   font-weight: 600;
@@ -70,7 +102,7 @@ h1::after {
   background: #fff;
   padding: 0.5rem 1rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(255, 166, 0, 0.1);
+  border: 2px solid var(--theme-card-border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,17 +112,18 @@ h1::after {
 
 .bankWord:hover {
   transform: translateY(-2px);
+  border-color: var(--theme-primary);
 }
 
 .bankCharacter {
   font-size: 1.5rem;
-  color: #34495e;
+  color: var(--theme-text);
   margin-bottom: 0.2rem;
 }
 
 .bankPinyin {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: var(--theme-secondary);
 }
 
 .printButton {
@@ -98,18 +131,18 @@ h1::after {
   padding: 0.8rem 1.5rem;
   font-size: 1rem;
   color: #fff;
-  background: linear-gradient(135deg, #ff9f43 0%, #ff7f50 100%);
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
   border: none;
   border-radius: 25px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(255, 166, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .printButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 166, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .printButton:active {
