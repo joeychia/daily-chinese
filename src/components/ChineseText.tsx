@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ChineseWord } from '../data/sampleText';
-import styles from './ChineseText.module.css';
 
 interface ChineseTextProps {
   text: ChineseWord[];
@@ -8,47 +7,55 @@ interface ChineseTextProps {
 }
 
 export const ChineseText: React.FC<ChineseTextProps> = ({ text, onWordPeek }) => {
-  const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
+  const [activeWord, setActiveWord] = useState<ChineseWord | null>(null);
 
-  const handleWordActivate = (index: number) => {
-    setActiveWordIndex(index);
-    if (onWordPeek && /[\u4e00-\u9fa5]/.test(text[index].characters)) {
-      onWordPeek(text[index]);
+  const handleTouchStart = (e: React.TouchEvent, word: ChineseWord) => {
+    e.preventDefault(); // Prevent double-firing on mobile
+    setActiveWord(word);
+    if (onWordPeek) {
+      onWordPeek(word);
     }
   };
 
-  if (text.length === 0) {
-    return <div>No text to display</div>;
-  }
+  const handleMouseDown = (word: ChineseWord) => {
+    setActiveWord(word);
+    if (onWordPeek) {
+      onWordPeek(word);
+    }
+  };
+
+  const handleRelease = () => {
+    setActiveWord(null);
+  };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.textContainer}>
-        {text.map((word, index) => (
-          <span 
-            key={index} 
-            className={styles.word}
-            onMouseDown={() => handleWordActivate(index)}
-            onMouseUp={() => setActiveWordIndex(null)}
-            onMouseLeave={() => setActiveWordIndex(null)}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              handleWordActivate(index);
-            }}
-            onTouchEnd={() => setActiveWordIndex(null)}
-          >
-            <div className={`${styles.pinyin} ${activeWordIndex === index ? styles.visible : ''}`}>
-              {word.pinyin.join(' ')}
+    <div className="chinese-text" style={{ fontSize: '1.5rem', lineHeight: '2.5', position: 'relative' }}>
+      {text.map((word, index) => (
+        <span
+          key={index}
+          style={{ 
+            display: 'inline-block',
+            position: 'relative',
+            cursor: 'pointer',
+            padding: '0 2px',
+            userSelect: 'none', // Prevent text selection on tap/click
+            WebkitUserSelect: 'none'
+          }}
+          onMouseDown={() => handleMouseDown(word)}
+          onMouseUp={handleRelease}
+          onMouseLeave={handleRelease}
+          onTouchStart={(e) => handleTouchStart(e, word)}
+          onTouchEnd={handleRelease}
+        >
+          {word.characters}
+          {activeWord === word && (
+            <div className={`pinyin-popup visible`}>
+              <div className="character">{word.characters}</div>
+              <div className="pinyin">{word.pinyin.join(' ')}</div>
             </div>
-            <div className={styles.characters}>
-              {word.characters}
-            </div>
-          </span>
-        ))}
-      </div>
-      <div className={styles.instructions}>
-        点击汉字查看拼音
-      </div>
+          )}
+        </span>
+      ))}
     </div>
   );
-}; 
+};
