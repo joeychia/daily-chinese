@@ -19,6 +19,8 @@ const Articles = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedArticle, setGeneratedArticle] = useState<GeneratedArticle | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [sourceText, setSourceText] = useState('');
+  const [isTextMode, setIsTextMode] = useState(false);
 
   useEffect(() => {
     loadArticles();
@@ -39,15 +41,26 @@ const Articles = () => {
   };
 
   const handleGenerate = async () => {
-    if (!generationPrompt.trim()) {
-      setError('Please enter a prompt');
-      return;
+    if (isTextMode) {
+      if (!sourceText.trim()) {
+        setError('Please enter some text');
+        return;
+      }
+    } else {
+      if (!generationPrompt.trim()) {
+        setError('Please enter a prompt');
+        return;
+      }
     }
 
     try {
       setIsGenerating(true);
       setError(null);
-      const generated = await geminiService.generateArticle(generationPrompt, { maxLength });
+      
+      const generated = isTextMode
+        ? await geminiService.generateFromText(sourceText, { maxLength })
+        : await geminiService.generateArticle(generationPrompt, { maxLength });
+      
       setGeneratedArticle(generated);
       setShowConfirmation(true);
     } catch (err) {
@@ -88,6 +101,11 @@ const Articles = () => {
   const handleCancelSave = () => {
     setGeneratedArticle(null);
     setShowConfirmation(false);
+    if (isTextMode) {
+      setSourceText('');
+    } else {
+      setGenerationPrompt('');
+    }
   };
 
   const handleSearch = async () => {
@@ -142,15 +160,39 @@ const Articles = () => {
         <h1 className="text-3xl font-bold mb-6">Reading Samples</h1>
         
         <div className="generation-form mb-8">
+          <div className="generation-mode">
+            <button
+              onClick={() => setIsTextMode(false)}
+              className={`mode-button ${!isTextMode ? 'active' : ''}`}
+            >
+              输入主题
+            </button>
+            <button
+              onClick={() => setIsTextMode(true)}
+              className={`mode-button ${isTextMode ? 'active' : ''}`}
+            >
+              从文本生成
+            </button>
+          </div>
           <div className="input-group">
-            <input
-              type="text"
-              value={generationPrompt}
-              onChange={(e) => setGenerationPrompt(e.target.value)}
-              placeholder="输入主题来生成新文章..."
-              className="search-input"
-              disabled={isGenerating || showConfirmation}
-            />
+            {isTextMode ? (
+              <textarea
+                value={sourceText}
+                onChange={(e) => setSourceText(e.target.value)}
+                placeholder="粘贴原文内容..."
+                className="source-text-input"
+                disabled={isGenerating || showConfirmation}
+              />
+            ) : (
+              <input
+                type="text"
+                value={generationPrompt}
+                onChange={(e) => setGenerationPrompt(e.target.value)}
+                placeholder="输入主题来生成新文章..."
+                className="search-input"
+                disabled={isGenerating || showConfirmation}
+              />
+            )}
             <div className="length-input-group">
               <input
                 type="number"

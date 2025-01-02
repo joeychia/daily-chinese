@@ -501,3 +501,79 @@ code {
   border-color: #ef4444;
   color: #ef4444;
 }
+
+/* Generation mode styles */
+.generation-mode {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mode-button {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  color: var(--theme-text);
+  background: var(--theme-card-bg);
+  border: 2px solid var(--theme-card-border);
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.mode-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.mode-button.active {
+  opacity: 1;
+  border-color: var(--theme-primary);
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mode-button.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Source text input styles */
+.source-text-input {
+  flex: 1;
+  min-height: 120px;
+  padding: 1rem;
+  font-size: 1rem;
+  border: 2px solid var(--theme-card-border);
+  border-radius: 1rem;
+  background: var(--theme-card-bg);
+  color: var(--theme-text);
+  transition: all 0.2s ease;
+  resize: vertical;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.source-text-input:focus {
+  outline: none;
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.2);
+}
+
+/* Adjust input group for textarea */
+.input-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.input-group .source-text-input {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.input-group .length-input-group,
+.input-group .actionButton {
+  margin-left: auto;
+}
