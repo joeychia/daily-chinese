@@ -4,6 +4,12 @@ import styles from './QuizPanel.module.css';
 import { processChineseText } from '../utils/textProcessor';
 import type { ChineseWord } from '../data/sampleText';
 
+interface ActiveWordInfo {
+  word: ChineseWord;
+  optionIndex: number;
+  wordIndex: number;
+}
+
 interface QuizPanelProps {
   quizzes: Quiz[];
 }
@@ -20,27 +26,24 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [results, setResults] = useState<QuizResult[]>([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [activeWord, setActiveWord] = useState<ChineseWord | null>(null);
+  const [activeWord, setActiveWord] = useState<ActiveWordInfo | null>(null);
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (showAnswer) return;
     setSelectedAnswer(answerIndex);
   };
 
-  const handleMouseDown = useCallback((word: ChineseWord) => {
-    console.log('Mouse down on word:', word);
-    setActiveWord(word);
+  const handleMouseDown = useCallback((word: ChineseWord, optionIndex: number = -1, wordIndex: number) => {
+    setActiveWord({ word, optionIndex, wordIndex });
   }, []);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent, word: ChineseWord) => {
-    console.log('Touch start on word:', word);
+  const handleTouchStart = useCallback((e: React.TouchEvent, word: ChineseWord, optionIndex: number = -1, wordIndex: number) => {
     e.preventDefault(); // Prevent double-firing on mobile
     e.stopPropagation(); // Stop event bubbling
-    setActiveWord(word);
+    setActiveWord({ word, optionIndex, wordIndex });
   }, []);
 
   const handleRelease = useCallback(() => {
-    console.log('Release, clearing active word');
     setActiveWord(null);
   }, []);
 
@@ -100,8 +103,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
 
   const quiz = quizzes[currentQuiz];
   const processedQuestion = processChineseText(quiz.question);
-
-  console.log('Active word:', activeWord);
+  const processedOptions = quiz.options.map(option => processChineseText(option));
 
   return (
     <div className={styles.quizPanel}>
@@ -110,8 +112,7 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
       </div>
       <div className={`${styles.question} chinese-text`}>
         {processedQuestion.map((word, index) => {
-          const isActive = activeWord?.characters === word.characters;
-          console.log('Rendering word:', word.characters, 'isActive:', isActive);
+          const isActive = activeWord?.optionIndex === -1 && activeWord?.wordIndex === index;
           return (
             <span
               key={index}
@@ -123,10 +124,10 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
                 userSelect: 'none',
                 WebkitUserSelect: 'none'
               }}
-              onMouseDown={() => handleMouseDown(word)}
+              onMouseDown={() => handleMouseDown(word, -1, index)}
               onMouseUp={handleRelease}
               onMouseLeave={handleRelease}
-              onTouchStart={(e) => handleTouchStart(e, word)}
+              onTouchStart={(e) => handleTouchStart(e, word, -1, index)}
               onTouchEnd={handleRelease}
             >
               {word.characters}
@@ -141,24 +142,63 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
         })}
       </div>
       <div className={styles.options}>
-        {quiz.options.map((option, index) => (
+        {processedOptions.map((option, optionIndex) => (
           <button
-            key={index}
+            key={optionIndex}
             className={`${styles.option} ${
-              selectedAnswer === index ? styles.selected : ''
+              selectedAnswer === optionIndex ? styles.selected : ''
             } ${
               showAnswer
-                ? index === quiz.correctAnswer
+                ? optionIndex === quiz.correctAnswer
                   ? styles.correct
-                  : selectedAnswer === index
+                  : selectedAnswer === optionIndex
                   ? styles.incorrect
                   : ''
                 : ''
             }`}
-            onClick={() => handleAnswerSelect(index)}
+            onClick={() => handleAnswerSelect(optionIndex)}
             disabled={showAnswer}
           >
-            {option}
+            {option.map((word, wordIndex) => {
+              const isActive = activeWord?.optionIndex === optionIndex && activeWord?.wordIndex === wordIndex;
+              return (
+                <span
+                  key={wordIndex}
+                  style={{ 
+                    display: 'inline-block',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    padding: '0 2px',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none'
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation(); // Prevent button click when showing pinyin
+                    handleMouseDown(word, optionIndex, wordIndex);
+                  }}
+                  onMouseUp={(e) => {
+                    e.stopPropagation();
+                    handleRelease();
+                  }}
+                  onMouseLeave={handleRelease}
+                  onTouchStart={(e) => {
+                    handleTouchStart(e, word, optionIndex, wordIndex);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation();
+                    handleRelease();
+                  }}
+                >
+                  {word.characters}
+                  {isActive && (
+                    <div className="pinyin-popup visible">
+                      <div className="character">{word.characters}</div>
+                      <div className="pinyin">{word.pinyin.join(' ')}</div>
+                    </div>
+                  )}
+                </span>
+              );
+            })}
           </button>
         ))}
       </div>
