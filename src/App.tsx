@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { ChineseText } from './components/ChineseText'
 import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
+import { QuizPanel } from './components/QuizPanel'
 import { ChineseWord } from './data/sampleText'
 import { Theme, themes } from './config/themes'
 import { processChineseText } from './utils/textProcessor'
+import { Reading } from './types/reading'
+import sampleReading from './data/readings/sample.json'
 import './App.css'
 
 function App() {
@@ -15,29 +18,23 @@ function App() {
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<string>('candy');
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
+  const [reading, setReading] = useState<Reading>(sampleReading);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
     setError(null);
     
-    fetch('/sample.txt')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(text => {
-        const processed = processChineseText(text);
-        setProcessedText(processed);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error loading text:', error);
-        setError(error.message);
-        setIsLoading(false);
-      });
-  }, []);
+    try {
+      const processed = processChineseText(reading.content);
+      setProcessedText(processed);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error processing text:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+      setIsLoading(false);
+    }
+  }, [reading]);
 
   const handleWordPeek = (word: ChineseWord) => {
     if (!wordBank.some(w => w.characters === word.characters)) {
@@ -55,6 +52,10 @@ function App() {
 
   const handleThemeChange = (themeId: string) => {
     setCurrentTheme(themeId);
+  };
+
+  const toggleQuiz = () => {
+    setShowQuiz(prev => !prev);
   };
 
   // Get current theme object
@@ -76,7 +77,7 @@ function App() {
       '--theme-highlight': theme.colors.highlight,
     } as React.CSSProperties}>
       <div className="header">
-        <h1>每日一读</h1>
+        <h1>{reading.title}</h1>
         <button 
           className="themeButton" 
           onClick={() => setIsThemePanelOpen(true)}
@@ -85,6 +86,23 @@ function App() {
           {theme.emoji}
         </button>
       </div>
+      {reading.author && (
+        <div className="meta">
+          <span className="author">作者：{reading.author}</span>
+          {reading.sourceDate && (
+            <span className="date">日期：{reading.sourceDate}</span>
+          )}
+        </div>
+      )}
+      {reading.tags.length > 0 && (
+        <div className="tags">
+          {reading.tags.map((tag, index) => (
+            <span key={index} className="tag">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
       {isLoading && <div>Loading...</div>}
       {error && <div style={{ color: 'red' }}>Error: {error}</div>}
       {!isLoading && !error && processedText.length > 0 && (
@@ -93,6 +111,15 @@ function App() {
           <div className="wordCount">
             字数：{wordCount}
           </div>
+          <div className="actions">
+            <button 
+              className="actionButton"
+              onClick={toggleQuiz}
+            >
+              {showQuiz ? '隐藏测验' : '开始测验'}
+            </button>
+          </div>
+          {showQuiz && <QuizPanel quizzes={reading.quizzes} />}
           {wordBank.length > 0 && (
             <div className="wordBank">
               <h2>生词本</h2>

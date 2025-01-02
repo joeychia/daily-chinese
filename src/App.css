@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .themeButton {
@@ -61,6 +61,66 @@ h1::after {
   height: 4px;
   background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
   border-radius: 2px;
+}
+
+.meta {
+  margin: 1rem 0;
+  font-size: 1rem;
+  color: var(--theme-text);
+  opacity: 0.8;
+}
+
+.meta span {
+  margin: 0 1rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1rem 0 2rem;
+}
+
+.tag {
+  padding: 0.3rem 1rem;
+  border-radius: 20px;
+  background: var(--theme-card-bg);
+  color: var(--theme-primary);
+  font-size: 0.9rem;
+  border: 1px solid var(--theme-card-border);
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  transform: translateY(-2px);
+  border-color: var(--theme-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actions {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.actionButton {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  color: var(--theme-text);
+  background: var(--theme-card-bg);
+  border: 2px solid var(--theme-card-border);
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  border-color: var(--theme-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .wordCount {
