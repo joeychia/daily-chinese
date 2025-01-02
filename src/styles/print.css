@@ -1,0 +1,51 @@
+@media print {
+  /* Hide everything except the cards when printing */
+  body * {
+    visibility: hidden;
+  }
+
+  .printableCards,
+  .printableCards * {
+    visibility: visible;
+  }
+
+  .printableCards {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+  }
+
+  /* Card grid layout */
+  .cardGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5cm;
+    padding: 1cm;
+    page-break-after: always;
+  }
+
+  /* Individual card styling */
+  .printCard {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 0.5cm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    break-inside: avoid;
+  }
+
+  .printCharacter {
+    font-size: 32px;
+    margin-bottom: 0.3cm;
+  }
+
+  .printPinyin {
+    font-size: 16px;
+    color: #666;
+  }
+} 

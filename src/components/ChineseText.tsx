@@ -4,10 +4,18 @@ import styles from './ChineseText.module.css';
 
 interface ChineseTextProps {
   text: ChineseWord[];
+  onWordPeek?: (word: ChineseWord) => void;
 }
 
-export const ChineseText: React.FC<ChineseTextProps> = ({ text }) => {
+export const ChineseText: React.FC<ChineseTextProps> = ({ text, onWordPeek }) => {
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
+
+  const handleWordActivate = (index: number) => {
+    setActiveWordIndex(index);
+    if (onWordPeek && /[\u4e00-\u9fa5]/.test(text[index].characters)) {
+      onWordPeek(text[index]);
+    }
+  };
 
   if (text.length === 0) {
     return <div>No text to display</div>;
@@ -20,12 +28,12 @@ export const ChineseText: React.FC<ChineseTextProps> = ({ text }) => {
           <span 
             key={index} 
             className={styles.word}
-            onMouseDown={() => setActiveWordIndex(index)}
+            onMouseDown={() => handleWordActivate(index)}
             onMouseUp={() => setActiveWordIndex(null)}
             onMouseLeave={() => setActiveWordIndex(null)}
             onTouchStart={(e) => {
-              e.preventDefault(); // Prevent default touch behavior
-              setActiveWordIndex(index);
+              e.preventDefault();
+              handleWordActivate(index);
             }}
             onTouchEnd={() => setActiveWordIndex(null)}
           >
@@ -39,7 +47,7 @@ export const ChineseText: React.FC<ChineseTextProps> = ({ text }) => {
         ))}
       </div>
       <div className={styles.instructions}>
-        Tap on any character to see pinyin
+        点击汉字查看拼音
       </div>
     </div>
   );

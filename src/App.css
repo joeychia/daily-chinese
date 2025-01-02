@@ -41,3 +41,77 @@ h1::after {
   display: inline-block;
   backdrop-filter: blur(4px);
 }
+
+.wordBank {
+  margin: 2rem auto;
+  max-width: 800px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 4px 16px rgba(255, 166, 0, 0.1);
+}
+
+.wordBank h2 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.wordList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.bankWord {
+  background: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(255, 166, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+  transition: transform 0.2s ease;
+}
+
+.bankWord:hover {
+  transform: translateY(-2px);
+}
+
+.bankCharacter {
+  font-size: 1.5rem;
+  color: #34495e;
+  margin-bottom: 0.2rem;
+}
+
+.bankPinyin {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.printButton {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #ff9f43 0%, #ff7f50 100%);
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 166, 0, 0.2);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.printButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 166, 0, 0.3);
+}
+
+.printButton:active {
+  transform: translateY(0);
+}
