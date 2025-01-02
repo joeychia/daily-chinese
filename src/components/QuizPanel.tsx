@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Quiz } from '../types/reading';
 import styles from './QuizPanel.module.css';
+import { processChineseText } from '../utils/textProcessor';
+import type { ChineseWord } from '../data/sampleText';
 
 interface QuizPanelProps {
   quizzes: Quiz[];
@@ -18,11 +20,29 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [results, setResults] = useState<QuizResult[]>([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [activeWord, setActiveWord] = useState<ChineseWord | null>(null);
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (showAnswer) return;
     setSelectedAnswer(answerIndex);
   };
+
+  const handleMouseDown = useCallback((word: ChineseWord) => {
+    console.log('Mouse down on word:', word);
+    setActiveWord(word);
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent, word: ChineseWord) => {
+    console.log('Touch start on word:', word);
+    e.preventDefault(); // Prevent double-firing on mobile
+    e.stopPropagation(); // Stop event bubbling
+    setActiveWord(word);
+  }, []);
+
+  const handleRelease = useCallback(() => {
+    console.log('Release, clearing active word');
+    setActiveWord(null);
+  }, []);
 
   const handleCheckAnswer = () => {
     if (selectedAnswer === null) return;
@@ -79,14 +99,46 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
   }
 
   const quiz = quizzes[currentQuiz];
+  const processedQuestion = processChineseText(quiz.question);
+
+  console.log('Active word:', activeWord);
 
   return (
     <div className={styles.quizPanel}>
       <div className={styles.progress}>
         问题 {currentQuiz + 1} / {quizzes.length}
       </div>
-      <div className={styles.question}>
-        {quiz.question}
+      <div className={`${styles.question} chinese-text`}>
+        {processedQuestion.map((word, index) => {
+          const isActive = activeWord?.characters === word.characters;
+          console.log('Rendering word:', word.characters, 'isActive:', isActive);
+          return (
+            <span
+              key={index}
+              style={{ 
+                display: 'inline-block',
+                position: 'relative',
+                cursor: 'pointer',
+                padding: '0 2px',
+                userSelect: 'none',
+                WebkitUserSelect: 'none'
+              }}
+              onMouseDown={() => handleMouseDown(word)}
+              onMouseUp={handleRelease}
+              onMouseLeave={handleRelease}
+              onTouchStart={(e) => handleTouchStart(e, word)}
+              onTouchEnd={handleRelease}
+            >
+              {word.characters}
+              {isActive && (
+                <div className="pinyin-popup visible">
+                  <div className="character">{word.characters}</div>
+                  <div className="pinyin">{word.pinyin.join(' ')}</div>
+                </div>
+              )}
+            </span>
+          );
+        })}
       </div>
       <div className={styles.options}>
         {quiz.options.map((option, index) => (

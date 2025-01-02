@@ -19,7 +19,8 @@
   color: var(--theme-text);
   margin-bottom: 2rem;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 2.5;
+  position: relative;
 }
 
 .options {
