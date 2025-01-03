@@ -73,6 +73,9 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
           <div className={styles.menuItem} onClick={() => { navigate('/articles'); onClose(); }}>
             文章列表
           </div>
+          <div className={styles.menuItem} onClick={() => { navigate('/wordbank'); onClose(); }}>
+            我的生词本
+          </div>
         </div>
         
         <div className={styles.search}>

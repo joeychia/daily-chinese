@@ -1,0 +1,31 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--theme-text);
+  transition: transform 0.2s ease;
+}
+
+.backButton:hover {
+  transform: translateX(-2px);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+} 

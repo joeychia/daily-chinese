@@ -1,42 +1,69 @@
 .topBar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3rem;
-  background: var(--theme-card-bg);
-  border-bottom: 1px solid var(--theme-card-border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
-  z-index: 100;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 20px;
+  background-color: var(--theme-card-bg);
+  border-bottom: 1px solid var(--theme-card-border);
 }
 
-.menuButton, .themeButton {
+.menuButton {
   background: none;
   border: none;
-  font-size: 1.25rem;
-  padding: 0.5rem;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--theme-text);
+}
+
+.title {
+  flex: 1;
+  font-size: 20px;
+  font-weight: bold;
+  margin-left: 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.wordBankButton {
+  background: none;
+  border: none;
+  padding: 8px 12px;
   cursor: pointer;
   color: var(--theme-text);
-  transition: opacity 0.2s;
-  width: 2.5rem;
-  height: 2.5rem;
+  font-size: 16px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge {
+  background-color: var(--theme-primary);
+  color: white;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 12px;
+  min-width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
 }
 
-.menuButton:hover, .themeButton:hover {
-  background: var(--theme-highlight);
+.themeButton {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
 }
 
-.streakContainer {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.menuButton:hover,
+.wordBankButton:hover,
+.themeButton:hover {
+  opacity: 0.8;
 } 

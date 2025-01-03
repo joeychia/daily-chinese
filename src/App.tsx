@@ -20,6 +20,8 @@ import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, su
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { Timer } from './components/Timer'
 import { TopBar } from './components/TopBar'
+import { WordBankComponent } from './components/WordBankComponent'
+import { WordBank } from './components/WordBank'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -105,10 +107,9 @@ function MainContent() {
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
 
-  // Reset start time when article changes
-  useEffect(() => {
-    setStartTime(Date.now());
-  }, [articleId, reading.id]);
+  // Filter word bank for current article
+  const articleWords = processedText.map(word => word.characters);
+  const filteredWordBank = wordBank.filter(word => articleWords.includes(word.characters));
 
   // Load user's word bank
   useEffect(() => {
@@ -119,15 +120,14 @@ function MainContent() {
 
     const loadWordBank = async () => {
       try {
-        const wordBank = await getWordBank(user.id);
-        setWordBank(wordBank);
+        const words = await getWordBank(user.id);
+        setWordBank(words);
       } catch (error) {
         console.error('Error loading word bank:', error);
       }
     };
     loadWordBank();
 
-    // Subscribe to word bank changes
     const unsubscribe = subscribeToWordBank(user.id, (updatedWordBank: ChineseWord[]) => {
       setWordBank(updatedWordBank);
     });
@@ -168,6 +168,11 @@ function MainContent() {
       clearInterval(syncInterval);
     };
   }, [user, wordBank]);
+
+  // Reset start time when article changes
+  useEffect(() => {
+    setStartTime(Date.now());
+  }, [articleId, reading.id]);
 
   // Initialize database first
   useEffect(() => {
@@ -381,10 +386,6 @@ function MainContent() {
   const theme = themes.find(t => t.id === currentTheme) || themes[0];
   const wordCount = processedText.filter(word => /[\u4e00-\u9fa5]/.test(word.characters)).length;
 
-  // Filter word bank for current article
-  const articleWords = processedText.map(word => word.characters);
-  const filteredWordBank = wordBank.filter(word => articleWords.includes(word.characters));
-
   const handleWordLongPress = (word: ChineseWord) => {
     setWordToDelete(word);
     setShowConfirmDialog(true);
@@ -392,8 +393,9 @@ function MainContent() {
 
   const handleWordTouchStart = (word: ChineseWord) => {
     longPressTimeout.current = setTimeout(() => {
-      handleWordLongPress(word);
-    }, 500); // 500ms for long press
+      setWordToDelete(word);
+      setShowConfirmDialog(true);
+    }, 500);
   };
 
   const handleWordTouchEnd = () => {
@@ -515,33 +517,12 @@ function MainContent() {
               />
             )}
             {filteredWordBank.length > 0 && (
-              <div className="word-bank">
-                <h2>
-                  生词本
-                  {showSavedIndicator && (
-                    <span className="save-status">已保存</span>
-                  )}
-                </h2>
-                <div className="word-list">
-                  {filteredWordBank.map((word, index) => (
-                    <div
-                      key={index}
-                      className="word-card"
-                      onTouchStart={() => handleWordTouchStart(word)}
-                      onTouchEnd={handleWordTouchEnd}
-                      onMouseDown={() => handleWordTouchStart(word)}
-                      onMouseUp={handleWordTouchEnd}
-                      onMouseLeave={handleWordTouchEnd}
-                    >
-                      <div className="character">{word.characters}</div>
-                      <div className="pinyin">{word.pinyin.join(' ')}</div>
-                    </div>
-                  ))}
-                </div>
-                <button className="home-button" onClick={handlePrint}>
-                  打印生词卡
-                </button>
-              </div>
+              <WordBankComponent
+                words={filteredWordBank}
+                title="本文生词"
+                onDeleteWord={handleDeleteWord}
+                showSavedIndicator={showSavedIndicator}
+              />
             )}
           </>
         )}
@@ -606,6 +587,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Articles />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wordbank"
+            element={
+              <ProtectedRoute>
+                <WordBank />
               </ProtectedRoute>
             }
           />
