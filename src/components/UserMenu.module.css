@@ -2,34 +2,94 @@
   position: relative;
 }
 
-.trigger {
-  background: none;
-  border: none;
-  padding: 0;
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+
+.loginButton,
+.signUpButton {
+  padding: 0.5rem 1.25rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s ease;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 80px;
+}
+
+.loginButton {
+  background: var(--theme-primary);
+  color: white;
+  border: none;
+}
+
+.loginButton:hover {
+  background: var(--theme-highlight);
+  transform: translateY(-1px);
+}
+
+.signUpButton {
+  background: transparent;
+  color: var(--theme-text);
+  border: 1px solid var(--theme-card-border);
+}
+
+.signUpButton:hover {
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+  transform: translateY(-1px);
+}
+
+.trigger {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.trigger:hover {
+  background: var(--theme-card-bg);
+}
+
+.userTrigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--theme-text);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.avatarPlaceholder {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
   background: var(--theme-primary);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 500;
   font-size: 1rem;
+  font-weight: bold;
+  flex-shrink: 0;
 }
 
 .overlay {
@@ -41,46 +101,67 @@
   z-index: 100;
 }
 
-.menu {
+.dropdown {
   position: absolute;
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
-  border-radius: 0.5rem;
+  border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   min-width: 200px;
   z-index: 101;
+  padding: 0.75rem;
   animation: slideIn 0.2s ease-out;
 }
 
 .userInfo {
-  padding: 1rem;
-  border-bottom: 1px solid var(--theme-card-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+
+.details {
+  flex: 1;
+  min-width: 0;
 }
 
 .name {
   font-weight: 500;
   color: var(--theme-text);
   margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .email {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--theme-secondary);
-  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: var(--theme-card-border);
+  margin: 0.5rem 0;
 }
 
 .signOutButton {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem;
   text-align: left;
   background: none;
   border: none;
   color: #ef4444;
   cursor: pointer;
+  border-radius: 4px;
   transition: background-color 0.2s ease;
+  font-size: 0.875rem;
 }
 
 .signOutButton:hover {

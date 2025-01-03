@@ -2,8 +2,14 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
+interface AuthUser {
+  id: string;
+  email: string | null;
+  displayName: string | null;
+}
+
 interface AuthContextType {
-  user: { id: string } | null;
+  user: AuthUser | null;
   loading: boolean;
 }
 
@@ -17,12 +23,16 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user ? { id: user.uid } : null);
+      setUser(user ? {
+        id: user.uid,
+        email: user.email,
+        displayName: user.displayName
+      } : null);
       setLoading(false);
     });
 
