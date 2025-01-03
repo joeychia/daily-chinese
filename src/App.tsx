@@ -23,6 +23,7 @@ import { db } from './config/firebase'
 import { User } from 'firebase/auth'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { Timer } from './components/Timer'
+import { StreakDisplay } from './components/StreakDisplay'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -103,6 +104,7 @@ function MainContent() {
   const longPressTimeout = useRef<NodeJS.Timeout>();
   const [isReading, setIsReading] = useState<boolean>(true);
   const [lastReadTime, setLastReadTime] = useState<number | undefined>();
+  const [streakRefreshCounter, setStreakRefreshCounter] = useState(0);
 
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
@@ -446,6 +448,8 @@ function MainContent() {
       await articleService.saveUserArticleData(user.id, articleId, {
         lastReadTime: readingTime
       });
+      // Trigger streak refresh
+      setStreakRefreshCounter(prev => prev + 1);
     } catch (error) {
       console.error('Error saving reading time:', error);
     }
@@ -483,6 +487,7 @@ function MainContent() {
         isRunning={isReading}
         lastReadTime={lastReadTime}
       />
+      <StreakDisplay refreshTrigger={streakRefreshCounter} />
       {reading.author && (
         <div className="meta">
           <span className="author">作者：{reading.author}</span>
