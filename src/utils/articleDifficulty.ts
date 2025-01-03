@@ -3,12 +3,12 @@ import path from 'path';
 
 // Define character level ranges
 export const CHAR_LEVELS = {
-  LEVEL_1: { min: 1, max: 500 },    // Most common 500
-  LEVEL_2: { min: 501, max: 1000 }, // 501-1000
-  LEVEL_3: { min: 1001, max: 1500 }, // 1001-1500
-  LEVEL_4: { min: 1501, max: 2000 }, // 1501-2000
-  LEVEL_5: { min: 2001, max: 2500 }, // 2001-2500
-  LEVEL_6: { min: 2501, max: Infinity }, // 2501+
+  LEVEL_1: { min: 1, max: 300 },     // Most common 300
+  LEVEL_2: { min: 301, max: 600 },   // Top 301-600
+  LEVEL_3: { min: 601, max: 1000 },  // Top 601-1000
+  LEVEL_4: { min: 1001, max: 1500 }, // Top 1001-1500
+  LEVEL_5: { min: 1501, max: 2000 }, // Top 1501-2000
+  LEVEL_6: { min: 2001, max: Infinity }, // 2000+
 };
 
 // Interface for article analysis results
@@ -16,7 +16,7 @@ export interface ArticleAnalysis {
   totalCharacters: number;
   uniqueCharacters: number;
   characterLevels: {
-    [key: string]: number;
+    [key: string]: number;  // Now represents percentage of total characters
   };
   difficultyScore: number;
   difficultyLevel: number; // 1-5 scale
@@ -87,21 +87,21 @@ const isChineseCharacter = (char: string): boolean => {
 };
 
 // Calculate difficulty level (1-5) based on level distribution
-const calculateDifficultyLevel = (levelDistribution: { [key: string]: number }): number => {
+const calculateDifficultyLevel = (characterLevels: { [key: string]: number }): number => {
   // If more than 10% characters are in level 5 or 6, return level 5
-  if (levelDistribution.LEVEL_5 + levelDistribution.LEVEL_6 > 10) {
+  if (characterLevels.LEVEL_5 + characterLevels.LEVEL_6 > 10) {
     return 5;
   }
   // If more than 10% characters are in level 4, return level 4
-  if (levelDistribution.LEVEL_4 > 10) {
+  if (characterLevels.LEVEL_4 > 10) {
     return 4;
   }
   // If more than 10% characters are in level 3, return level 3
-  if (levelDistribution.LEVEL_3 > 10) {
+  if (characterLevels.LEVEL_3 > 10) {
     return 3;
   }
   // If more than 10% characters are in level 2, return level 2
-  if (levelDistribution.LEVEL_2 > 10) {
+  if (characterLevels.LEVEL_2 > 10) {
     return 2;
   }
   // If mostly level 1 characters, return level 1
@@ -116,7 +116,7 @@ export const analyzeArticleDifficulty = (text: string): ArticleAnalysis => {
   const uniqueChars = new Set(characters);
   
   // Initialize level counts
-  const characterLevels: { [key: string]: number } = {
+  const levelCounts: { [key: string]: number } = {
     LEVEL_1: 0,
     LEVEL_2: 0,
     LEVEL_3: 0,
@@ -125,21 +125,46 @@ export const analyzeArticleDifficulty = (text: string): ArticleAnalysis => {
     LEVEL_6: 0
   };
 
-  // Count characters by level
+  // Count characters by level (counting each occurrence)
+  characters.forEach(char => {
+    const rank = characterRanks.get(char);
+    if (rank) {
+      const level = getCharacterLevel(rank);
+      levelCounts[level]++;
+    } else {
+      levelCounts['LEVEL_6']++;
+    }
+  });
+
+  // Calculate percentages for each level
+  const totalChars = characters.length;
+  const characterLevels = Object.entries(levelCounts).reduce((acc, [level, count]) => {
+    acc[level] = totalChars === 0 ? 0 : Number(((count / totalChars) * 100).toFixed(1));
+    return acc;
+  }, {} as { [key: string]: number });
+
+  // For backward compatibility, keep levelDistribution based on unique characters
+  const uniqueCharLevels: { [key: string]: number } = {
+    LEVEL_1: 0,
+    LEVEL_2: 0,
+    LEVEL_3: 0,
+    LEVEL_4: 0,
+    LEVEL_5: 0,
+    LEVEL_6: 0
+  };
+
   uniqueChars.forEach(char => {
     const rank = characterRanks.get(char);
     if (rank) {
       const level = getCharacterLevel(rank);
-      characterLevels[level]++;
+      uniqueCharLevels[level]++;
     } else {
-      characterLevels.LEVEL_6++;
+      uniqueCharLevels['LEVEL_6']++;
     }
   });
 
-  // Calculate level distribution as percentages
-  const totalUnique = uniqueChars.size;
-  const levelDistribution = Object.entries(characterLevels).reduce((acc, [level, count]) => {
-    acc[level] = totalUnique === 0 ? 0 : Number(((count / totalUnique) * 100).toFixed(1));
+  const levelDistribution = Object.entries(uniqueCharLevels).reduce((acc, [level, count]) => {
+    acc[level] = uniqueChars.size === 0 ? 0 : Number(((count / uniqueChars.size) * 100).toFixed(1));
     return acc;
   }, {} as { [key: string]: number });
 
@@ -148,7 +173,7 @@ export const analyzeArticleDifficulty = (text: string): ArticleAnalysis => {
     uniqueCharacters: uniqueChars.size,
     characterLevels,
     levelDistribution,
-    difficultyScore: calculateDifficultyScore(levelDistribution),
-    difficultyLevel: calculateDifficultyLevel(levelDistribution)
+    difficultyScore: calculateDifficultyScore(characterLevels),
+    difficultyLevel: calculateDifficultyLevel(characterLevels)
   };
 }; 

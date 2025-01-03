@@ -113,4 +113,45 @@ describe('Article Difficulty Analysis', () => {
     const level1Text = '我是你'; // Should be level 1 (common characters)
     expect(analyzeArticleDifficulty(level1Text).difficultyLevel).toBe(1);
   });
+
+  // Test longer text analysis
+  test('analyzes longer text correctly', () => {
+    // A passage about learning programming
+    const longText = `编程是一种创造性的活动。通过编写代码，我们可以让计算机按照我们的想法工作。在学习编程的过程中，我们需要掌握基本的概念和逻辑思维方式。首先，我们要理解变量、函数、循环等基础知识。然后，我们可以开始编写简单的程序。随着技能的提升，我们可以挑战更复杂的项目。编程不仅是一种技术，也是一种解决问题的方法。通过不断练习和实践，我们可以提高编程能力。在这个数字化时代，编程技能变得越来越重要。无论是在工作中还是在日常生活中，编程都可以帮助我们更好地完成任务。学习编程需要耐心和毅力，但最终的收获是值得的。让我们开始编程之旅吧！在编程世界中，我们可以创造出各种有趣的应用和工具。从简单的计算器到复杂的网站，从手机应用到人工智能系统，编程为我们打开了无限可能。通过持续学习和创新，我们能够在这个领域不断进步。`;
+
+    const analysis = analyzeArticleDifficulty(longText);
+
+    // Test basic metrics
+    expect(analysis.totalCharacters).toBeGreaterThanOrEqual(300);
+    expect(analysis.uniqueCharacters).toBeLessThan(analysis.totalCharacters);
+
+    // Test level distribution
+    expect(Object.values(analysis.levelDistribution).reduce((a, b) => a + b)).toBeCloseTo(100, 1);
+
+    // Test difficulty metrics
+    expect(analysis.difficultyScore).toBeGreaterThan(0);
+    expect(analysis.difficultyScore).toBeLessThan(100);
+    expect(analysis.difficultyLevel).toBeGreaterThanOrEqual(3);
+    expect(analysis.difficultyLevel).toBeLessThanOrEqual(5);
+
+    // Since this text contains programming terms, it should have some higher-level characters
+    const higherLevelChars = analysis.characterLevels.LEVEL_4 + 
+                            analysis.characterLevels.LEVEL_5 + 
+                            analysis.characterLevels.LEVEL_6;
+    expect(higherLevelChars).toBeGreaterThan(0);
+
+    // The text should still contain many common characters
+    expect(analysis.characterLevels.LEVEL_1).toBeGreaterThan(60); // Most characters should be common
+    expect(analysis.characterLevels.LEVEL_2).toBeGreaterThan(10); // Some characters should be moderately common
+
+    // Log the analysis for inspection
+    console.log('Analysis of long text:', {
+      totalCharacters: analysis.totalCharacters,
+      uniqueCharacters: analysis.uniqueCharacters,
+      characterLevels: analysis.characterLevels,
+      levelDistribution: analysis.levelDistribution,
+      difficultyScore: analysis.difficultyScore,
+      difficultyLevel: analysis.difficultyLevel
+    });
+  });
 }); 
