@@ -54,19 +54,36 @@ export const userDataService = {
     wordBank: ChineseWord[]
   ) => {
     let timeout: NodeJS.Timeout;
+    let lastSyncedWordBank = JSON.stringify(wordBank);
     
     // Return the function to save word bank
     return () => {
+      // Only sync if word bank has changed
+      const currentWordBank = JSON.stringify(wordBank);
+      if (currentWordBank === lastSyncedWordBank) {
+        return;
+      }
+      
       clearTimeout(timeout);
       timeout = setTimeout(async () => {
-        const userArticleRef = ref(db, `users/${userId}/articles/${articleId}`);
-        const snapshot = await get(userArticleRef);
-        const existingData = snapshot.val() || {};
-        
-        await set(userArticleRef, {
-          ...existingData,
-          wordBank,
-        });
+        try {
+          const userArticleRef = ref(db, `users/${userId}/articles/${articleId}`);
+          const snapshot = await get(userArticleRef);
+          const existingData = snapshot.val() || {};
+          
+          await set(userArticleRef, {
+            ...existingData,
+            wordBank,
+          });
+          
+          lastSyncedWordBank = currentWordBank;
+          console.log('Word bank synced successfully:', {
+            articleId,
+            wordCount: wordBank.length
+          });
+        } catch (error) {
+          console.error('Error syncing word bank:', error);
+        }
       }, 60000); // 1 minute delay
     };
   },
@@ -77,9 +94,14 @@ export const userDataService = {
     articleId: string,
     callback: (wordBank: ChineseWord[]) => void
   ) => {
+    console.log('Setting up word bank subscription:', { articleId });
     const wordBankRef = ref(db, `users/${userId}/articles/${articleId}/wordBank`);
     return onValue(wordBankRef, (snapshot) => {
       const wordBank = snapshot.val() || [];
+      console.log('Word bank updated from server:', {
+        articleId,
+        wordCount: wordBank.length
+      });
       callback(wordBank);
     });
   },

@@ -54,14 +54,22 @@ function MainContent() {
   const [reading, setReading] = useState<Reading>(sampleReading);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
-  const [startTime] = useState<number>(Date.now());
+  const [startTime, setStartTime] = useState<number>(Date.now());
   const { articleId } = useParams();
+
+  // Reset start time when article changes
+  useEffect(() => {
+    setStartTime(Date.now());
+  }, [articleId, reading.id]);
 
   // Load user's progress when article changes
   useEffect(() => {
     if (user && articleId) {
       const loadProgress = async () => {
         try {
+          // Reset word bank first
+          setWordBank([]);
+          
           const progress = await userDataService.getArticleProgress(user.id, articleId);
           if (progress?.wordBank) {
             setWordBank(progress.wordBank);
@@ -71,8 +79,11 @@ function MainContent() {
         }
       };
       loadProgress();
+    } else {
+      // Reset word bank when no article is selected or user is not logged in
+      setWordBank([]);
     }
-  }, [user, articleId]);
+  }, [user, articleId, reading.id]); // Add reading.id to dependencies to handle sample reading
 
   // Setup word bank syncing
   useEffect(() => {
