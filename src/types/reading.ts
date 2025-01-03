@@ -1,7 +1,7 @@
 export interface Quiz {
   question: string;
   options: string[];
-  correctAnswer: number; // index of the correct option
+  correctOption: number;
 }
 
 export interface Reading {

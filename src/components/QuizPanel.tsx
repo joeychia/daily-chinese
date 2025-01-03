@@ -1,13 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState } from 'react';
+import { Quiz } from '../types/reading';
 import { userDataService } from '../services/userDataService';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './QuizPanel.module.css';
-
-interface Quiz {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
+import { ChineseText } from './ChineseText';
+import { processChineseText } from '../utils/textProcessor';
 
 interface QuizPanelProps {
   quizzes: Quiz[];
@@ -15,65 +12,59 @@ interface QuizPanelProps {
   startTime: number;
 }
 
-export const QuizPanel = ({ quizzes, articleId, startTime }: QuizPanelProps) => {
+export function QuizPanel({ quizzes, articleId, startTime }: QuizPanelProps) {
   const { user } = useAuth();
-  const [currentQuiz, setCurrentQuiz] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [showResults, setShowResults] = useState(false);
-  const [readingDuration, setReadingDuration] = useState(0);
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  useEffect(() => {
-    if (showResults && user) {
-      const duration = Math.floor((Date.now() - startTime) / 1000);
-      setReadingDuration(duration);
-      const score = Math.round((correctAnswers / quizzes.length) * 100);
-      userDataService.saveQuizCompletion(user.id, articleId, score, duration);
-    }
-  }, [showResults, user, correctAnswers, quizzes.length, articleId, startTime]);
+  const currentQuiz = quizzes[currentQuizIndex];
+  const processedQuestion = processChineseText(currentQuiz.question);
+  const processedOptions = currentQuiz.options.map(option => processChineseText(option));
 
-  const handleAnswerSelect = (index: number) => {
-    if (!isAnswerChecked) {
-      setSelectedAnswer(index);
+  const handleOptionSelect = (optionIndex: number) => {
+    if (!isSubmitted) {
+      setSelectedOption(optionIndex);
     }
   };
 
-  const handleCheckAnswer = () => {
-    if (selectedAnswer === null) return;
+  const handleNext = async () => {
+    if (selectedOption === null) return;
 
-    setIsAnswerChecked(true);
-    if (selectedAnswer === quizzes[currentQuiz].correctAnswer) {
-      setCorrectAnswers(prev => prev + 1);
+    if (selectedOption === currentQuiz.correctOption) {
+      setScore(prev => prev + 1);
     }
-  };
 
-  const handleNextQuiz = () => {
-    if (currentQuiz < quizzes.length - 1) {
-      setCurrentQuiz(prev => prev + 1);
-      setSelectedAnswer(null);
-      setIsAnswerChecked(false);
+    if (currentQuizIndex < quizzes.length - 1) {
+      setCurrentQuizIndex(prev => prev + 1);
+      setSelectedOption(null);
     } else {
-      setShowResults(true);
+      setShowResult(true);
+      const finalScore = ((score + (selectedOption === currentQuiz.correctOption ? 1 : 0)) / quizzes.length) * 100;
+      const duration = Math.floor((Date.now() - startTime) / 1000); // Convert to seconds
+      
+      if (user) {
+        await userDataService.saveQuizCompletion(user.id, articleId, finalScore, duration);
+      }
+    }
+    setIsSubmitted(false);
+  };
+
+  const handleSubmit = () => {
+    if (selectedOption !== null) {
+      setIsSubmitted(true);
     }
   };
 
-  const formatDuration = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}分${remainingSeconds}秒`;
-  };
-
-  if (showResults) {
-    const score = Math.round((correctAnswers / quizzes.length) * 100);
+  if (showResult) {
+    const finalScore = ((score + (selectedOption === currentQuiz.correctOption ? 1 : 0)) / quizzes.length) * 100;
     return (
       <div className={styles.quizPanel}>
         <h2>测验结果</h2>
-        <div className={styles.results}>
-          <p>得分：{score}分</p>
-          <p>正确答案：{correctAnswers} / {quizzes.length}</p>
-          <p>阅读用时：{formatDuration(readingDuration)}</p>
-        </div>
+        <p>得分：{finalScore.toFixed(0)}%</p>
+        <p>正确：{score + (selectedOption === currentQuiz.correctOption ? 1 : 0)} / {quizzes.length}</p>
       </div>
     );
   }
@@ -81,49 +72,47 @@ export const QuizPanel = ({ quizzes, articleId, startTime }: QuizPanelProps) => 
   return (
     <div className={styles.quizPanel}>
       <div className={styles.progress}>
-        问题 {currentQuiz + 1} / {quizzes.length}
+        问题 {currentQuizIndex + 1} / {quizzes.length}
       </div>
       <div className={styles.question}>
-        {quizzes[currentQuiz].question}
+        <ChineseText text={processedQuestion} onWordPeek={() => {}} />
       </div>
       <div className={styles.options}>
-        {quizzes[currentQuiz].options.map((option, index) => (
+        {processedOptions.map((option, index) => (
           <button
             key={index}
             className={`${styles.option} ${
-              selectedAnswer === index ? styles.selected : ''
+              selectedOption === index ? styles.selected : ''
             } ${
-              isAnswerChecked
-                ? index === quizzes[currentQuiz].correctAnswer
+              isSubmitted
+                ? index === currentQuiz.correctOption
                   ? styles.correct
-                  : selectedAnswer === index
+                  : selectedOption === index
                   ? styles.incorrect
                   : ''
                 : ''
             }`}
-            onClick={() => handleAnswerSelect(index)}
-            disabled={isAnswerChecked}
+            onClick={() => handleOptionSelect(index)}
           >
-            {option}
+            <ChineseText text={option} onWordPeek={() => {}} />
           </button>
         ))}
       </div>
-      {!isAnswerChecked ? (
-        <button
-          className={styles.checkButton}
-          onClick={handleCheckAnswer}
-          disabled={selectedAnswer === null}
-        >
-          检查答案
-        </button>
-      ) : (
-        <button
-          className={styles.nextButton}
-          onClick={handleNextQuiz}
-        >
-          {currentQuiz < quizzes.length - 1 ? '下一题' : '查看结果'}
-        </button>
-      )}
+      <div className={styles.actions}>
+        {!isSubmitted ? (
+          <button
+            className={styles.submitButton}
+            onClick={handleSubmit}
+            disabled={selectedOption === null}
+          >
+            提交答案
+          </button>
+        ) : (
+          <button className={styles.nextButton} onClick={handleNext}>
+            {currentQuizIndex < quizzes.length - 1 ? '下一题' : '查看结果'}
+          </button>
+        )}
+      </div>
     </div>
   );
-}; 
+} 
