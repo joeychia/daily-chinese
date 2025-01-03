@@ -11,6 +11,11 @@
   -webkit-touch-callout: none; /* Disable iOS callout on long-press */
 }
 
+.content {
+  margin-top: 4rem;
+  padding: 0 1rem;
+}
+
 /* Add this to allow text selection in input and textarea elements */
 input, textarea {
   -webkit-user-select: text;

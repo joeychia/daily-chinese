@@ -24,6 +24,7 @@ import { User } from 'firebase/auth'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { Timer } from './components/Timer'
 import { StreakDisplay } from './components/StreakDisplay'
+import { TopBar } from './components/TopBar'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -465,104 +466,95 @@ function MainContent() {
       '--theme-card-border': theme.colors.cardBorder,
       '--theme-highlight': theme.colors.highlight,
     } as React.CSSProperties}>
-      <div className="header">
-        <button 
-          className="menuButton" 
-          onClick={() => setIsNavOpen(true)}
-          title="菜单"
-        >
-          ☰
-        </button>
-        <h1><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
-        <button 
-          className="themeButton" 
-          onClick={() => setIsThemePanelOpen(true)}
-          title="更换主题"
-        >
-          {theme.emoji}
-        </button>
-      </div>
-      <Timer 
-        startTime={startTime}
-        isRunning={isReading}
-        lastReadTime={lastReadTime}
+      <TopBar
+        onMenuClick={() => setIsNavOpen(true)}
+        onThemeClick={() => setIsThemePanelOpen(true)}
+        themeEmoji={theme.emoji}
+        refreshTrigger={streakRefreshCounter}
       />
-      <StreakDisplay refreshTrigger={streakRefreshCounter} />
-      {reading.author && (
-        <div className="meta">
-          <span className="author">作者：{reading.author}</span>
-          {reading.sourceDate && (
-            <span className="date">日期：{reading.sourceDate}</span>
-          )}
-        </div>
-      )}
-      {reading.tags && reading.tags.map((tag: string, index: number) => (
-        <span key={index} className="tag">
-          {tag}
-        </span>
-      ))}
-      {isLoading && <div>Loading...</div>}
-      {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-      {!isLoading && !error && processedText.length > 0 && (
-        <>
-          <ChineseText 
-            text={processedText} 
-            onWordPeek={handleWordPeek} 
-            wordBank={wordBank}
-          />
-          <div className="wordCount">
-            字数：{wordCount}
+      <div className="content">
+        <h1><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
+        <Timer 
+          startTime={startTime}
+          isRunning={isReading}
+          lastReadTime={lastReadTime}
+        />
+        {reading.author && (
+          <div className="meta">
+            <span className="author">作者：{reading.author}</span>
+            {reading.sourceDate && (
+              <span className="date">日期：{reading.sourceDate}</span>
+            )}
           </div>
-          <div className="actions">
-            <button 
-              className="actionButton"
-              onClick={toggleQuiz}
-            >
-              {showQuiz ? '隐藏测验' : '开始测验'}
-            </button>
-          </div>
-          {showQuiz && (
-            <QuizPanel 
-              quizzes={reading.quizzes} 
-              articleId={articleId || reading.id}
-              startTime={startTime}
-              onComplete={handleQuizComplete}
+        )}
+        {reading.tags && reading.tags.map((tag: string, index: number) => (
+          <span key={index} className="tag">
+            {tag}
+          </span>
+        ))}
+        {isLoading && <div>Loading...</div>}
+        {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+        {!isLoading && !error && processedText.length > 0 && (
+          <>
+            <ChineseText 
+              text={processedText} 
+              onWordPeek={handleWordPeek} 
+              wordBank={wordBank}
             />
-          )}
-          {filteredWordBank.length > 0 && (
-            <div className="word-bank">
-              <h2>
-                生词本
-                {showSavedIndicator && (
-                  <span className="save-status">已保存</span>
-                )}
-              </h2>
-              <div className="word-list">
-                {filteredWordBank.map((word, index) => (
-                  <div
-                    key={index}
-                    className="word-card"
-                    onTouchStart={() => handleWordTouchStart(word)}
-                    onTouchEnd={handleWordTouchEnd}
-                    onMouseDown={() => handleWordTouchStart(word)}
-                    onMouseUp={handleWordTouchEnd}
-                    onMouseLeave={handleWordTouchEnd}
-                  >
-                    <div className="character">{word.characters}</div>
-                    <div className="pinyin">{word.pinyin.join(' ')}</div>
-                  </div>
-                ))}
-              </div>
-              <button className="home-button" onClick={handlePrint}>
-                打印生词卡
+            <div className="wordCount">
+              字数：{wordCount}
+            </div>
+            <div className="actions">
+              <button 
+                className="actionButton"
+                onClick={toggleQuiz}
+              >
+                {showQuiz ? '隐藏测验' : '开始测验'}
               </button>
             </div>
-          )}
-        </>
-      )}
-      {!isLoading && !error && processedText.length === 0 && (
-        <div>No text loaded</div>
-      )}
+            {showQuiz && (
+              <QuizPanel 
+                quizzes={reading.quizzes} 
+                articleId={articleId || reading.id}
+                startTime={startTime}
+                onComplete={handleQuizComplete}
+              />
+            )}
+            {filteredWordBank.length > 0 && (
+              <div className="word-bank">
+                <h2>
+                  生词本
+                  {showSavedIndicator && (
+                    <span className="save-status">已保存</span>
+                  )}
+                </h2>
+                <div className="word-list">
+                  {filteredWordBank.map((word, index) => (
+                    <div
+                      key={index}
+                      className="word-card"
+                      onTouchStart={() => handleWordTouchStart(word)}
+                      onTouchEnd={handleWordTouchEnd}
+                      onMouseDown={() => handleWordTouchStart(word)}
+                      onMouseUp={handleWordTouchEnd}
+                      onMouseLeave={handleWordTouchEnd}
+                    >
+                      <div className="character">{word.characters}</div>
+                      <div className="pinyin">{word.pinyin.join(' ')}</div>
+                    </div>
+                  ))}
+                </div>
+                <button className="home-button" onClick={handlePrint}>
+                  打印生词卡
+                </button>
+              </div>
+            )}
+          </>
+        )}
+        {!isLoading && !error && processedText.length === 0 && (
+          <div>No text loaded</div>
+        )}
+      </div>
       {showPrintPreview && <PrintableCards words={wordBank} />}
       <ThemePanel
         isOpen={isThemePanelOpen}

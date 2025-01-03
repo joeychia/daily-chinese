@@ -1,0 +1,42 @@
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  background: var(--theme-card-bg);
+  border-bottom: 1px solid var(--theme-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menuButton, .themeButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--theme-text);
+  transition: opacity 0.2s;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.menuButton:hover, .themeButton:hover {
+  background: var(--theme-highlight);
+}
+
+.streakContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} 
