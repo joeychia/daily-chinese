@@ -8,77 +8,83 @@
 }
 
 .textContainer {
-  font-size: 24px;
-  line-height: 1.6;
-  user-select: none;
+  font-size: 1.5rem;
+  line-height: 2.5;
+  position: relative;
   padding: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
+}
+
+.wordContainer {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  padding: 0 2px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .word {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
   position: relative;
-  cursor: pointer;
-  padding: 0.1em;
+  z-index: 1;
+}
+
+.wordBankDot {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: #ff4d4f;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.pinyinPopup {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
   border-radius: 8px;
-  transition: all 0.2s ease;
-  margin: 0;
+  padding: 4px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 60px;
+  text-align: center;
+  margin-bottom: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
 }
 
-.word:hover {
-  background-color: #fff3d4;
-  transform: translateY(-2px);
+.pinyinPopup.visible {
+  opacity: 1;
 }
 
-.word:active {
-  background-color: #ffe4a3;
-  transform: translateY(0);
+.pinyinPopup::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid var(--theme-card-border);
+}
+
+.character {
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin-bottom: 0;
+  line-height: 1.2;
+  color: var(--theme-text);
 }
 
 .pinyin {
-  position: absolute;
-  top: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  color: #2c3e50;
-  opacity: 0;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(135deg, #ffd995 0%, #ffecd1 100%);
-  padding: 3px 6px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(255, 166, 0, 0.2);
-  pointer-events: none;
-  transform-origin: bottom center;
-  transform: translateX(-50%) scale(0.9);
-  border: 1px solid #fff;
-}
-
-.pinyin.visible {
-  opacity: 1;
-  transform: translateX(-50%) scale(1);
-}
-
-.characters {
-  font-size: 24px;
-  color: #34495e;
-  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.instructions {
-  text-align: center;
-  color: #7f8c8d;
-  margin: 0 0 0.5rem;
-  font-size: 14px;
+  font-size: 1rem;
+  color: var(--theme-secondary);
   font-weight: 500;
-  background: #fff;
-  padding: 8px;
-  border-radius: 0 0 16px 16px;
-  border-top: 2px dashed #ffe4a3;
+  line-height: 1;
 } 

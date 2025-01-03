@@ -457,7 +457,11 @@ function MainContent() {
       {error && <div style={{ color: 'red' }}>Error: {error}</div>}
       {!isLoading && !error && processedText.length > 0 && (
         <>
-          <ChineseText text={processedText} onWordPeek={handleWordPeek} />
+          <ChineseText 
+            text={processedText} 
+            onWordPeek={handleWordPeek} 
+            wordBank={wordBank}
+          />
           <div className="wordCount">
             字数：{wordCount}
           </div>
