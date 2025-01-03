@@ -30,6 +30,14 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes, articleId, onComp
   }
 
   const currentQuiz = quizzes[currentQuizIndex];
+  if (!currentQuiz || !currentQuiz.question || !currentQuiz.options) {
+    return (
+      <div className={styles.quizPanel}>
+        <h2>测验数据错误</h2>
+      </div>
+    );
+  }
+
   const processedQuestion = processChineseText(currentQuiz.question);
   const processedOptions = currentQuiz.options.map(option => processChineseText(option));
 
