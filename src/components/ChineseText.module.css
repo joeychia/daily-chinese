@@ -18,6 +18,11 @@
   text-align: left;
 }
 
+/* Add specific styling for title text */
+h1 .textContainer {
+  text-align: center;
+}
+
 .wordContainer {
   display: inline;
   position: relative;
