@@ -470,7 +470,7 @@ function MainContent() {
         refreshTrigger={streakRefreshCounter}
       />
       <div className="content">
-        <h1><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
+        <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
         <Timer 
           startTime={startTime}
           isRunning={isReading}
