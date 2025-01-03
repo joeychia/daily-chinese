@@ -31,6 +31,7 @@ export interface UserStreak {
   longestStreak: number;
   lastReadDate: string;  // ISO date string
   streakStartDate: string;  // ISO date string
+  completedDates: string[];  // Array of ISO date strings for completed days
 }
 
 export const articleService = {
@@ -92,7 +93,8 @@ export const articleService = {
           ...currentStreak,
           currentStreak: currentStreak.currentStreak + 1,
           longestStreak: Math.max(currentStreak.currentStreak + 1, currentStreak.longestStreak),
-          lastReadDate: today
+          lastReadDate: today,
+          completedDates: [...(currentStreak.completedDates || []), today]
         };
       } else {
         // Streak broken, start new streak
@@ -100,7 +102,8 @@ export const articleService = {
           currentStreak: 1,
           longestStreak: currentStreak.longestStreak,
           lastReadDate: today,
-          streakStartDate: today
+          streakStartDate: today,
+          completedDates: [today]
         };
       }
     } else {
@@ -109,7 +112,8 @@ export const articleService = {
         currentStreak: 1,
         longestStreak: 1,
         lastReadDate: today,
-        streakStartDate: today
+        streakStartDate: today,
+        completedDates: [today]
       };
     }
     

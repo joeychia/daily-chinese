@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { articleService, UserStreak } from '../services/articleService';
+import { StreakPanel } from './StreakPanel';
 import styles from './StreakDisplay.module.css';
 
 interface StreakDisplayProps {
@@ -10,6 +11,7 @@ interface StreakDisplayProps {
 export const StreakDisplay: React.FC<StreakDisplayProps> = ({ refreshTrigger = 0 }) => {
   const { user } = useAuth();
   const [streak, setStreak] = useState<UserStreak | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => {
     const loadStreak = async () => {
@@ -37,17 +39,27 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({ refreshTrigger = 0
   const longestStreak = streak?.longestStreak || 0;
 
   return (
-    <div className={styles.streakContainer}>
-      <div className={styles.streakBox}>
-        <span className={styles.streakIcon}>🔥</span>
-        <span className={styles.streakCount}>{currentStreak}</span>
-        <span className={styles.streakLabel}>天</span>
-      </div>
-      {longestStreak > 0 && longestStreak > currentStreak && (
-        <div className={styles.bestStreak}>
-          最长连续：{longestStreak}天
+    <>
+      <div 
+        className={styles.streakContainer}
+        onClick={() => setIsPanelOpen(true)}
+      >
+        <div className={styles.streakBox}>
+          <span className={styles.streakIcon}>🔥</span>
+          <span className={styles.streakCount}>{currentStreak}</span>
+          <span className={styles.streakLabel}>天</span>
         </div>
-      )}
-    </div>
+        {longestStreak > 0 && longestStreak > currentStreak && (
+          <div className={styles.bestStreak}>
+            最长连续：{longestStreak}天
+          </div>
+        )}
+      </div>
+      <StreakPanel 
+        isOpen={isPanelOpen}
+        onClose={() => setIsPanelOpen(false)}
+        streak={streak}
+      />
+    </>
   );
 }; 
