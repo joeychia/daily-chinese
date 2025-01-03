@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { ChineseWord } from '../data/sampleText';
 import { getWordBank, subscribeToWordBank, saveWordBank } from '../services/userDataService';
 import { WordBankComponent } from './WordBankComponent';
-import { TopBar } from './TopBar';
 import styles from './WordBank.module.css';
 
 export const WordBank: React.FC = () => {
@@ -12,6 +11,7 @@ export const WordBank: React.FC = () => {
   const navigate = useNavigate();
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
+  const [wordToDelete, setWordToDelete] = useState<ChineseWord | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -71,7 +71,12 @@ export const WordBank: React.FC = () => {
   }, [user, wordBank]);
 
   const handleDeleteWord = (word: ChineseWord) => {
-    setWordBank(prev => prev.filter(w => w.characters !== word.characters));
+    if (!user) return;
+    const newWordBank = wordBank.filter(w => w.characters !== word.characters);
+    setWordBank(newWordBank);
+    saveWordBank(user.id, newWordBank).catch(error => {
+      console.error('Error saving word bank:', error);
+    });
   };
 
   return (
@@ -86,6 +91,7 @@ export const WordBank: React.FC = () => {
         words={wordBank}
         title="全部生词"
         onDeleteWord={handleDeleteWord}
+        onWordToDelete={setWordToDelete}
         showSavedIndicator={showSavedIndicator}
       />
     </div>

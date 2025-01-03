@@ -7,7 +7,7 @@ import styles from './WordBankComponent.module.css';
 interface WordBankComponentProps {
   words: ChineseWord[];
   title: string;
-  onDeleteWord: () => void;
+  onDeleteWord: (word: ChineseWord) => void;
   onWordToDelete: (word: ChineseWord | null) => void;
   showSavedIndicator?: boolean;
 }
@@ -48,7 +48,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
 
   const handleDeleteConfirm = () => {
     if (wordToDelete) {
-      onDeleteWord();
+      onDeleteWord(wordToDelete);
       setShowConfirmDialog(false);
       setWordToDelete(null);
       onWordToDelete(null);
