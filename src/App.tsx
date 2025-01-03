@@ -10,7 +10,7 @@ import Articles from './components/Articles'
 import { ChineseWord } from './data/sampleText'
 import { themes } from './config/themes'
 import { processChineseText } from './utils/textProcessor'
-import { Reading } from './types/reading'
+import { Reading, Quiz } from './types/reading'
 import sampleReading from './data/readings/sample.json'
 import { initializeDatabase } from './scripts/initializeDb'
 import { articleService } from './services/articleService'
@@ -18,6 +18,20 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
 import { UserMenu } from './components/UserMenu'
 import { userDataService } from './services/userDataService'
+
+// Define the structure of the quiz from the database
+interface DatabaseQuiz {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+}
+
+// Convert database quiz to application quiz
+const convertQuiz = (dbQuiz: DatabaseQuiz): Quiz => ({
+  question: dbQuiz.question,
+  options: dbQuiz.options,
+  correctOption: dbQuiz.correctAnswer
+});
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -56,6 +70,9 @@ function MainContent() {
   const [isDbInitialized, setIsDbInitialized] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const { articleId } = useParams();
+
+  // Process title for pinyin support
+  const processedTitle = processChineseText(reading.title);
 
   // Reset start time when article changes
   useEffect(() => {
@@ -155,7 +172,7 @@ function MainContent() {
               author: article.author,
               content: article.content,
               tags: article.tags,
-              quizzes: article.quizzes || [],
+              quizzes: article.quizzes?.map(convertQuiz) || [],
               sourceDate: article.generatedDate
             };
             
@@ -195,7 +212,7 @@ function MainContent() {
             author: randomArticle.author,
             content: randomArticle.content,
             tags: randomArticle.tags,
-            quizzes: randomArticle.quizzes || [],
+            quizzes: randomArticle.quizzes?.map(convertQuiz) || [],
             sourceDate: randomArticle.generatedDate
           };
           
@@ -214,7 +231,7 @@ function MainContent() {
             author: randomArticle.author,
             content: randomArticle.content,
             tags: randomArticle.tags,
-            quizzes: randomArticle.quizzes || [],
+            quizzes: randomArticle.quizzes?.map(convertQuiz) || [],
             sourceDate: randomArticle.generatedDate
           };
           
@@ -323,7 +340,7 @@ function MainContent() {
         <UserMenu />
       </nav>
       <div className="header">
-        <h1>{reading.title}</h1>
+        <h1><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
         <button 
           className="themeButton" 
           onClick={() => setIsThemePanelOpen(true)}
