@@ -11,15 +11,6 @@ export const CHAR_LEVELS = {
   LEVEL_6: { min: 2501, max: Infinity }, // 2501+
 };
 
-// Interface for character frequency data
-interface CharacterData {
-  id: number;
-  character: string;
-  frequency: number;
-  percentage: number;
-  cumulative: number;
-}
-
 // Interface for article analysis results
 export interface ArticleAnalysis {
   totalCharacters: number;
@@ -34,27 +25,21 @@ export interface ArticleAnalysis {
   };
 }
 
-// Load and parse the character frequency data
-const loadCharacterData = (): Map<string, CharacterData> => {
-  const characterMap = new Map<string, CharacterData>();
+// Load and parse the character rank data
+const loadCharacterRanks = (): Map<string, number> => {
+  const characterMap = new Map<string, number>();
   try {
-    const csvPath = path.join(process.cwd(), 'src', 'data', 'hanzi-top3000.csv');
+    const csvPath = path.join(process.cwd(), 'src', 'data', 'hanzi-ranks.csv');
     const fileContent = readFileSync(csvPath, 'utf-8');
     const lines = fileContent.split('\n').slice(1); // Skip header
 
     lines.forEach(line => {
       if (!line.trim()) return;
-      const [id, char, freq, percentage, cumulative] = line.split(',');
-      characterMap.set(char, {
-        id: parseInt(id),
-        character: char,
-        frequency: parseInt(freq),
-        percentage: parseFloat(percentage),
-        cumulative: parseFloat(cumulative)
-      });
+      const [rank, char] = line.split(',');
+      characterMap.set(char, parseInt(rank));
     });
   } catch (error) {
-    console.error('Error loading character frequency data:', error);
+    console.error('Error loading character rank data:', error);
   }
   return characterMap;
 }
@@ -125,7 +110,7 @@ const calculateDifficultyLevel = (levelDistribution: { [key: string]: number }):
 
 // Main function to analyze article difficulty
 export const analyzeArticleDifficulty = (text: string): ArticleAnalysis => {
-  const characterData = loadCharacterData();
+  const characterRanks = loadCharacterRanks();
   // Filter only Chinese characters
   const characters = Array.from(text.trim()).filter(isChineseCharacter);
   const uniqueChars = new Set(characters);
@@ -142,9 +127,9 @@ export const analyzeArticleDifficulty = (text: string): ArticleAnalysis => {
 
   // Count characters by level
   uniqueChars.forEach(char => {
-    const data = characterData.get(char);
-    if (data) {
-      const level = getCharacterLevel(data.id);
+    const rank = characterRanks.get(char);
+    if (rank) {
+      const level = getCharacterLevel(rank);
       characterLevels[level]++;
     } else {
       characterLevels.LEVEL_6++;
