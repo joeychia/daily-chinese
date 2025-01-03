@@ -352,13 +352,51 @@ function MainContent() {
     }, 100);
   };
 
-  const handleThemeChange = (themeId: string) => {
+  // Load theme when user logs in
+  useEffect(() => {
+    if (!user) {
+      setCurrentTheme('candy'); // Reset to default theme
+      return;
+    }
+
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await userDataService.getTheme(user.id);
+        if (savedTheme) {
+          setCurrentTheme(savedTheme);
+        }
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+    loadTheme();
+
+    // Subscribe to theme changes
+    const unsubscribe = userDataService.subscribeToTheme(user.id, (theme) => {
+      setCurrentTheme(theme);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
+
+  const handleThemeChange = async (themeId: string) => {
     console.log('Changing theme:', {
       from: currentTheme,
       to: themeId,
       theme: themes.find(t => t.id === themeId)?.name
     });
     setCurrentTheme(themeId);
+
+    // Save theme to database
+    if (user) {
+      try {
+        await userDataService.saveTheme(user.id, themeId);
+      } catch (error) {
+        console.error('Error saving theme:', error);
+      }
+    }
   };
 
   const toggleQuiz = () => {

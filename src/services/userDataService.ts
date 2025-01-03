@@ -14,9 +14,39 @@ export interface UserData {
     [articleId: string]: ArticleProgress;
   };
   wordBank?: ChineseWord[]; // General word bank for the user
+  theme?: string; // User's theme preference
 }
 
 export const userDataService = {
+  // Get user's theme preference
+  getTheme: async (userId: string): Promise<string | null> => {
+    const userRef = ref(db, `users/${userId}/theme`);
+    const snapshot = await get(userRef);
+    return snapshot.val();
+  },
+
+  // Save user's theme preference
+  saveTheme: async (userId: string, theme: string): Promise<void> => {
+    const userRef = ref(db, `users/${userId}/theme`);
+    await set(userRef, theme);
+  },
+
+  // Subscribe to theme changes
+  subscribeToTheme: (
+    userId: string,
+    callback: (theme: string) => void
+  ) => {
+    console.log('Setting up theme subscription');
+    const themeRef = ref(db, `users/${userId}/theme`);
+    return onValue(themeRef, (snapshot) => {
+      const theme = snapshot.val();
+      if (theme) {
+        console.log('Theme updated from server:', theme);
+        callback(theme);
+      }
+    });
+  },
+
   // Get user's general word bank
   getWordBank: async (userId: string): Promise<ChineseWord[]> => {
     const userRef = ref(db, `users/${userId}/wordBank`);
