@@ -5,7 +5,8 @@ interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithMicrosoft: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -55,14 +56,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const signInWithMicrosoft = async () => {
+  const signInWithEmail = async (email: string, password: string) => {
     try {
-      console.log('AuthProvider: Signing in with Microsoft...');
-      const user = await authService.signInWithMicrosoft();
-      console.log('AuthProvider: Microsoft sign in successful', { user });
+      console.log('AuthProvider: Signing in with email...');
+      const user = await authService.signInWithEmail(email, password);
+      console.log('AuthProvider: Email sign in successful', { user });
       setUser(user);
     } catch (error) {
-      console.error('AuthProvider: Error signing in with Microsoft:', error);
+      console.error('AuthProvider: Error signing in with email:', error);
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      console.log('AuthProvider: Signing up with email...');
+      const user = await authService.signUpWithEmail(email, password);
+      console.log('AuthProvider: Email sign up successful', { user });
+      setUser(user);
+    } catch (error) {
+      console.error('AuthProvider: Error signing up with email:', error);
       throw error;
     }
   };
@@ -85,7 +98,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     user,
     loading,
     signInWithGoogle,
-    signInWithMicrosoft,
+    signInWithEmail,
+    signUpWithEmail,
     signOut
   };
 

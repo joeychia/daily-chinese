@@ -1,10 +1,12 @@
 import { 
-  signInWithPopup, 
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
   User
 } from 'firebase/auth';
-import { auth, googleProvider, microsoftProvider } from '../config/firebase';
+import { auth, googleProvider } from '../config/firebase';
 
 export interface AuthUser {
   id: string;
@@ -26,8 +28,13 @@ export const authService = {
     return convertFirebaseUser(result.user);
   },
 
-  signInWithMicrosoft: async (): Promise<AuthUser> => {
-    const result = await signInWithPopup(auth, microsoftProvider);
+  signInWithEmail: async (email: string, password: string): Promise<AuthUser> => {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return convertFirebaseUser(result.user);
+  },
+
+  signUpWithEmail: async (email: string, password: string): Promise<AuthUser> => {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
     return convertFirebaseUser(result.user);
   },
 
