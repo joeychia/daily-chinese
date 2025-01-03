@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { articleService, Article } from '../services/articleService';
-import styles from './ArticleNav.module.css';
+import { articleService } from '../services/articleService';
+import type { DatabaseArticle } from '../services/articleService';
+import { UserMenu } from './UserMenu';
+import styles from './Menu.module.css';
 
-interface ArticleNavProps {
+interface MenuProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const ArticleNav: React.FC<ArticleNavProps> = ({ isOpen, onClose }) => {
-  const [articles, setArticles] = useState<Article[]>([]);
+export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
+  const [articles, setArticles] = useState<DatabaseArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,6 +46,11 @@ export const ArticleNav: React.FC<ArticleNavProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
+  const handleHomeClick = () => {
+    navigate('/');
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -51,8 +58,21 @@ export const ArticleNav: React.FC<ArticleNavProps> = ({ isOpen, onClose }) => {
       <div className={styles.overlay} onClick={onClose} />
       <div className={styles.panel}>
         <div className={styles.header}>
-          <h2>文章列表</h2>
+          <h2>菜单</h2>
           <button className={styles.closeButton} onClick={onClose}>✕</button>
+        </div>
+
+        <div className={styles.userSection}>
+          <UserMenu />
+        </div>
+        
+        <div className={styles.menuItems}>
+          <div className={styles.menuItem} onClick={handleHomeClick}>
+            阅读
+          </div>
+          <div className={styles.menuItem} onClick={() => { navigate('/articles'); onClose(); }}>
+            文章列表
+          </div>
         </div>
         
         <div className={styles.search}>

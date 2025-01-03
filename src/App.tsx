@@ -4,7 +4,7 @@ import { ChineseText } from './components/ChineseText'
 import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
 import { QuizPanel } from './components/QuizPanel'
-import { ArticleNav } from './components/ArticleNav'
+import { Menu } from './components/Menu'
 import { LoginPage } from './components/LoginPage'
 import Articles from './components/Articles'
 import { ChineseWord } from './data/sampleText'
@@ -419,14 +419,14 @@ function MainContent() {
       '--theme-card-border': theme.colors.cardBorder,
       '--theme-highlight': theme.colors.highlight,
     } as React.CSSProperties}>
-      <nav className="navigation">
-        <button className="navButton" onClick={() => setIsNavOpen(true)}>☰</button>
-        <Link to="/">阅读</Link>
-        <Link to="/articles">文章列表</Link>
-        <div className="spacer" />
-        <UserMenu />
-      </nav>
       <div className="header">
+        <button 
+          className="menuButton" 
+          onClick={() => setIsNavOpen(true)}
+          title="菜单"
+        >
+          ☰
+        </button>
         <h1><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
         <button 
           className="themeButton" 
@@ -517,7 +517,7 @@ function MainContent() {
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
       />
-      <ArticleNav
+      <Menu
         isOpen={isNavOpen}
         onClose={() => setIsNavOpen(false)}
       />

@@ -7,7 +7,7 @@ interface DatabaseQuiz {
   correctAnswer: number;
 }
 
-interface DatabaseArticle {
+export interface DatabaseArticle {
   id: string;
   title: string;
   author: string;
