@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { articleService, Article } from '../services/articleService';
 import styles from './ArticleNav.module.css';
 
@@ -36,8 +36,7 @@ export const ArticleNav: React.FC<ArticleNavProps> = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const filteredArticles = articles.filter(article =>
-    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    article.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleArticleClick = (articleId: string) => {
@@ -52,7 +51,7 @@ export const ArticleNav: React.FC<ArticleNavProps> = ({ isOpen, onClose }) => {
       <div className={styles.overlay} onClick={onClose} />
       <div className={styles.panel}>
         <div className={styles.header}>
-          <h2>Articles</h2>
+          <h2>文章列表</h2>
           <button className={styles.closeButton} onClick={onClose}>✕</button>
         </div>
         
@@ -61,13 +60,13 @@ export const ArticleNav: React.FC<ArticleNavProps> = ({ isOpen, onClose }) => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search articles..."
+            placeholder="搜索文章..."
             className={styles.searchInput}
           />
         </div>
 
         <div className={styles.content}>
-          {loading && <div className={styles.loading}>Loading articles...</div>}
+          {loading && <div className={styles.loading}>加载中...</div>}
           {error && <div className={styles.error}>{error}</div>}
           
           {!loading && !error && (
@@ -78,18 +77,7 @@ export const ArticleNav: React.FC<ArticleNavProps> = ({ isOpen, onClose }) => {
                   className={styles.articleItem}
                   onClick={() => handleArticleClick(article.id)}
                 >
-                  <h3 className={styles.articleTitle}>{article.title}</h3>
-                  <div className={styles.articleMeta}>
-                    <span className={styles.author}>{article.author}</span>
-                    {article.generatedDate && (
-                      <span className={styles.date}>{article.generatedDate}</span>
-                    )}
-                  </div>
-                  <div className={styles.tags}>
-                    {article.tags.map((tag, index) => (
-                      <span key={index} className={styles.tag}>{tag}</span>
-                    ))}
-                  </div>
+                  <div className={styles.articleTitle}>{article.title}</div>
                 </div>
               ))}
             </div>

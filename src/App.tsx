@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom'
 import { ChineseText } from './components/ChineseText'
 import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
 import { QuizPanel } from './components/QuizPanel'
+import { ArticleNav } from './components/ArticleNav'
 import Articles from './components/Articles'
 import { ChineseWord } from './data/sampleText'
 import { themes } from './config/themes'
@@ -22,9 +23,11 @@ function MainContent() {
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<string>('candy');
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const [reading, setReading] = useState<Reading>(sampleReading);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
+  const { articleId } = useParams();
 
   // Initialize database first
   useEffect(() => {
@@ -42,16 +45,41 @@ function MainContent() {
     init();
   }, []);
 
-  // Load random article only after database is initialized
+  // Load article based on ID or random if none specified
   useEffect(() => {
     if (!isDbInitialized) {
       console.log('Waiting for database initialization...');
       return;
     }
 
-    const loadRandomArticle = async () => {
-      console.log('Attempting to load a random article from database...');
+    const loadArticle = async () => {
+      console.log('Loading article...', { articleId });
       try {
+        if (articleId) {
+          // Load specific article
+          const article = await articleService.getArticleById(articleId);
+          if (article) {
+            console.log('Successfully loaded article:', {
+              id: article.id,
+              title: article.title
+            });
+            
+            const articleAsReading: Reading = {
+              id: article.id,
+              title: article.title,
+              author: article.author,
+              content: article.content,
+              tags: article.tags,
+              quizzes: article.quizzes || [],
+              sourceDate: article.generatedDate
+            };
+            
+            setReading(articleAsReading);
+            return;
+          }
+        }
+
+        // Load random article if no ID or article not found
         const articles = await articleService.getAllArticles();
         
         // Get last read article ID from localStorage
@@ -112,15 +140,15 @@ function MainContent() {
           setReading(sampleReading);
         }
       } catch (error) {
-        console.error('Error loading random article:', error);
+        console.error('Error loading article:', error);
         console.log('Falling back to sample reading');
         localStorage.removeItem('lastReadArticleId');
         setReading(sampleReading);
       }
     };
 
-    loadRandomArticle();
-  }, [isDbInitialized]);
+    loadArticle();
+  }, [isDbInitialized, articleId]);
 
   useEffect(() => {
     console.log('Loading reading content:', { 
@@ -203,6 +231,7 @@ function MainContent() {
       '--theme-highlight': theme.colors.highlight,
     } as React.CSSProperties}>
       <nav className="navigation">
+        <button className="navButton" onClick={() => setIsNavOpen(true)}>☰</button>
         <Link to="/">阅读</Link>
         <Link to="/articles">文章列表</Link>
       </nav>
@@ -278,6 +307,10 @@ function MainContent() {
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
       />
+      <ArticleNav
+        isOpen={isNavOpen}
+        onClose={() => setIsNavOpen(false)}
+      />
     </div>
   );
 }
@@ -291,6 +324,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<MainContent />} />
+        <Route path="/article/:articleId" element={<MainContent />} />
         <Route path="/articles" element={<Articles />} />
       </Routes>
     </Router>
