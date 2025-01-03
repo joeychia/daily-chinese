@@ -87,4 +87,8 @@
   color: var(--theme-secondary);
   font-weight: 500;
   line-height: 1;
+}
+
+.interactive {
+  cursor: pointer;
 } 
