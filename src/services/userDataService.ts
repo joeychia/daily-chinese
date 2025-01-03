@@ -13,9 +13,17 @@ export interface UserData {
   articles: {
     [articleId: string]: ArticleProgress;
   };
+  wordBank?: ChineseWord[]; // General word bank for the user
 }
 
 export const userDataService = {
+  // Get user's general word bank
+  getWordBank: async (userId: string): Promise<ChineseWord[]> => {
+    const userRef = ref(db, `users/${userId}/wordBank`);
+    const snapshot = await get(userRef);
+    return snapshot.val() || [];
+  },
+
   // Save article progress
   saveArticleProgress: async (
     userId: string,
@@ -51,7 +59,8 @@ export const userDataService = {
   setupWordBankSync: (
     userId: string,
     articleId: string,
-    wordBank: ChineseWord[]
+    wordBank: ChineseWord[],
+    onSyncComplete?: (syncedWords: ChineseWord[]) => void
   ) => {
     let timeout: NodeJS.Timeout;
     let lastSyncedWordBank = JSON.stringify(wordBank);
@@ -67,20 +76,34 @@ export const userDataService = {
       clearTimeout(timeout);
       timeout = setTimeout(async () => {
         try {
-          const userArticleRef = ref(db, `users/${userId}/articles/${articleId}`);
-          const snapshot = await get(userArticleRef);
+          // Use different paths for article-specific and general word banks
+          const path = articleId === 'general' ? 
+            `users/${userId}/wordBank` : 
+            `users/${userId}/articles/${articleId}`;
+          
+          const userRef = ref(db, path);
+          const snapshot = await get(userRef);
           const existingData = snapshot.val() || {};
           
-          await set(userArticleRef, {
-            ...existingData,
-            wordBank,
-          });
+          // For general word bank, just save the word bank directly
+          if (articleId === 'general') {
+            await set(userRef, wordBank);
+          } else {
+            // For article-specific word bank, merge with existing data
+            await set(userRef, {
+              ...existingData,
+              wordBank,
+            });
+          }
           
           lastSyncedWordBank = currentWordBank;
           console.log('Word bank synced successfully:', {
             articleId,
             wordCount: wordBank.length
           });
+          
+          // Call the callback with synced words
+          onSyncComplete?.(wordBank);
         } catch (error) {
           console.error('Error syncing word bank:', error);
         }
@@ -95,7 +118,12 @@ export const userDataService = {
     callback: (wordBank: ChineseWord[]) => void
   ) => {
     console.log('Setting up word bank subscription:', { articleId });
-    const wordBankRef = ref(db, `users/${userId}/articles/${articleId}/wordBank`);
+    // Use different paths for article-specific and general word banks
+    const path = articleId === 'general' ? 
+      `users/${userId}/wordBank` : 
+      `users/${userId}/articles/${articleId}/wordBank`;
+    
+    const wordBankRef = ref(db, path);
     return onValue(wordBankRef, (snapshot) => {
       const wordBank = snapshot.val() || [];
       console.log('Word bank updated from server:', {

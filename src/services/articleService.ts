@@ -1,8 +1,13 @@
 import { ref, get, set } from 'firebase/database';
 import { db } from '../config/firebase';
-import { Quiz } from '../types/reading';
 
-interface Article {
+interface DatabaseQuiz {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+}
+
+interface DatabaseArticle {
   id: string;
   title: string;
   author: string;
@@ -10,11 +15,11 @@ interface Article {
   tags: string[];
   isGenerated: boolean;
   generatedDate: string;
-  quizzes: Quiz[];
+  quizzes: DatabaseQuiz[];
 }
 
 export const articleService = {
-  getAllArticles: async (): Promise<Article[]> => {
+  getAllArticles: async (): Promise<DatabaseArticle[]> => {
     const articlesRef = ref(db, 'articles');
     const snapshot = await get(articlesRef);
     if (snapshot.exists()) {
@@ -24,7 +29,7 @@ export const articleService = {
     return [];
   },
 
-  getArticleById: async (id: string): Promise<Article | null> => {
+  getArticleById: async (id: string): Promise<DatabaseArticle | null> => {
     const articleRef = ref(db, `articles/${id}`);
     const snapshot = await get(articleRef);
     if (snapshot.exists()) {

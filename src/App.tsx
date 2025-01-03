@@ -18,6 +18,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
 import { UserMenu } from './components/UserMenu'
 import { userDataService } from './services/userDataService'
+import { ref, get, set } from 'firebase/database'
+import { db } from './config/firebase'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -26,11 +28,33 @@ interface DatabaseQuiz {
   correctAnswer: number;
 }
 
+interface DatabaseArticle {
+  id: string;
+  title: string;
+  author: string;
+  content: string;
+  tags: string[];
+  isGenerated: boolean;
+  generatedDate: string;
+  quizzes: DatabaseQuiz[];
+}
+
 // Convert database quiz to application quiz
 const convertQuiz = (dbQuiz: DatabaseQuiz): Quiz => ({
   question: dbQuiz.question,
   options: dbQuiz.options,
   correctOption: dbQuiz.correctAnswer
+});
+
+// Convert database article to application reading
+const convertArticle = (article: DatabaseArticle): Reading => ({
+  id: article.id,
+  title: article.title,
+  author: article.author,
+  content: article.content,
+  tags: article.tags,
+  quizzes: article.quizzes?.map(convertQuiz) || [],
+  sourceDate: article.generatedDate
 });
 
 interface ProtectedRouteProps {
@@ -69,6 +93,7 @@ function MainContent() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const { articleId } = useParams();
 
   // Process title for pinyin support
@@ -81,41 +106,46 @@ function MainContent() {
 
   // Load user's progress when article changes
   useEffect(() => {
-    if (user && articleId) {
-      const loadProgress = async () => {
-        try {
-          // Reset word bank first
-          setWordBank([]);
-          
+    if (!user) {
+      // Reset word bank when user is not logged in
+      setWordBank([]);
+      return;
+    }
+
+    const loadProgress = async () => {
+      try {
+        // Reset word bank first
+        setWordBank([]);
+        
+        if (articleId) {
+          // Load article-specific word bank
           const progress = await userDataService.getArticleProgress(user.id, articleId);
           if (progress?.wordBank) {
             setWordBank(progress.wordBank);
           }
-        } catch (error) {
-          console.error('Error loading user progress:', error);
+        } else {
+          // On homepage, load the user's general word bank
+          const wordBank = await userDataService.getWordBank(user.id);
+          if (wordBank) {
+            setWordBank(wordBank);
+          }
         }
-      };
-      loadProgress();
-    } else {
-      // Reset word bank when no article is selected or user is not logged in
-      setWordBank([]);
-    }
-  }, [user, articleId, reading.id]); // Add reading.id to dependencies to handle sample reading
+      } catch (error) {
+        console.error('Error loading user progress:', error);
+      }
+    };
+    loadProgress();
+  }, [user, articleId, reading.id]);
 
-  // Setup word bank syncing
+  // Setup word bank subscription
   useEffect(() => {
-    if (!user || !articleId) return;
+    if (!user) return;
 
-    const syncWordBank = userDataService.setupWordBankSync(
-      user.id,
-      articleId,
-      wordBank
-    );
-
+    console.log('Setting up word bank subscription');
     // Subscribe to word bank changes
     const unsubscribe = userDataService.subscribeToWordBank(
       user.id,
-      articleId,
+      articleId || 'general',
       (updatedWordBank) => {
         if (updatedWordBank && updatedWordBank.length > 0) {
           setWordBank(updatedWordBank);
@@ -123,13 +153,63 @@ function MainContent() {
       }
     );
 
-    // Sync word bank when it changes
-    syncWordBank();
-
     return () => {
+      console.log('Cleaning up word bank subscription');
       unsubscribe();
     };
-  }, [user, articleId, wordBank]);
+  }, [user, articleId]); // Only resubscribe when user or articleId changes
+
+  // Setup word bank syncing
+  useEffect(() => {
+    if (!user) return;
+
+    console.log('Setting up word bank sync interval');
+    const syncWordBank = async () => {
+      try {
+        // Use different paths for article-specific and general word banks
+        const path = articleId ? 
+          `users/${user.id}/articles/${articleId}` : 
+          `users/${user.id}/wordBank`;
+        
+        const userRef = ref(db, path);
+        const snapshot = await get(userRef);
+        const existingData = snapshot.val() || {};
+        
+        // For article-specific word bank, merge with existing data
+        if (articleId) {
+          await set(userRef, {
+            ...existingData,
+            wordBank,
+          });
+        } else {
+          // For general word bank, just save the word bank directly
+          await set(userRef, wordBank);
+        }
+        
+        console.log('Word bank synced successfully:', {
+          articleId: articleId || 'general',
+          wordCount: wordBank.length,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Show saved indicator for 5 seconds
+        setShowSavedIndicator(true);
+        setTimeout(() => {
+          setShowSavedIndicator(false);
+        }, 5000);
+      } catch (error) {
+        console.error('Error syncing word bank:', error);
+      }
+    };
+
+    // Start periodic sync
+    const syncInterval = setInterval(syncWordBank, 60000); // Sync every minute
+
+    return () => {
+      console.log('Cleaning up word bank sync interval');
+      clearInterval(syncInterval);
+    };
+  }, [user, articleId, wordBank, db]);
 
   // Initialize database first
   useEffect(() => {
@@ -166,17 +246,7 @@ function MainContent() {
               title: article.title
             });
             
-            const articleAsReading: Reading = {
-              id: article.id,
-              title: article.title,
-              author: article.author,
-              content: article.content,
-              tags: article.tags,
-              quizzes: article.quizzes?.map(convertQuiz) || [],
-              sourceDate: article.generatedDate
-            };
-            
-            setReading(articleAsReading);
+            setReading(convertArticle(article));
             return;
           }
         }
@@ -205,18 +275,7 @@ function MainContent() {
           // Save this article's ID as the last read
           localStorage.setItem('lastReadArticleId', randomArticle.id);
           
-          // Convert Article to Reading format
-          const articleAsReading: Reading = {
-            id: randomArticle.id,
-            title: randomArticle.title,
-            author: randomArticle.author,
-            content: randomArticle.content,
-            tags: randomArticle.tags,
-            quizzes: randomArticle.quizzes?.map(convertQuiz) || [],
-            sourceDate: randomArticle.generatedDate
-          };
-          
-          setReading(articleAsReading);
+          setReading(convertArticle(randomArticle));
         } else if (articles.length > 0) {
           // If no other articles available, use any article
           console.log('No unread articles, using random article from all');
@@ -225,17 +284,7 @@ function MainContent() {
           
           localStorage.setItem('lastReadArticleId', randomArticle.id);
           
-          const articleAsReading: Reading = {
-            id: randomArticle.id,
-            title: randomArticle.title,
-            author: randomArticle.author,
-            content: randomArticle.content,
-            tags: randomArticle.tags,
-            quizzes: randomArticle.quizzes?.map(convertQuiz) || [],
-            sourceDate: randomArticle.generatedDate
-          };
-          
-          setReading(articleAsReading);
+          setReading(convertArticle(randomArticle));
         } else {
           console.log('No articles found in database, falling back to sample reading');
           localStorage.removeItem('lastReadArticleId');
@@ -391,7 +440,12 @@ function MainContent() {
           )}
           {wordBank.length > 0 && (
             <div className="word-bank">
-              <h2>生词本</h2>
+              <h2>
+                生词本
+                {showSavedIndicator && (
+                  <span className="save-status">已保存</span>
+                )}
+              </h2>
               <div className="word-list">
                 {wordBank.map((word, index) => (
                   <div key={index} className="word-card">
