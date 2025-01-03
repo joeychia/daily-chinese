@@ -1,3 +1,8 @@
+export interface ChineseWord {
+  characters: string;
+  pinyin: string[];
+}
+
 export interface Quiz {
   question: string;
   options: string[];

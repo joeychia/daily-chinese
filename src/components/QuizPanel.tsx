@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Quiz } from '../types/reading';
-import { userDataService } from '../services/userDataService';
+import { saveQuizCompletion } from '../services/userDataService';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './QuizPanel.module.css';
 import { ChineseText } from './ChineseText';
@@ -46,7 +46,7 @@ export function QuizPanel({ quizzes, articleId, startTime }: QuizPanelProps) {
       const duration = Math.floor((Date.now() - startTime) / 1000); // Convert to seconds
       
       if (user) {
-        await userDataService.saveQuizCompletion(user.id, articleId, finalScore, duration);
+        await saveQuizCompletion(user.id, articleId, finalScore, duration);
       }
     }
     setIsSubmitted(false);

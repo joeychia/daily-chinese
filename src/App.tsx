@@ -17,9 +17,10 @@ import { articleService } from './services/articleService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
 import { UserMenu } from './components/UserMenu'
-import { userDataService } from './services/userDataService'
+import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, subscribeToTheme } from './services/userDataService'
 import { ref, get, set } from 'firebase/database'
 import { db } from './config/firebase'
+import { User } from 'firebase/auth'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -104,90 +105,42 @@ function MainContent() {
     setStartTime(Date.now());
   }, [articleId, reading.id]);
 
-  // Load user's progress when article changes
+  // Load user's word bank
   useEffect(() => {
     if (!user) {
-      // Reset word bank when user is not logged in
       setWordBank([]);
       return;
     }
 
-    const loadProgress = async () => {
+    const loadWordBank = async () => {
       try {
-        // Reset word bank first
-        setWordBank([]);
-        
-        if (articleId) {
-          // Load article-specific word bank
-          const progress = await userDataService.getArticleProgress(user.id, articleId);
-          if (progress?.wordBank) {
-            setWordBank(progress.wordBank);
-          }
-        } else {
-          // On homepage, load the user's general word bank
-          const wordBank = await userDataService.getWordBank(user.id);
-          if (wordBank) {
-            setWordBank(wordBank);
-          }
-        }
+        const wordBank = await getWordBank(user.id);
+        setWordBank(wordBank);
       } catch (error) {
-        console.error('Error loading user progress:', error);
+        console.error('Error loading word bank:', error);
       }
     };
-    loadProgress();
-  }, [user, articleId, reading.id]);
+    loadWordBank();
 
-  // Setup word bank subscription
-  useEffect(() => {
-    if (!user) return;
-
-    console.log('Setting up word bank subscription');
     // Subscribe to word bank changes
-    const unsubscribe = userDataService.subscribeToWordBank(
-      user.id,
-      articleId || 'general',
-      (updatedWordBank) => {
-        if (updatedWordBank && updatedWordBank.length > 0) {
-          setWordBank(updatedWordBank);
-        }
-      }
-    );
+    const unsubscribe = subscribeToWordBank(user.id, (updatedWordBank: ChineseWord[]) => {
+      setWordBank(updatedWordBank);
+    });
 
     return () => {
-      console.log('Cleaning up word bank subscription');
       unsubscribe();
     };
-  }, [user, articleId]); // Only resubscribe when user or articleId changes
+  }, [user]);
 
   // Setup word bank syncing
   useEffect(() => {
     if (!user) return;
 
-    console.log('Setting up word bank sync interval');
+    let syncTimeout: NodeJS.Timeout;
     const syncWordBank = async () => {
       try {
-        // Use different paths for article-specific and general word banks
-        const path = articleId ? 
-          `users/${user.id}/articles/${articleId}` : 
-          `users/${user.id}/wordBank`;
-        
-        const userRef = ref(db, path);
-        const snapshot = await get(userRef);
-        const existingData = snapshot.val() || {};
-        
-        // For article-specific word bank, merge with existing data
-        if (articleId) {
-          await set(userRef, {
-            ...existingData,
-            wordBank,
-          });
-        } else {
-          // For general word bank, just save the word bank directly
-          await set(userRef, wordBank);
-        }
-        
+        await saveWordBank(user.id, wordBank);
         console.log('Word bank synced successfully:', {
-          articleId: articleId || 'general',
           wordCount: wordBank.length,
           timestamp: new Date().toISOString()
         });
@@ -206,10 +159,10 @@ function MainContent() {
     const syncInterval = setInterval(syncWordBank, 60000); // Sync every minute
 
     return () => {
-      console.log('Cleaning up word bank sync interval');
+      clearTimeout(syncTimeout);
       clearInterval(syncInterval);
     };
-  }, [user, articleId, wordBank, db]);
+  }, [user, wordBank]);
 
   // Initialize database first
   useEffect(() => {
@@ -361,9 +314,9 @@ function MainContent() {
 
     const loadTheme = async () => {
       try {
-        const savedTheme = await userDataService.getTheme(user.id);
-        if (savedTheme) {
-          setCurrentTheme(savedTheme);
+        const theme = await getTheme(user.id);
+        if (theme) {
+          setCurrentTheme(theme);
         }
       } catch (error) {
         console.error('Error loading theme:', error);
@@ -372,7 +325,7 @@ function MainContent() {
     loadTheme();
 
     // Subscribe to theme changes
-    const unsubscribe = userDataService.subscribeToTheme(user.id, (theme) => {
+    const unsubscribe = subscribeToTheme(user.id, (theme: string) => {
       setCurrentTheme(theme);
     });
 
@@ -380,6 +333,20 @@ function MainContent() {
       unsubscribe();
     };
   }, [user]);
+
+  // Save theme when it changes
+  useEffect(() => {
+    if (!user) return;
+
+    const saveUserTheme = async () => {
+      try {
+        await saveTheme(user.id, currentTheme);
+      } catch (error) {
+        console.error('Error saving theme:', error);
+      }
+    };
+    saveUserTheme();
+  }, [user, currentTheme]);
 
   const handleThemeChange = async (themeId: string) => {
     console.log('Changing theme:', {
@@ -392,7 +359,7 @@ function MainContent() {
     // Save theme to database
     if (user) {
       try {
-        await userDataService.saveTheme(user.id, themeId);
+        await saveTheme(user.id, themeId);
       } catch (error) {
         console.error('Error saving theme:', error);
       }
@@ -408,6 +375,10 @@ function MainContent() {
 
   const theme = themes.find(t => t.id === currentTheme) || themes[0];
   const wordCount = processedText.filter(word => /[\u4e00-\u9fa5]/.test(word.characters)).length;
+
+  // Filter word bank for current article
+  const articleWords = processedText.map(word => word.characters);
+  const filteredWordBank = wordBank.filter(word => articleWords.includes(word.characters));
 
   return (
     <div className="app" style={{
@@ -444,15 +415,11 @@ function MainContent() {
           )}
         </div>
       )}
-      {reading.tags.length > 0 && (
-        <div className="tags">
-          {reading.tags.map((tag, index) => (
-            <span key={index} className="tag">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+      {reading.tags && reading.tags.map((tag: string, index: number) => (
+        <span key={index} className="tag">
+          {tag}
+        </span>
+      ))}
       {isLoading && <div>Loading...</div>}
       {error && <div style={{ color: 'red' }}>Error: {error}</div>}
       {!isLoading && !error && processedText.length > 0 && (
@@ -480,7 +447,7 @@ function MainContent() {
               startTime={startTime}
             />
           )}
-          {wordBank.length > 0 && (
+          {filteredWordBank.length > 0 && (
             <div className="word-bank">
               <h2>
                 生词本
@@ -489,7 +456,7 @@ function MainContent() {
                 )}
               </h2>
               <div className="word-list">
-                {wordBank.map((word, index) => (
+                {filteredWordBank.map((word, index) => (
                   <div key={index} className="word-card">
                     <div className="character">{word.characters}</div>
                     <div className="pinyin">{word.pinyin.join(' ')}</div>
