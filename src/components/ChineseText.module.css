@@ -5,6 +5,7 @@
   background-color: #fff9f0;
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(255, 166, 0, 0.1);
+  text-align: left;
 }
 
 .textContainer {
@@ -12,12 +13,14 @@
   line-height: 2.5;
   position: relative;
   padding: 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
 }
 
 .wordContainer {
-  display: inline-block;
+  display: inline;
   position: relative;
-  cursor: pointer;
   padding: 0 2px;
   user-select: none;
   -webkit-user-select: none;
@@ -30,7 +33,7 @@
 
 .wordBankDot {
   position: absolute;
-  top: 10px;
+  top: -2px;
   left: 50%;
   transform: translateX(-50%);
   width: 4px;
