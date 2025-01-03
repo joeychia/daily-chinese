@@ -4,30 +4,23 @@ import { articleService, UserStreak } from '../services/articleService';
 import { StreakPanel } from './StreakPanel';
 import styles from './StreakDisplay.module.css';
 
-interface StreakDisplayProps {
-  refreshTrigger?: number;
-}
-
-export const StreakDisplay: React.FC<StreakDisplayProps> = ({ refreshTrigger = 0 }) => {
+export const StreakDisplay: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 0 }) => {
   const { user } = useAuth();
   const [streak, setStreak] = useState<UserStreak | null>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    if (!user) return;
+
     const loadStreak = async () => {
-      if (!user) return;
-      
-      try {
-        const userStreak = await articleService.getUserStreak(user.id);
-        setStreak(userStreak || {
-          currentStreak: 0,
-          longestStreak: 0,
-          lastReadDate: '',
-          streakStartDate: ''
-        });
-      } catch (error) {
-        console.error('Error loading streak:', error);
-      }
+      const userStreak = await articleService.getUserStreak(user.id);
+      setStreak(userStreak || {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastReadDate: '',
+        streakStartDate: '',
+        completedDates: []
+      });
     };
 
     loadStreak();
@@ -42,7 +35,7 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({ refreshTrigger = 0
     <>
       <div 
         className={styles.streakContainer}
-        onClick={() => setIsPanelOpen(true)}
+        onClick={() => setIsOpen(true)}
       >
         <div className={styles.streakBox}>
           <span className={styles.streakIcon}>🔥</span>
@@ -56,8 +49,8 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({ refreshTrigger = 0
         )}
       </div>
       <StreakPanel 
-        isOpen={isPanelOpen}
-        onClose={() => setIsPanelOpen(false)}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
         streak={streak}
       />
     </>

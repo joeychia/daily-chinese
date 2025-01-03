@@ -14,8 +14,7 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
   if (!isOpen) return null;
 
   const today = new Date();
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(today.getMonth() - 1);
+  const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
 
   const formatDate = (date: Date) => {
     return date.toISOString().split('T')[0];
@@ -36,14 +35,14 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
 
   const tileContent = ({ date }: { date: Date }) => {
     if (isDateCompleted(date)) {
-      return <span className={styles.completedIcon}>🔥</span>;
+      return <span data-testid="calendar-fire-emoji" className={styles.completedIcon}>🔥</span>;
     }
     return null;
   };
 
   return (
     <>
-      <div className={styles.overlay} onClick={onClose} />
+      <div className={styles.overlay} onClick={onClose} data-testid="streak-panel-overlay" />
       <div className={styles.panel}>
         <div className={styles.header}>
           <h2>阅读记录</h2>
@@ -65,13 +64,17 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
           <Calendar
             value={today}
             maxDate={today}
-            minDate={oneMonthAgo}
+            minDate={startDate}
             locale="zh-CN"
             tileClassName={tileClassName}
             tileContent={tileContent}
             showNeighboringMonth={false}
             prev2Label={null}
             next2Label={null}
+            defaultView="month"
+            defaultActiveStartDate={today}
+            view="month"
+            activeStartDate={today}
           />
         </div>
 

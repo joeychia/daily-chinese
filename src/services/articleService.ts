@@ -72,53 +72,58 @@ export const articleService = {
     return null;
   },
 
-  updateUserStreak: async (userId: string): Promise<UserStreak> => {
+  async updateUserStreak(userId: string): Promise<void> {
     const streakRef = ref(db, `users/${userId}/streak`);
     const snapshot = await get(streakRef);
     const today = new Date().toISOString().split('T')[0];
-    
-    let streak: UserStreak;
-    if (snapshot.exists()) {
-      const currentStreak = snapshot.val() as UserStreak;
-      const lastReadDate = new Date(currentStreak.lastReadDate);
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      if (today === currentStreak.lastReadDate) {
-        // Already read today, maintain streak
-        streak = currentStreak;
-      } else if (yesterday.toISOString().split('T')[0] === currentStreak.lastReadDate) {
-        // Read yesterday, increment streak
-        streak = {
-          ...currentStreak,
-          currentStreak: currentStreak.currentStreak + 1,
-          longestStreak: Math.max(currentStreak.currentStreak + 1, currentStreak.longestStreak),
-          lastReadDate: today,
-          completedDates: [...(currentStreak.completedDates || []), today]
-        };
-      } else {
-        // Streak broken, start new streak
-        streak = {
-          currentStreak: 1,
-          longestStreak: currentStreak.longestStreak,
-          lastReadDate: today,
-          streakStartDate: today,
-          completedDates: [today]
-        };
-      }
-    } else {
-      // First time reading, initialize streak
-      streak = {
+
+    if (!snapshot.exists()) {
+      // Initialize streak for first-time user
+      await set(streakRef, {
         currentStreak: 1,
         longestStreak: 1,
         lastReadDate: today,
         streakStartDate: today,
         completedDates: [today]
-      };
+      });
+      return;
     }
-    
-    await set(streakRef, streak);
-    return streak;
+
+    const currentStreak = snapshot.val();
+    if (currentStreak.lastReadDate === today) {
+      // Already read today, maintain current streak
+      await set(streakRef, currentStreak);
+      return;
+    }
+
+    // Check if the last read was yesterday
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (currentStreak.lastReadDate === yesterdayStr) {
+      // Maintain streak
+      const newStreak = currentStreak.currentStreak + 1;
+      const longestStreak = Math.max(newStreak, currentStreak.longestStreak);
+      const completedDates = [...currentStreak.completedDates, today];
+
+      await set(streakRef, {
+        ...currentStreak,
+        currentStreak: newStreak,
+        longestStreak,
+        lastReadDate: today,
+        completedDates
+      });
+    } else {
+      // Break streak and start new one
+      await set(streakRef, {
+        ...currentStreak,
+        currentStreak: 1,
+        lastReadDate: today,
+        streakStartDate: today,
+        completedDates: [today]
+      });
+    }
   },
 
   saveUserArticleData: async (
