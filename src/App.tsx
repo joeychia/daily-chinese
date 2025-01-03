@@ -413,7 +413,6 @@ function MainContent() {
   const handleDeleteWord = () => {
     if (wordToDelete) {
       setWordBank(prev => prev.filter(w => w.characters !== wordToDelete.characters));
-      setShowConfirmDialog(false);
       setWordToDelete(null);
     }
   };
@@ -509,9 +508,6 @@ function MainContent() {
               onWordPeek={handleWordPeek} 
               wordBank={wordBank}
             />
-            <div className="wordCount">
-              字数：{wordCount}
-            </div>
             <div className="actions">
               <button 
                 className="actionButton"
@@ -532,6 +528,7 @@ function MainContent() {
                 words={filteredWordBank}
                 title="本文生词"
                 onDeleteWord={handleDeleteWord}
+                onWordToDelete={setWordToDelete}
                 showSavedIndicator={showSavedIndicator}
               />
             )}

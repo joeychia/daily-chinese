@@ -7,7 +7,8 @@ import styles from './WordBankComponent.module.css';
 interface WordBankComponentProps {
   words: ChineseWord[];
   title: string;
-  onDeleteWord: (word: ChineseWord) => void;
+  onDeleteWord: () => void;
+  onWordToDelete: (word: ChineseWord | null) => void;
   showSavedIndicator?: boolean;
 }
 
@@ -15,6 +16,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   words,
   title,
   onDeleteWord,
+  onWordToDelete,
   showSavedIndicator = false,
 }) => {
   const [showPrintPreview, setShowPrintPreview] = React.useState(false);
@@ -33,6 +35,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   const handleWordTouchStart = (word: ChineseWord) => {
     longPressTimeout.current = setTimeout(() => {
       setWordToDelete(word);
+      onWordToDelete(word);
       setShowConfirmDialog(true);
     }, 500);
   };
@@ -45,9 +48,10 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
 
   const handleDeleteConfirm = () => {
     if (wordToDelete) {
-      onDeleteWord(wordToDelete);
+      onDeleteWord();
       setShowConfirmDialog(false);
       setWordToDelete(null);
+      onWordToDelete(null);
     }
   };
 
