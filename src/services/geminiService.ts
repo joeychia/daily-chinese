@@ -137,5 +137,41 @@ export const geminiService = {
       console.error("Error generating article from text:", error);
       throw error;
     }
+  },
+
+  async generateMetadata(sourceText: string): Promise<GeneratedArticle> {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const systemPrompt = `You are a Chinese language learning assistant. For the given Chinese text:
+    1. Generate an appropriate title if not obvious from the text
+    2. Keep the original content exactly as is
+    3. Generate relevant tags for categorization
+    4. Create 3 multiple choice questions to test comprehension
+    
+    Important:
+    - Use simplified Chinese characters in the questions and options
+    - Keep questions at an intermediate level (HSK 3-4)
+    - Make sure questions test understanding, not just vocabulary
+    - Each question should have 4 options
+    
+    Format the response as a JSON object with the following structure:
+    {
+      "title": "标题",
+      "content": "原文内容(保持不变)",
+      "tags": ["标签1", "标签2", ...],
+      "quizzes": [
+        {
+          "question": "问题",
+          "options": ["选项1", "选项2", "选项3", "选项4"],
+          "correctAnswer": 0 // index of correct option
+        },
+        ...
+      ]
+    }`;
+
+    const result = await model.generateContent([systemPrompt, sourceText]);
+    const response = result.response;
+    const text = response.text();
+    return JSON.parse(text);
   }
 }; 

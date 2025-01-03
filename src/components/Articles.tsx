@@ -7,6 +7,8 @@ import { geminiService } from '../services/geminiService';
 
 SyntaxHighlighter.registerLanguage('json', json);
 
+type GenerationMode = 'prompt' | 'text' | 'original';
+
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ const Articles = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [sourceText, setSourceText] = useState('');
-  const [generationMode, setGenerationMode] = useState<'prompt' | 'text'>('prompt');
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('prompt');
 
   useEffect(() => {
     loadArticles();
@@ -43,15 +45,21 @@ const Articles = () => {
     setIsGenerating(true);
     setError(null);
     try {
-      const article = generationMode === 'prompt'
-        ? await geminiService.generateArticle(prompt, { maxLength })
-        : await geminiService.generateFromText(sourceText, { maxLength });
+      let article;
+      if (generationMode === 'prompt') {
+        article = await geminiService.generateArticle(prompt, { maxLength });
+      } else if (generationMode === 'text') {
+        article = await geminiService.generateFromText(sourceText, { maxLength });
+      } else {
+        // Original mode
+        article = await geminiService.generateMetadata(sourceText);
+      }
       
       const newArticle: Article = {
         ...article,
         id: `article-${Date.now()}`,
-        author: "AI生成",
-        isGenerated: true,
+        author: generationMode === 'original' ? "原文" : "AI生成",
+        isGenerated: generationMode !== 'original',
         generatedDate: new Date().toISOString().split('T')[0],
       };
       
@@ -137,6 +145,12 @@ const Articles = () => {
               >
                 Generate from Text
               </button>
+              <button
+                className={`articles-mode-button ${generationMode === 'original' ? 'active' : ''}`}
+                onClick={() => setGenerationMode('original')}
+              >
+                Use Original Text
+              </button>
             </div>
 
             {generationMode === 'prompt' ? (
@@ -152,23 +166,28 @@ const Articles = () => {
               <textarea
                 value={sourceText}
                 onChange={(e) => setSourceText(e.target.value)}
-                placeholder="Paste the source text here..."
+                placeholder={generationMode === 'original' 
+                  ? "Paste the original text here. The text will be kept as is, and we'll generate title, tags, and quizzes for it..."
+                  : "Paste the source text here..."
+                }
                 className="articles-source-text-input"
                 disabled={isGenerating || showConfirmation}
               />
             )}
 
             <div className="articles-generation-controls">
-              <input
-                type="number"
-                value={maxLength}
-                onChange={(e) => setMaxLength(parseInt(e.target.value))}
-                min="100"
-                max="1000"
-                step="50"
-                className="articles-length-input"
-                disabled={isGenerating || showConfirmation}
-              />
+              {generationMode !== 'original' && (
+                <input
+                  type="number"
+                  value={maxLength}
+                  onChange={(e) => setMaxLength(parseInt(e.target.value))}
+                  min="100"
+                  max="1000"
+                  step="50"
+                  className="articles-length-input"
+                  disabled={isGenerating || showConfirmation}
+                />
+              )}
               <button
                 className="articles-primary-button"
                 onClick={handleGenerate}

@@ -11,6 +11,7 @@ import { processChineseText } from './utils/textProcessor'
 import { Reading } from './types/reading'
 import sampleReading from './data/readings/sample.json'
 import { initializeDatabase } from './scripts/initializeDb'
+import { articleService } from './services/articleService'
 import './App.css'
 
 function MainContent() {
@@ -21,15 +22,126 @@ function MainContent() {
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<string>('candy');
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
-  const [reading, _setReading] = useState<Reading>(sampleReading);
+  const [reading, setReading] = useState<Reading>(sampleReading);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [isDbInitialized, setIsDbInitialized] = useState(false);
+
+  // Initialize database first
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await initializeDatabase();
+        console.log('Database initialized');
+        setIsDbInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+        // Still set as initialized to allow loading sample
+        setIsDbInitialized(true);
+      }
+    };
+    init();
+  }, []);
+
+  // Load random article only after database is initialized
+  useEffect(() => {
+    if (!isDbInitialized) {
+      console.log('Waiting for database initialization...');
+      return;
+    }
+
+    const loadRandomArticle = async () => {
+      console.log('Attempting to load a random article from database...');
+      try {
+        const articles = await articleService.getAllArticles();
+        
+        // Get last read article ID from localStorage
+        const lastReadId = localStorage.getItem('lastReadArticleId');
+        console.log('Last read article ID:', lastReadId);
+        
+        // Filter out the last read article and get available articles
+        const availableArticles = articles.filter(article => article.id !== lastReadId);
+        console.log('Available articles:', availableArticles.length);
+
+        if (availableArticles.length > 0) {
+          // Get a random article from the filtered list
+          const randomIndex = Math.floor(Math.random() * availableArticles.length);
+          const randomArticle = availableArticles[randomIndex];
+          console.log('Successfully loaded random article:', {
+            id: randomArticle.id,
+            title: randomArticle.title,
+            isGenerated: randomArticle.isGenerated
+          });
+          
+          // Save this article's ID as the last read
+          localStorage.setItem('lastReadArticleId', randomArticle.id);
+          
+          // Convert Article to Reading format
+          const articleAsReading: Reading = {
+            id: randomArticle.id,
+            title: randomArticle.title,
+            author: randomArticle.author,
+            content: randomArticle.content,
+            tags: randomArticle.tags,
+            quizzes: randomArticle.quizzes || [],
+            sourceDate: randomArticle.generatedDate
+          };
+          
+          setReading(articleAsReading);
+        } else if (articles.length > 0) {
+          // If no other articles available, use any article
+          console.log('No unread articles, using random article from all');
+          const randomIndex = Math.floor(Math.random() * articles.length);
+          const randomArticle = articles[randomIndex];
+          
+          localStorage.setItem('lastReadArticleId', randomArticle.id);
+          
+          const articleAsReading: Reading = {
+            id: randomArticle.id,
+            title: randomArticle.title,
+            author: randomArticle.author,
+            content: randomArticle.content,
+            tags: randomArticle.tags,
+            quizzes: randomArticle.quizzes || [],
+            sourceDate: randomArticle.generatedDate
+          };
+          
+          setReading(articleAsReading);
+        } else {
+          console.log('No articles found in database, falling back to sample reading');
+          localStorage.removeItem('lastReadArticleId');
+          setReading(sampleReading);
+        }
+      } catch (error) {
+        console.error('Error loading random article:', error);
+        console.log('Falling back to sample reading');
+        localStorage.removeItem('lastReadArticleId');
+        setReading(sampleReading);
+      }
+    };
+
+    loadRandomArticle();
+  }, [isDbInitialized]);
 
   useEffect(() => {
+    console.log('Loading reading content:', { 
+      title: reading.title, 
+      author: reading.author,
+      tags: reading.tags,
+      contentLength: reading.content.length,
+      quizCount: reading.quizzes.length
+    });
+    
     setIsLoading(true);
     setError(null);
     
     try {
+      console.log('Processing text content...');
       const processed = processChineseText(reading.content);
+      console.log('Text processed successfully:', {
+        totalWords: processed.length,
+        chineseCharacters: processed.filter(word => /[\u4e00-\u9fa5]/.test(word.characters)).length,
+        firstFewWords: processed.slice(0, 3).map(w => w.characters).join('')
+      });
       setProcessedText(processed);
       setIsLoading(false);
     } catch (error) {
@@ -41,11 +153,19 @@ function MainContent() {
 
   const handleWordPeek = (word: ChineseWord) => {
     if (!wordBank.some(w => w.characters === word.characters)) {
+      console.log('Adding word to word bank:', {
+        character: word.characters,
+        pinyin: word.pinyin.join(' ')
+      });
       setWordBank(prev => [...prev, word]);
     }
   };
 
   const handlePrint = () => {
+    console.log('Preparing to print word bank cards:', {
+      wordCount: wordBank.length,
+      words: wordBank.map(w => w.characters).join(', ')
+    });
     setShowPrintPreview(true);
     setTimeout(() => {
       window.print();
@@ -54,10 +174,18 @@ function MainContent() {
   };
 
   const handleThemeChange = (themeId: string) => {
+    console.log('Changing theme:', {
+      from: currentTheme,
+      to: themeId,
+      theme: themes.find(t => t.id === themeId)?.name
+    });
     setCurrentTheme(themeId);
   };
 
   const toggleQuiz = () => {
+    console.log(showQuiz ? 'Hiding quiz panel' : 'Showing quiz panel', {
+      quizCount: reading.quizzes.length
+    });
     setShowQuiz(prev => !prev);
   };
 
