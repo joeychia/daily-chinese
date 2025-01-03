@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Quiz } from '../types/reading';
-import { saveQuizCompletion } from '../services/userDataService';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './QuizPanel.module.css';
 import { ChineseText } from './ChineseText';
 import { processChineseText } from '../utils/textProcessor';
+import { articleService } from '../services/articleService';
 
 interface QuizPanelProps {
   quizzes: Quiz[];
@@ -44,10 +44,17 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes, articleId, startT
     } else {
       setShowResult(true);
       const finalScore = ((score + (selectedOption === currentQuiz.correctOption ? 1 : 0)) / quizzes.length) * 100;
-      const duration = Math.floor((Date.now() - startTime) / 1000); // Convert to seconds
       
       if (user) {
-        await saveQuizCompletion(user.id, articleId, finalScore, duration);
+        try {
+          const userData = await articleService.getUserArticleData(user.id, articleId);
+          const quizScores = userData?.quizScores || [];
+          await articleService.saveUserArticleData(user.id, articleId, {
+            quizScores: [...quizScores, finalScore]
+          });
+        } catch (error) {
+          console.error('Error saving quiz score:', error);
+        }
       }
     }
     setIsSubmitted(false);

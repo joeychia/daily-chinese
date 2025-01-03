@@ -18,9 +18,11 @@ export interface DatabaseArticle {
   quizzes: DatabaseQuiz[];
 }
 
-export interface ReadingTime {
-  lastReadTime: number;
+export interface UserArticleData {
+  lastReadTime?: number;
   bestTime?: number;
+  quizScores?: number[];
+  wordBank?: string[];
 }
 
 export const articleService = {
@@ -43,27 +45,37 @@ export const articleService = {
     return null;
   },
 
-  getReadingTime: async (userId: string, articleId: string): Promise<ReadingTime | null> => {
-    const readingTimeRef = ref(db, `users/${userId}/readingTimes/${articleId}`);
-    const snapshot = await get(readingTimeRef);
+  getUserArticleData: async (userId: string, articleId: string): Promise<UserArticleData | null> => {
+    const userArticleRef = ref(db, `users/${userId}/articles/${articleId}`);
+    const snapshot = await get(userArticleRef);
     if (snapshot.exists()) {
       return snapshot.val();
     }
     return null;
   },
 
-  saveReadingTime: async (userId: string, articleId: string, time: number): Promise<void> => {
-    const readingTimeRef = ref(db, `users/${userId}/readingTimes/${articleId}`);
-    const currentData = await get(readingTimeRef);
-    const currentTime = currentData.exists() ? currentData.val() : null;
+  saveUserArticleData: async (
+    userId: string, 
+    articleId: string, 
+    data: Partial<UserArticleData>
+  ): Promise<void> => {
+    const userArticleRef = ref(db, `users/${userId}/articles/${articleId}`);
+    const currentSnapshot = await get(userArticleRef);
+    const currentData = currentSnapshot.exists() ? currentSnapshot.val() : {};
     
-    const newData: ReadingTime = {
-      lastReadTime: time,
-      bestTime: currentTime?.bestTime && currentTime.bestTime < time 
-        ? currentTime.bestTime 
-        : time
+    // Merge new data with existing data
+    const newData = {
+      ...currentData,
+      ...data,
+      // Special handling for reading time to maintain best time
+      ...(data.lastReadTime && {
+        lastReadTime: data.lastReadTime,
+        bestTime: currentData.bestTime && currentData.bestTime < data.lastReadTime 
+          ? currentData.bestTime 
+          : data.lastReadTime
+      })
     };
     
-    await set(readingTimeRef, newData);
+    await set(userArticleRef, newData);
   }
 }; 

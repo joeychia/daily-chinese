@@ -418,9 +418,9 @@ function MainContent() {
       if (!user || !articleId) return;
       
       try {
-        const readingTime = await articleService.getReadingTime(user.id, articleId);
-        if (readingTime) {
-          setLastReadTime(readingTime.lastReadTime);
+        const userData = await articleService.getUserArticleData(user.id, articleId);
+        if (userData?.lastReadTime) {
+          setLastReadTime(userData.lastReadTime);
         } else {
           setLastReadTime(undefined);
         }
@@ -443,7 +443,9 @@ function MainContent() {
     const readingTime = endTime - startTime;
     
     try {
-      await articleService.saveReadingTime(user.id, articleId, readingTime);
+      await articleService.saveUserArticleData(user.id, articleId, {
+        lastReadTime: readingTime
+      });
     } catch (error) {
       console.error('Error saving reading time:', error);
     }
