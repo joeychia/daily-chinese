@@ -12,9 +12,11 @@ export interface Quiz {
 export interface Reading {
   id: string;
   title: string;
-  author?: string;
-  sourceDate?: string;
+  author: string;
   content: string;
   tags: string[];
   quizzes: Quiz[];
+  isGenerated: boolean;
+  generatedDate: string;
+  difficultyLevel: number;
 } 

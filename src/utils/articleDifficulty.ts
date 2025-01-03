@@ -1,5 +1,4 @@
-import { readFileSync } from 'fs';
-import path from 'path';
+import { characterRanks } from '../data/characterRanks';
 
 // Define character level ranges
 export const CHAR_LEVELS = {
@@ -23,25 +22,6 @@ export interface ArticleAnalysis {
   levelDistribution: {
     [key: string]: number;
   };
-}
-
-// Load and parse the character rank data
-const loadCharacterRanks = (): Map<string, number> => {
-  const characterMap = new Map<string, number>();
-  try {
-    const csvPath = path.join(process.cwd(), 'src', 'data', 'hanzi-ranks.csv');
-    const fileContent = readFileSync(csvPath, 'utf-8');
-    const lines = fileContent.split('\n').slice(1); // Skip header
-
-    lines.forEach(line => {
-      if (!line.trim()) return;
-      const [rank, char] = line.split(',');
-      characterMap.set(char, parseInt(rank));
-    });
-  } catch (error) {
-    console.error('Error loading character rank data:', error);
-  }
-  return characterMap;
 }
 
 // Get character level based on its rank
@@ -110,7 +90,6 @@ const calculateDifficultyLevel = (characterLevels: { [key: string]: number }): n
 
 // Main function to analyze article difficulty
 export const analyzeArticleDifficulty = (text: string): ArticleAnalysis => {
-  const characterRanks = loadCharacterRanks();
   // Filter only Chinese characters
   const characters = Array.from(text.trim()).filter(isChineseCharacter);
   const uniqueChars = new Set(characters);

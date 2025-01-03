@@ -1,5 +1,6 @@
-import { ref, get, set } from 'firebase/database';
+import { ref, get, set, update, remove } from 'firebase/database';
 import { db } from '../config/firebase';
+import { analyzeArticleDifficulty } from '../utils/articleDifficulty';
 
 interface DatabaseQuiz {
   question: string;
@@ -168,6 +169,47 @@ export const articleService = {
     // Update streak when article is completed
     if (data.lastReadTime) {
       await articleService.updateUserStreak(userId);
+    }
+  },
+
+  // Calculate and sync article difficulty level
+  calculateAndSyncDifficulty: async (articleId: string, content: string) => {
+    try {
+      const analysis = analyzeArticleDifficulty(content);
+      const difficultyLevel = analysis.difficultyLevel;
+      
+      // Update the article with the calculated difficulty level
+      const articleRef = ref(db, `articles/${articleId}`);
+      await update(articleRef, { difficultyLevel });
+      
+      return difficultyLevel;
+    } catch (error) {
+      console.error('Error calculating/syncing difficulty level:', error);
+      throw error;
+    }
+  },
+
+  // Get article with difficulty level, calculate if not present
+  getArticleWithDifficulty: async (articleId: string) => {
+    try {
+      const articleRef = ref(db, `articles/${articleId}`);
+      const snapshot = await get(articleRef);
+      
+      if (!snapshot.exists()) {
+        throw new Error('Article not found');
+      }
+
+      const article = snapshot.val();
+      
+      // If difficulty level doesn't exist, calculate and sync it
+      if (article.difficultyLevel === undefined) {
+        article.difficultyLevel = await articleService.calculateAndSyncDifficulty(articleId, article.content);
+      }
+
+      return article;
+    } catch (error) {
+      console.error('Error getting article with difficulty:', error);
+      throw error;
     }
   }
 }; 

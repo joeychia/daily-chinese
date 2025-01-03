@@ -21,6 +21,7 @@ import { Timer } from './components/Timer'
 import { TopBar } from './components/TopBar'
 import { WordBankComponent } from './components/WordBankComponent'
 import { WordBank } from './components/WordBank'
+import { initializeCharacterRanks } from './scripts/initializeCharacterRanks'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -38,6 +39,7 @@ interface DatabaseArticle {
   isGenerated: boolean;
   generatedDate: string;
   quizzes: DatabaseQuiz[];
+  difficultyLevel?: number; // 1-5 scale
 }
 
 // Convert database quiz to application quiz
@@ -54,8 +56,10 @@ const convertArticle = (article: DatabaseArticle): Reading => ({
   author: article.author,
   content: article.content,
   tags: article.tags,
-  quizzes: article.quizzes?.map(convertQuiz) || [],
-  sourceDate: article.generatedDate
+  isGenerated: article.isGenerated,
+  generatedDate: article.generatedDate,
+  quizzes: article.quizzes.map(convertQuiz),
+  difficultyLevel: article.difficultyLevel || 1
 });
 
 interface ProtectedRouteProps {
@@ -89,7 +93,17 @@ function MainContent() {
   const [currentTheme, setCurrentTheme] = useState<string>('candy');
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [reading, setReading] = useState<Reading>(sampleReading);
+  const [reading, setReading] = useState<Reading>({
+    id: 'sample',
+    title: '示例文章',
+    author: '示例作者',
+    content: '这是一个示例文章。',
+    tags: ['示例'],
+    quizzes: [],
+    isGenerated: false,
+    generatedDate: '2024-01-01',
+    difficultyLevel: 1
+  });
   const [showQuiz, setShowQuiz] = useState(false);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
@@ -100,6 +114,7 @@ function MainContent() {
   const [isReading, setIsReading] = useState<boolean>(true);
   const [lastReadTime, setLastReadTime] = useState<number | undefined>();
   const [streakRefreshCounter, setStreakRefreshCounter] = useState(0);
+  const [currentReading, setCurrentReading] = useState<Reading | null>(null);
 
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
@@ -196,19 +211,20 @@ function MainContent() {
 
     const loadArticle = async () => {
       console.log('Loading article...', { articleId });
+      setIsLoading(true);
+      setError(null);
+      
       try {
         if (articleId) {
           // Load specific article
-          const article = await articleService.getArticleById(articleId);
-          if (article) {
-            console.log('Successfully loaded article:', {
-              id: article.id,
-              title: article.title
-            });
-            
-            setReading(convertArticle(article));
-            return;
-          }
+          const article = await articleService.getArticleWithDifficulty(articleId);
+          const reading = convertArticle(article);
+          setReading(reading);
+          console.log('Successfully loaded article:', {
+            id: article.id,
+            title: article.title
+          });
+          return;
         }
 
         // Load random article if no ID or article not found
@@ -252,9 +268,10 @@ function MainContent() {
         }
       } catch (error) {
         console.error('Error loading article:', error);
-        console.log('Falling back to sample reading');
-        localStorage.removeItem('lastReadArticleId');
+        setError(error instanceof Error ? error.message : 'Failed to load article');
         setReading(sampleReading);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -425,6 +442,17 @@ function MainContent() {
     }
   };
 
+  const getDifficultyLabel = (level: number): string => {
+    switch (level) {
+      case 1: return '入门';
+      case 2: return '初级';
+      case 3: return '中级';
+      case 4: return '高级';
+      case 5: return '专家';
+      default: return '未知';
+    }
+  };
+
   return (
     <div className="app" style={{
       background: theme.colors.background,
@@ -442,68 +470,67 @@ function MainContent() {
         refreshTrigger={streakRefreshCounter}
       />
       <div className="content">
-        <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.5rem 0' }}>
-          <Timer 
-            startTime={startTime}
-            isRunning={isReading}
-            lastReadTime={lastReadTime}
-          />
-          <div>
-            识字率：{Math.round((1 - unfamiliarWordsCount / wordCount) * 100)}% of {wordCount}
-          </div>
-        </div>
-        {reading.author && (
-          <div className="meta">
-            <span className="author">作者：{reading.author}</span>
-            {reading.sourceDate && (
-              <span className="date">日期：{reading.sourceDate}</span>
-            )}
-          </div>
-        )}
-        {reading.tags && reading.tags.map((tag: string, index: number) => (
-          <span key={index} className="tag">
-            {tag}
-          </span>
-        ))}
-        {isLoading && <div>Loading...</div>}
-        {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-        {!isLoading && !error && processedText.length > 0 && (
+        {reading && (
           <>
-            <ChineseText 
-              text={processedText} 
-              onWordPeek={handleWordPeek} 
-              wordBank={wordBank}
-            />
-            <div className="actions">
-              <button 
-                className="actionButton"
-                onClick={toggleQuiz}
+            <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
+            <div className="article-metadata">
+              <span>作者: {reading.author}</span>
+              <span 
+                className="difficulty-level" 
+                data-level={reading.difficultyLevel}
               >
-                {showQuiz ? '隐藏测验' : '开始测验'}
-              </button>
+                难度等级: {reading.difficultyLevel} 
+                ({getDifficultyLabel(reading.difficultyLevel)})
+              </span>
             </div>
-            {showQuiz && (
-              <QuizPanel 
-                quizzes={reading.quizzes} 
-                articleId={articleId || reading.id}
-                onComplete={handleQuizComplete}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.5rem 0' }}>
+              <Timer 
+                startTime={startTime}
+                isRunning={isReading}
+                lastReadTime={lastReadTime}
               />
-            )}
-            {filteredWordBank.length > 0 && (
-              <WordBankComponent
-                words={filteredWordBank}
-                title="本文生词"
-                onDeleteWord={handleDeleteWord}
-                onWordToDelete={setWordToDelete}
-                showSavedIndicator={showSavedIndicator}
-              />
+              <div>
+                识字率：{Math.round((1 - unfamiliarWordsCount / wordCount) * 100)}% of {wordCount}
+              </div>
+            </div>
+            {isLoading && <div>Loading...</div>}
+            {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+            {!isLoading && !error && processedText.length > 0 && (
+              <>
+                <ChineseText 
+                  text={processedText} 
+                  onWordPeek={handleWordPeek} 
+                  wordBank={wordBank}
+                />
+                <div className="actions">
+                  <button 
+                    className="actionButton"
+                    onClick={toggleQuiz}
+                  >
+                    {showQuiz ? '隐藏测验' : '开始测验'}
+                  </button>
+                </div>
+                {showQuiz && (
+                  <QuizPanel 
+                    quizzes={reading.quizzes} 
+                    articleId={articleId || reading.id}
+                    onComplete={handleQuizComplete}
+                  />
+                )}
+                {filteredWordBank.length > 0 && (
+                  <WordBankComponent
+                    words={filteredWordBank}
+                    title="本文生词"
+                    onDeleteWord={handleDeleteWord}
+                    onWordToDelete={setWordToDelete}
+                    showSavedIndicator={showSavedIndicator}
+                  />
+                )}
+              </>
             )}
           </>
         )}
-        {!isLoading && !error && processedText.length === 0 && (
-          <div>No text loaded</div>
-        )}
+        {!reading && <div>Loading article...</div>}
       </div>
       <ThemePanel
         isOpen={isThemePanelOpen}
@@ -530,8 +557,9 @@ function MainContent() {
 
 function App() {
   useEffect(() => {
-    console.log('App: Initializing database...');
+    console.log('App: Initializing...');
     initializeDatabase();
+    initializeCharacterRanks();
   }, []);
 
   console.log('App: Rendering');
