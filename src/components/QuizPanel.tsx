@@ -1,233 +1,116 @@
-import { useState, useCallback } from 'react';
-import { Quiz } from '../types/reading';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { userDataService } from '../services/userDataService';
 import styles from './QuizPanel.module.css';
-import { processChineseText } from '../utils/textProcessor';
-import type { ChineseWord } from '../data/sampleText';
 
-interface ActiveWordInfo {
-  word: ChineseWord;
-  optionIndex: number;
-  wordIndex: number;
+interface Quiz {
+  question: string;
+  options: string[];
+  correctAnswer: number;
 }
 
 interface QuizPanelProps {
   quizzes: Quiz[];
+  articleId: string;
+  startTime: number;
 }
 
-interface QuizResult {
-  questionIndex: number;
-  selectedAnswer: number;
-  isCorrect: boolean;
-}
-
-// Helper function to check if a word is a Chinese character (has valid pinyin)
-const isChineseCharacter = (word: ChineseWord): boolean => {
-  // Check if it's a Chinese character by checking its Unicode range
-  const char = word.characters;
-  const code = char.charCodeAt(0);
-  return (
-    (code >= 0x4E00 && code <= 0x9FFF) || // CJK Unified Ideographs
-    (code >= 0x3400 && code <= 0x4DBF) || // CJK Unified Ideographs Extension A
-    (code >= 0x20000 && code <= 0x2A6DF) || // CJK Unified Ideographs Extension B
-    (code >= 0x2A700 && code <= 0x2B73F) || // CJK Unified Ideographs Extension C
-    (code >= 0x2B740 && code <= 0x2B81F) || // CJK Unified Ideographs Extension D
-    (code >= 0x2B820 && code <= 0x2CEAF) // CJK Unified Ideographs Extension E
-  );
-};
-
-export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
+export const QuizPanel = ({ quizzes, articleId, startTime }: QuizPanelProps) => {
+  const { user } = useAuth();
   const [currentQuiz, setCurrentQuiz] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [results, setResults] = useState<QuizResult[]>([]);
-  const [quizCompleted, setQuizCompleted] = useState(false);
-  const [activeWord, setActiveWord] = useState<ActiveWordInfo | null>(null);
+  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [showResults, setShowResults] = useState(false);
+  const [readingDuration, setReadingDuration] = useState(0);
 
-  const handleAnswerSelect = (answerIndex: number) => {
-    if (showAnswer) return;
-    setSelectedAnswer(answerIndex);
+  useEffect(() => {
+    if (showResults && user) {
+      const duration = Math.floor((Date.now() - startTime) / 1000);
+      setReadingDuration(duration);
+      const score = Math.round((correctAnswers / quizzes.length) * 100);
+      userDataService.saveQuizCompletion(user.id, articleId, score, duration);
+    }
+  }, [showResults, user, correctAnswers, quizzes.length, articleId, startTime]);
+
+  const handleAnswerSelect = (index: number) => {
+    if (!isAnswerChecked) {
+      setSelectedAnswer(index);
+    }
   };
-
-  const handleMouseDown = useCallback((word: ChineseWord, optionIndex: number = -1, wordIndex: number) => {
-    if (isChineseCharacter(word)) {
-      setActiveWord({ word, optionIndex, wordIndex });
-    }
-  }, []);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent, word: ChineseWord, optionIndex: number = -1, wordIndex: number) => {
-    if (isChineseCharacter(word)) {
-      e.preventDefault(); // Prevent double-firing on mobile
-      e.stopPropagation(); // Stop event bubbling
-      setActiveWord({ word, optionIndex, wordIndex });
-    }
-  }, []);
-
-  const handleRelease = useCallback(() => {
-    setActiveWord(null);
-  }, []);
 
   const handleCheckAnswer = () => {
     if (selectedAnswer === null) return;
 
-    const isCorrect = selectedAnswer === quizzes[currentQuiz].correctAnswer;
-    setShowAnswer(true);
-    setResults(prev => [...prev, {
-      questionIndex: currentQuiz,
-      selectedAnswer,
-      isCorrect
-    }]);
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuiz < quizzes.length - 1) {
-      setCurrentQuiz(prev => prev + 1);
-      setSelectedAnswer(null);
-      setShowAnswer(false);
-    } else {
-      setQuizCompleted(true);
+    setIsAnswerChecked(true);
+    if (selectedAnswer === quizzes[currentQuiz].correctAnswer) {
+      setCorrectAnswers(prev => prev + 1);
     }
   };
 
-  const handleRestartQuiz = () => {
-    setCurrentQuiz(0);
-    setSelectedAnswer(null);
-    setShowAnswer(false);
-    setResults([]);
-    setQuizCompleted(false);
+  const handleNextQuiz = () => {
+    if (currentQuiz < quizzes.length - 1) {
+      setCurrentQuiz(prev => prev + 1);
+      setSelectedAnswer(null);
+      setIsAnswerChecked(false);
+    } else {
+      setShowResults(true);
+    }
   };
 
-  const correctAnswers = results.filter(r => r.isCorrect).length;
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}分${remainingSeconds}秒`;
+  };
 
-  if (quizCompleted) {
+  if (showResults) {
+    const score = Math.round((correctAnswers / quizzes.length) * 100);
     return (
       <div className={styles.quizPanel}>
-        <h3>测验完成！</h3>
+        <h2>测验结果</h2>
         <div className={styles.results}>
-          <div className={styles.score}>
-            得分：{correctAnswers} / {quizzes.length}
-          </div>
-          <div className={styles.percentage}>
-            正确率：{Math.round((correctAnswers / quizzes.length) * 100)}%
-          </div>
+          <p>得分：{score}分</p>
+          <p>正确答案：{correctAnswers} / {quizzes.length}</p>
+          <p>阅读用时：{formatDuration(readingDuration)}</p>
         </div>
-        <button 
-          className={styles.button} 
-          onClick={handleRestartQuiz}
-        >
-          重新测验
-        </button>
       </div>
     );
   }
-
-  const quiz = quizzes[currentQuiz];
-  const processedQuestion = processChineseText(quiz.question);
-  const processedOptions = quiz.options.map(option => processChineseText(option));
 
   return (
     <div className={styles.quizPanel}>
       <div className={styles.progress}>
         问题 {currentQuiz + 1} / {quizzes.length}
       </div>
-      <div className={`${styles.question} chinese-text`}>
-        {processedQuestion.map((word, index) => {
-          const isActive = activeWord?.optionIndex === -1 && activeWord?.wordIndex === index;
-          return (
-            <span
-              key={index}
-              style={{ 
-                display: 'inline-block',
-                position: 'relative',
-                cursor: isChineseCharacter(word) ? 'pointer' : 'default',
-                padding: '0 2px',
-                userSelect: 'none',
-                WebkitUserSelect: 'none'
-              }}
-              onMouseDown={() => handleMouseDown(word, -1, index)}
-              onMouseUp={handleRelease}
-              onMouseLeave={handleRelease}
-              onTouchStart={(e) => handleTouchStart(e, word, -1, index)}
-              onTouchEnd={handleRelease}
-            >
-              {word.characters}
-              {isActive && isChineseCharacter(word) && (
-                <div className="pinyin-popup visible">
-                  <div className="character">{word.characters}</div>
-                  <div className="pinyin">{word.pinyin.join(' ')}</div>
-                </div>
-              )}
-            </span>
-          );
-        })}
+      <div className={styles.question}>
+        {quizzes[currentQuiz].question}
       </div>
       <div className={styles.options}>
-        {processedOptions.map((option, optionIndex) => (
+        {quizzes[currentQuiz].options.map((option, index) => (
           <button
-            key={optionIndex}
+            key={index}
             className={`${styles.option} ${
-              selectedAnswer === optionIndex ? styles.selected : ''
+              selectedAnswer === index ? styles.selected : ''
             } ${
-              showAnswer
-                ? optionIndex === quiz.correctAnswer
+              isAnswerChecked
+                ? index === quizzes[currentQuiz].correctAnswer
                   ? styles.correct
-                  : selectedAnswer === optionIndex
+                  : selectedAnswer === index
                   ? styles.incorrect
                   : ''
                 : ''
             }`}
-            onClick={() => handleAnswerSelect(optionIndex)}
-            disabled={showAnswer}
+            onClick={() => handleAnswerSelect(index)}
+            disabled={isAnswerChecked}
           >
-            {option.map((word, wordIndex) => {
-              const isActive = activeWord?.optionIndex === optionIndex && activeWord?.wordIndex === wordIndex;
-              return (
-                <span
-                  key={wordIndex}
-                  style={{ 
-                    display: 'inline-block',
-                    position: 'relative',
-                    cursor: isChineseCharacter(word) ? 'pointer' : 'default',
-                    padding: '0 2px',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none'
-                  }}
-                  onMouseDown={(e) => {
-                    if (isChineseCharacter(word)) {
-                      e.stopPropagation(); // Prevent button click when showing pinyin
-                      handleMouseDown(word, optionIndex, wordIndex);
-                    }
-                  }}
-                  onMouseUp={(e) => {
-                    e.stopPropagation();
-                    handleRelease();
-                  }}
-                  onMouseLeave={handleRelease}
-                  onTouchStart={(e) => {
-                    if (isChineseCharacter(word)) {
-                      handleTouchStart(e, word, optionIndex, wordIndex);
-                    }
-                  }}
-                  onTouchEnd={(e) => {
-                    e.stopPropagation();
-                    handleRelease();
-                  }}
-                >
-                  {word.characters}
-                  {isActive && isChineseCharacter(word) && (
-                    <div className="pinyin-popup visible">
-                      <div className="character">{word.characters}</div>
-                      <div className="pinyin">{word.pinyin.join(' ')}</div>
-                    </div>
-                  )}
-                </span>
-              );
-            })}
+            {option}
           </button>
         ))}
       </div>
-      {!showAnswer ? (
+      {!isAnswerChecked ? (
         <button
-          className={styles.button}
+          className={styles.checkButton}
           onClick={handleCheckAnswer}
           disabled={selectedAnswer === null}
         >
@@ -235,10 +118,10 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes }) => {
         </button>
       ) : (
         <button
-          className={styles.button}
-          onClick={handleNextQuestion}
+          className={styles.nextButton}
+          onClick={handleNextQuiz}
         >
-          {currentQuiz < quizzes.length - 1 ? '下一题' : '完成测验'}
+          {currentQuiz < quizzes.length - 1 ? '下一题' : '查看结果'}
         </button>
       )}
     </div>

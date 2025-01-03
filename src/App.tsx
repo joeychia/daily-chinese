@@ -17,6 +17,7 @@ import { articleService } from './services/articleService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
 import { UserMenu } from './components/UserMenu'
+import { userDataService } from './services/userDataService'
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -41,6 +42,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 };
 
 function MainContent() {
+  const { user } = useAuth();
   const [processedText, setProcessedText] = useState<ChineseWord[]>([]);
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +54,54 @@ function MainContent() {
   const [reading, setReading] = useState<Reading>(sampleReading);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isDbInitialized, setIsDbInitialized] = useState(false);
+  const [startTime] = useState<number>(Date.now());
   const { articleId } = useParams();
+
+  // Load user's progress when article changes
+  useEffect(() => {
+    if (user && articleId) {
+      const loadProgress = async () => {
+        try {
+          const progress = await userDataService.getArticleProgress(user.id, articleId);
+          if (progress?.wordBank) {
+            setWordBank(progress.wordBank);
+          }
+        } catch (error) {
+          console.error('Error loading user progress:', error);
+        }
+      };
+      loadProgress();
+    }
+  }, [user, articleId]);
+
+  // Setup word bank syncing
+  useEffect(() => {
+    if (!user || !articleId) return;
+
+    const syncWordBank = userDataService.setupWordBankSync(
+      user.id,
+      articleId,
+      wordBank
+    );
+
+    // Subscribe to word bank changes
+    const unsubscribe = userDataService.subscribeToWordBank(
+      user.id,
+      articleId,
+      (updatedWordBank) => {
+        if (updatedWordBank && updatedWordBank.length > 0) {
+          setWordBank(updatedWordBank);
+        }
+      }
+    );
+
+    // Sync word bank when it changes
+    syncWordBank();
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user, articleId, wordBank]);
 
   // Initialize database first
   useEffect(() => {
@@ -305,7 +354,13 @@ function MainContent() {
               {showQuiz ? '隐藏测验' : '开始测验'}
             </button>
           </div>
-          {showQuiz && <QuizPanel quizzes={reading.quizzes} />}
+          {showQuiz && (
+            <QuizPanel 
+              quizzes={reading.quizzes} 
+              articleId={articleId || reading.id}
+              startTime={startTime}
+            />
+          )}
           {wordBank.length > 0 && (
             <div className="word-bank">
               <h2>生词本</h2>
