@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ChineseWord } from '../data/sampleText';
-import { getWordBank, subscribeToWordBank, saveWordBank } from '../services/userDataService';
+import { getWordBank, subscribeToWordBank, saveWordBank, getTheme } from '../services/userDataService';
 import { WordBankComponent } from './WordBankComponent';
+import { themes } from '../config/themes';
 import styles from './WordBank.module.css';
 
 export const WordBank: React.FC = () => {
@@ -11,6 +12,27 @@ export const WordBank: React.FC = () => {
   const navigate = useNavigate();
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('candy');
+
+  // Load theme
+  useEffect(() => {
+    if (!user) {
+      setCurrentTheme('candy');
+      return;
+    }
+
+    const loadTheme = async () => {
+      try {
+        const theme = await getTheme(user.id);
+        if (theme) {
+          setCurrentTheme(theme);
+        }
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+    loadTheme();
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -78,8 +100,18 @@ export const WordBank: React.FC = () => {
     });
   };
 
+  const theme = themes.find(t => t.id === currentTheme) || themes[0];
+
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{
+      background: theme.colors.background,
+      color: theme.colors.text,
+      '--theme-primary': theme.colors.primary,
+      '--theme-secondary': theme.colors.secondary,
+      '--theme-card-bg': theme.colors.cardBackground,
+      '--theme-card-border': theme.colors.cardBorder,
+      '--theme-highlight': theme.colors.highlight,
+    } as React.CSSProperties}>
       <div className={styles.header}>
         <button className={styles.backButton} onClick={() => navigate(-1)}>
           ←

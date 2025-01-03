@@ -2,6 +2,9 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  min-height: 100vh;
+  background-color: var(--theme-background);
+  color: var(--theme-text);
 }
 
 .header {
@@ -9,6 +12,10 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: var(--theme-card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .backButton {
@@ -28,4 +35,61 @@
 .header h1 {
   margin: 0;
   font-size: 24px;
+}
+
+.wordList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.wordCard {
+  background-color: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.wordCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.character {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--theme-primary);
+}
+
+.pinyin {
+  font-size: 14px;
+  color: var(--theme-secondary);
+}
+
+.saveStatus {
+  margin-left: auto;
+  padding: 4px 8px;
+  background-color: var(--theme-primary);
+  color: white;
+  border-radius: 4px;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 } 
