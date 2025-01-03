@@ -11,7 +11,6 @@ export const WordBank: React.FC = () => {
   const navigate = useNavigate();
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
-  const [wordToDelete, setWordToDelete] = useState<ChineseWord | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -91,7 +90,7 @@ export const WordBank: React.FC = () => {
         words={wordBank}
         title="全部生词"
         onDeleteWord={handleDeleteWord}
-        onWordToDelete={setWordToDelete}
+        onWordToDelete={(_) => {}}
         showSavedIndicator={showSavedIndicator}
       />
     </div>

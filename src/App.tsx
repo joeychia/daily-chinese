@@ -1,7 +1,6 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useParams, Navigate } from 'react-router-dom'
 import { ChineseText } from './components/ChineseText'
-import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
 import { QuizPanel } from './components/QuizPanel'
 import { Menu } from './components/Menu'
@@ -87,7 +86,6 @@ function MainContent() {
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<string>('candy');
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -99,7 +97,6 @@ function MainContent() {
   const { articleId } = useParams();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [wordToDelete, setWordToDelete] = useState<ChineseWord | null>(null);
-  const longPressTimeout = useRef<NodeJS.Timeout>();
   const [isReading, setIsReading] = useState<boolean>(true);
   const [lastReadTime, setLastReadTime] = useState<number | undefined>();
   const [streakRefreshCounter, setStreakRefreshCounter] = useState(0);
@@ -303,18 +300,6 @@ function MainContent() {
     }
   };
 
-  const handlePrint = () => {
-    console.log('Preparing to print word bank cards:', {
-      wordCount: wordBank.length,
-      words: wordBank.map(w => w.characters).join(', ')
-    });
-    setShowPrintPreview(true);
-    setTimeout(() => {
-      window.print();
-      setShowPrintPreview(false);
-    }, 100);
-  };
-
   // Load theme when user logs in
   useEffect(() => {
     if (!user) {
@@ -391,24 +376,6 @@ function MainContent() {
     /[\u4e00-\u9fa5]/.test(word.characters) && 
     filteredWordBank.some(w => w.characters === word.characters)
   ).length;
-
-  const handleWordLongPress = (word: ChineseWord) => {
-    setWordToDelete(word);
-    setShowConfirmDialog(true);
-  };
-
-  const handleWordTouchStart = (word: ChineseWord) => {
-    longPressTimeout.current = setTimeout(() => {
-      setWordToDelete(word);
-      setShowConfirmDialog(true);
-    }, 500);
-  };
-
-  const handleWordTouchEnd = () => {
-    if (longPressTimeout.current) {
-      clearTimeout(longPressTimeout.current);
-    }
-  };
 
   const handleDeleteWord = () => {
     if (wordToDelete) {
@@ -538,7 +505,6 @@ function MainContent() {
           <div>No text loaded</div>
         )}
       </div>
-      {showPrintPreview && <PrintableCards words={wordBank} />}
       <ThemePanel
         isOpen={isThemePanelOpen}
         onClose={() => setIsThemePanelOpen(false)}
