@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link, useParams, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useParams, Navigate } from 'react-router-dom'
 import { ChineseText } from './components/ChineseText'
 import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
@@ -16,14 +16,9 @@ import { initializeDatabase } from './scripts/initializeDb'
 import { articleService } from './services/articleService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
-import { UserMenu } from './components/UserMenu'
 import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, subscribeToTheme } from './services/userDataService'
-import { ref, get, set } from 'firebase/database'
-import { db } from './config/firebase'
-import { User } from 'firebase/auth'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { Timer } from './components/Timer'
-import { StreakDisplay } from './components/StreakDisplay'
 import { TopBar } from './components/TopBar'
 
 // Define the structure of the quiz from the database
@@ -516,7 +511,6 @@ function MainContent() {
               <QuizPanel 
                 quizzes={reading.quizzes} 
                 articleId={articleId || reading.id}
-                startTime={startTime}
                 onComplete={handleQuizComplete}
               />
             )}

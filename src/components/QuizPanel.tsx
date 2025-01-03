@@ -9,11 +9,10 @@ import { articleService } from '../services/articleService';
 interface QuizPanelProps {
   quizzes: Quiz[];
   articleId: string;
-  startTime: number;
-  onComplete?: () => void;
+  onComplete: () => void;
 }
 
-export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes, articleId, startTime, onComplete }) => {
+export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes, articleId, onComplete }) => {
   const { user } = useAuth();
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);

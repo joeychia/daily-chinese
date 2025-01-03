@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChineseWord } from '../data/sampleText';
 import styles from './ChineseText.module.css';
 
