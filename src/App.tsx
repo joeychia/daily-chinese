@@ -385,6 +385,12 @@ function MainContent() {
 
   const theme = themes.find(t => t.id === currentTheme) || themes[0];
   const wordCount = processedText.filter(word => /[\u4e00-\u9fa5]/.test(word.characters)).length;
+  
+  // Calculate total unfamiliar words (counting duplicates)
+  const unfamiliarWordsCount = processedText.filter(word => 
+    /[\u4e00-\u9fa5]/.test(word.characters) && 
+    filteredWordBank.some(w => w.characters === word.characters)
+  ).length;
 
   const handleWordLongPress = (word: ChineseWord) => {
     setWordToDelete(word);
@@ -471,11 +477,16 @@ function MainContent() {
       />
       <div className="content">
         <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
-        <Timer 
-          startTime={startTime}
-          isRunning={isReading}
-          lastReadTime={lastReadTime}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.5rem 0' }}>
+          <Timer 
+            startTime={startTime}
+            isRunning={isReading}
+            lastReadTime={lastReadTime}
+          />
+          <div>
+            识字率：{Math.round((1 - unfamiliarWordsCount / wordCount) * 100)}% of {wordCount}
+          </div>
+        </div>
         {reading.author && (
           <div className="meta">
             <span className="author">作者：{reading.author}</span>
