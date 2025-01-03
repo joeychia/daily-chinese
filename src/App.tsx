@@ -22,6 +22,7 @@ import { ref, get, set } from 'firebase/database'
 import { db } from './config/firebase'
 import { User } from 'firebase/auth'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { Timer } from './components/Timer'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -100,6 +101,8 @@ function MainContent() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [wordToDelete, setWordToDelete] = useState<ChineseWord | null>(null);
   const longPressTimeout = useRef<NodeJS.Timeout>();
+  const [isReading, setIsReading] = useState<boolean>(true);
+  const [lastReadTime, setLastReadTime] = useState<number | undefined>();
 
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
@@ -409,6 +412,43 @@ function MainContent() {
     }
   };
 
+  // Load last reading time when article changes
+  useEffect(() => {
+    const loadReadingTime = async () => {
+      if (!user || !articleId) return;
+      
+      try {
+        const readingTime = await articleService.getReadingTime(user.id, articleId);
+        if (readingTime) {
+          setLastReadTime(readingTime.lastReadTime);
+        } else {
+          setLastReadTime(undefined);
+        }
+      } catch (error) {
+        console.error('Error loading reading time:', error);
+      }
+    };
+
+    loadReadingTime();
+    setIsReading(true);
+    setStartTime(Date.now());
+  }, [user, articleId]);
+
+  // Handle quiz completion
+  const handleQuizComplete = async () => {
+    if (!user || !articleId) return;
+    
+    setIsReading(false);
+    const endTime = Date.now();
+    const readingTime = endTime - startTime;
+    
+    try {
+      await articleService.saveReadingTime(user.id, articleId, readingTime);
+    } catch (error) {
+      console.error('Error saving reading time:', error);
+    }
+  };
+
   return (
     <div className="app" style={{
       background: theme.colors.background,
@@ -436,6 +476,11 @@ function MainContent() {
           {theme.emoji}
         </button>
       </div>
+      <Timer 
+        startTime={startTime}
+        isRunning={isReading}
+        lastReadTime={lastReadTime}
+      />
       {reading.author && (
         <div className="meta">
           <span className="author">作者：{reading.author}</span>
@@ -474,6 +519,7 @@ function MainContent() {
               quizzes={reading.quizzes} 
               articleId={articleId || reading.id}
               startTime={startTime}
+              onComplete={handleQuizComplete}
             />
           )}
           {filteredWordBank.length > 0 && (

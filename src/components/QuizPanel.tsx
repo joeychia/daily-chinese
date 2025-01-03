@@ -10,9 +10,10 @@ interface QuizPanelProps {
   quizzes: Quiz[];
   articleId: string;
   startTime: number;
+  onComplete?: () => void;
 }
 
-export function QuizPanel({ quizzes, articleId, startTime }: QuizPanelProps) {
+export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes, articleId, startTime, onComplete }) => {
   const { user } = useAuth();
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -52,9 +53,14 @@ export function QuizPanel({ quizzes, articleId, startTime }: QuizPanelProps) {
     setIsSubmitted(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedOption !== null) {
       setIsSubmitted(true);
+    }
+    
+    // Call onComplete when quiz is finished
+    if (onComplete) {
+      onComplete();
     }
   };
 
@@ -115,4 +121,4 @@ export function QuizPanel({ quizzes, articleId, startTime }: QuizPanelProps) {
       </div>
     </div>
   );
-} 
+}; 

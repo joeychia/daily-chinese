@@ -1,0 +1,22 @@
+.timerContainer {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--theme-secondary);
+  margin: 0.5rem 0;
+}
+
+.lastTime {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: var(--theme-highlight);
+}
+
+.currentTime {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
+} 

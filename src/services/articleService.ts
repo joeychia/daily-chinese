@@ -18,6 +18,11 @@ export interface DatabaseArticle {
   quizzes: DatabaseQuiz[];
 }
 
+export interface ReadingTime {
+  lastReadTime: number;
+  bestTime?: number;
+}
+
 export const articleService = {
   getAllArticles: async (): Promise<DatabaseArticle[]> => {
     const articlesRef = ref(db, 'articles');
@@ -37,4 +42,28 @@ export const articleService = {
     }
     return null;
   },
+
+  getReadingTime: async (userId: string, articleId: string): Promise<ReadingTime | null> => {
+    const readingTimeRef = ref(db, `users/${userId}/readingTimes/${articleId}`);
+    const snapshot = await get(readingTimeRef);
+    if (snapshot.exists()) {
+      return snapshot.val();
+    }
+    return null;
+  },
+
+  saveReadingTime: async (userId: string, articleId: string, time: number): Promise<void> => {
+    const readingTimeRef = ref(db, `users/${userId}/readingTimes/${articleId}`);
+    const currentData = await get(readingTimeRef);
+    const currentTime = currentData.exists() ? currentData.val() : null;
+    
+    const newData: ReadingTime = {
+      lastReadTime: time,
+      bestTime: currentTime?.bestTime && currentTime.bestTime < time 
+        ? currentTime.bestTime 
+        : time
+    };
+    
+    await set(readingTimeRef, newData);
+  }
 }; 
