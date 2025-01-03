@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { signOut } from 'firebase/auth';
+import { signOut, updateProfile } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { useNavigate } from 'react-router-dom';
 import styles from './UserMenu.module.css';
@@ -9,6 +9,13 @@ export const UserMenu: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newDisplayName, setNewDisplayName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNewDisplayName(user?.displayName || '');
+  }, [user?.displayName]);
 
   const handleSignOut = async () => {
     try {
@@ -37,6 +44,49 @@ export const UserMenu: React.FC = () => {
     if (user?.displayName) return user.displayName[0].toUpperCase();
     if (user?.email) return user.email[0].toUpperCase();
     return user?.id[0].toUpperCase();
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setNewDisplayName(user?.displayName || '');
+    setError(null);
+  };
+
+  const handleSaveDisplayName = async () => {
+    if (!auth.currentUser) return;
+    
+    const trimmedName = newDisplayName.trim();
+    if (!trimmedName) {
+      setError('用户名不能为空');
+      return;
+    }
+    
+    try {
+      await updateProfile(auth.currentUser, {
+        displayName: trimmedName
+      });
+      // Force a refresh of the user object
+      auth.currentUser.reload();
+      setIsEditing(false);
+      setError(null);
+      setIsDropdownOpen(false);
+    } catch (error) {
+      console.error('Error updating display name:', error);
+      setError('无法更新用户名，请重试');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setError(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveDisplayName();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
   };
 
   if (!user) {
@@ -79,8 +129,38 @@ export const UserMenu: React.FC = () => {
                 {getInitial()}
               </div>
               <div className={styles.details}>
-                <div className={styles.name}>{getDisplayName()}</div>
-                {user.email && <div className={styles.email}>{user.email}</div>}
+                {isEditing ? (
+                  <div className={styles.editNameForm}>
+                    <input
+                      type="text"
+                      value={newDisplayName}
+                      onChange={(e) => setNewDisplayName(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      className={styles.editNameInput}
+                      placeholder="输入新用户名"
+                      autoFocus
+                    />
+                    {error && <div className={styles.error}>{error}</div>}
+                    <div className={styles.editButtons}>
+                      <button onClick={handleSaveDisplayName} className={styles.saveButton}>
+                        保存
+                      </button>
+                      <button onClick={handleCancelEdit} className={styles.cancelButton}>
+                        取消
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.name}>
+                      {getDisplayName()}
+                      <button onClick={handleEditClick} className={styles.editButton}>
+                        编辑
+                      </button>
+                    </div>
+                    {user.email && <div className={styles.email}>{user.email}</div>}
+                  </>
+                )}
               </div>
             </div>
             <div className={styles.dropdownDivider} />

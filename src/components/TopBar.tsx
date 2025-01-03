@@ -56,7 +56,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       <button className={styles.menuButton} onClick={onMenuClick}>
         ☰
       </button>
-      <div className={styles.title}>每日中文</div>
+      <div className={styles.title}>每日一读</div>
       <div className={styles.actions}>
         <button className={styles.wordBankButton} onClick={handleWordBankClick}>
           生词本

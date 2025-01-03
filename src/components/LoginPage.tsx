@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { themes } from '../config/themes';
 import styles from './LoginPage.module.css';
 
 export const LoginPage: React.FC = () => {
@@ -13,6 +14,8 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
+
+  const theme = themes[0]; // Use candy theme for login page
 
   const handleGoogleSignIn = async () => {
     try {
@@ -64,7 +67,16 @@ export const LoginPage: React.FC = () => {
   }, [user, navigate]);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{
+      '--background': theme.colors.background,
+      '--cardBackground': theme.colors.cardBackground,
+      '--cardBorder': theme.colors.cardBorder,
+      '--text': theme.colors.text,
+      '--primary': theme.colors.primary,
+      '--secondary': theme.colors.secondary,
+      '--highlight': theme.colors.highlight,
+      '--primary-rgb': theme.colors.primary.replace(/^#/, '').match(/.{2}/g)?.map(x => parseInt(x, 16)).join(', ')
+    } as React.CSSProperties}>
       <div className={styles.loginBox}>
         <h1 className={styles.title}>每日一读</h1>
         <p className={styles.subtitle}>{isSignUp ? '创建新账号' : '欢迎回来'}</p>
