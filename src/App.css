@@ -14,6 +14,7 @@
   border-bottom: 1px solid var(--border-color);
   display: flex;
   gap: 1.5rem;
+  align-items: center;
 }
 
 .navigation a {
@@ -573,4 +574,8 @@
 .navButton:hover {
   color: var(--theme-primary);
   transform: scale(1.1);
+}
+
+.spacer {
+  flex: 1;
 }

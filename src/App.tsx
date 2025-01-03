@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link, useParams, Navigate } from 'react-router-dom'
 import { ChineseText } from './components/ChineseText'
 import { PrintableCards } from './components/PrintableCards'
 import { ThemePanel } from './components/ThemePanel'
 import { QuizPanel } from './components/QuizPanel'
 import { ArticleNav } from './components/ArticleNav'
+import { LoginPage } from './components/LoginPage'
 import Articles from './components/Articles'
 import { ChineseWord } from './data/sampleText'
 import { themes } from './config/themes'
@@ -13,7 +14,31 @@ import { Reading } from './types/reading'
 import sampleReading from './data/readings/sample.json'
 import { initializeDatabase } from './scripts/initializeDb'
 import { articleService } from './services/articleService'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
+import { UserMenu } from './components/UserMenu'
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { user, loading } = useAuth();
+  console.log('ProtectedRoute:', { user, loading });
+
+  if (loading) {
+    console.log('ProtectedRoute: Loading...');
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    console.log('ProtectedRoute: No user, redirecting to login');
+    return <Navigate to="/login" />;
+  }
+
+  console.log('ProtectedRoute: User authenticated, rendering children');
+  return <>{children}</>;
+};
 
 function MainContent() {
   const [processedText, setProcessedText] = useState<ChineseWord[]>([]);
@@ -234,6 +259,8 @@ function MainContent() {
         <button className="navButton" onClick={() => setIsNavOpen(true)}>☰</button>
         <Link to="/">阅读</Link>
         <Link to="/articles">文章列表</Link>
+        <div className="spacer" />
+        <UserMenu />
       </nav>
       <div className="header">
         <h1>{reading.title}</h1>
@@ -317,17 +344,43 @@ function MainContent() {
 
 function App() {
   useEffect(() => {
+    console.log('App: Initializing database...');
     initializeDatabase();
   }, []);
 
+  console.log('App: Rendering');
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<MainContent />} />
-        <Route path="/article/:articleId" element={<MainContent />} />
-        <Route path="/articles" element={<Articles />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <MainContent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/article/:articleId"
+            element={
+              <ProtectedRoute>
+                <MainContent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/articles"
+            element={
+              <ProtectedRoute>
+                <Articles />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
