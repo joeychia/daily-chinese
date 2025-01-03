@@ -92,7 +92,15 @@ export const articleService = {
     const currentStreak = snapshot.val();
     if (currentStreak.lastReadDate === today) {
       // Already read today, maintain current streak
-      await set(streakRef, currentStreak);
+      // Ensure today's date is in completedDates without duplicates
+      const completedDates = currentStreak.completedDates || [];
+      if (!completedDates.includes(today)) {
+        completedDates.push(today);
+      }
+      await set(streakRef, {
+        ...currentStreak,
+        completedDates
+      });
       return;
     }
 
@@ -105,7 +113,11 @@ export const articleService = {
       // Maintain streak
       const newStreak = currentStreak.currentStreak + 1;
       const longestStreak = Math.max(newStreak, currentStreak.longestStreak);
-      const completedDates = [...currentStreak.completedDates, today];
+      // Add today's date to completedDates if not already present
+      const completedDates = [...(currentStreak.completedDates || [])];
+      if (!completedDates.includes(today)) {
+        completedDates.push(today);
+      }
 
       await set(streakRef, {
         ...currentStreak,

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getWordBank, subscribeToWordBank } from '../services/userDataService';
 import { ChineseWord } from '../data/sampleText';
+import { StreakDisplay } from './StreakDisplay';
 import styles from './TopBar.module.css';
 
 interface TopBarProps {
@@ -56,11 +57,11 @@ export const TopBar: React.FC<TopBarProps> = ({
       <button className={styles.menuButton} onClick={onMenuClick}>
         ☰
       </button>
-      <div className={styles.title}>每日一读</div>
-      <div className={styles.actions}>
+      <div className={styles.rightSection}>
+        <StreakDisplay refreshTrigger={refreshTrigger} />
         <button className={styles.wordBankButton} onClick={handleWordBankClick}>
-          生词本
-          {wordCount > 0 && <span className={styles.badge}>{wordCount}</span>}
+          <span className={styles.badge}>{wordCount}</span>
+          📚
         </button>
         <button className={styles.themeButton} onClick={onThemeClick}>
           {themeEmoji}

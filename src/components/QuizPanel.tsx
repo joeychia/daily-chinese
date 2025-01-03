@@ -20,6 +20,15 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes, articleId, onComp
   const [showResult, setShowResult] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Handle case when there are no quizzes
+  if (!quizzes || quizzes.length === 0) {
+    return (
+      <div className={styles.quizPanel}>
+        <h2>暂无测验</h2>
+      </div>
+    );
+  }
+
   const currentQuiz = quizzes[currentQuizIndex];
   const processedQuestion = processChineseText(currentQuiz.question);
   const processedOptions = currentQuiz.options.map(option => processChineseText(option));
@@ -64,9 +73,16 @@ export const QuizPanel: React.FC<QuizPanelProps> = ({ quizzes, articleId, onComp
       setIsSubmitted(true);
     }
     
-    // Call onComplete when quiz is finished
-    if (onComplete) {
-      onComplete();
+    // Save quiz completion and trigger streak update
+    if (user && onComplete) {
+      try {
+        await articleService.saveUserArticleData(user.id, articleId, {
+          lastReadTime: Date.now() // Add this to trigger streak update
+        });
+        onComplete();
+      } catch (error) {
+        console.error('Error saving quiz completion:', error);
+      }
     }
   };
 

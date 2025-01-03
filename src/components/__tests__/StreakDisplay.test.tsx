@@ -8,17 +8,28 @@ import { AuthContext } from '../../contexts/AuthContext';
 jest.mock('../../services/articleService');
 
 describe('StreakDisplay', () => {
-  const mockUser = { id: 'test-user-123' };
+  const mockUser = {
+    id: 'test-user-id',
+    email: 'test@example.com',
+    displayName: 'Test User'
+  };
   const mockStreak = {
     currentStreak: 5,
     longestStreak: 7,
-    lastReadDate: '2024-01-02',
-    streakStartDate: '2023-12-29',
-    completedDates: ['2024-01-02', '2024-01-01', '2023-12-31', '2023-12-30', '2023-12-29']
+    lastReadDate: '2024-01-05',
+    streakStartDate: '2024-01-01',
+    completedDates: ['2024-01-05', '2024-01-04', '2024-01-03', '2024-01-02', '2024-01-01']
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Set a fixed date that matches our test data
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2024-01-05'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   const renderWithAuth = (component: React.ReactNode) => {
@@ -117,5 +128,26 @@ describe('StreakDisplay', () => {
     await waitFor(() => {
       expect(screen.getByText('6')).toBeInTheDocument();
     });
+  });
+
+  it('should show fire emoji on days with streak', async () => {
+    (articleService.getUserStreak as jest.Mock).mockResolvedValueOnce(mockStreak);
+
+    renderWithAuth(<StreakDisplay />);
+
+    // Click to open the streak panel
+    await waitFor(() => {
+      const streakDisplay = screen.getByText('5');
+      fireEvent.click(streakDisplay);
+    });
+
+    // Wait for the calendar to render and verify fire emojis
+    await waitFor(() => {
+      const fireEmojis = screen.getAllByTestId('calendar-fire-emoji');
+      expect(fireEmojis.length).toBe(mockStreak.completedDates.length);
+    });
+
+    // Verify that the legend shows completed status
+    expect(screen.getByText('已完成')).toBeInTheDocument();
   });
 }); 

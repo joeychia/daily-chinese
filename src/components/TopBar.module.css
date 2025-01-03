@@ -1,65 +1,61 @@
 .topBar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: var(--theme-card-bg);
-  border-bottom: 1px solid var(--theme-card-border);
+  padding: 0.5rem 1rem;
+  background: var(--theme-card-bg);
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .menuButton {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 1.5rem;
   cursor: pointer;
-  padding: 5px;
+  padding: 0.5rem;
   color: var(--theme-text);
 }
 
-.title {
-  flex: 1;
-  font-size: 20px;
-  font-weight: bold;
-  margin-left: 20px;
-}
-
-.actions {
+.rightSection {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 1rem;
 }
 
 .wordBankButton {
   background: none;
   border: none;
-  padding: 8px 12px;
+  font-size: 1.5rem;
   cursor: pointer;
+  padding: 0.5rem;
   color: var(--theme-text);
-  font-size: 16px;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 5px;
-}
-
-.badge {
-  background-color: var(--theme-primary);
-  color: white;
-  border-radius: 12px;
-  padding: 2px 6px;
-  font-size: 12px;
-  min-width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .themeButton {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 1.5rem;
   cursor: pointer;
-  padding: 5px;
+  padding: 0.5rem;
+}
+
+.badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--theme-primary);
+  color: white;
+  border-radius: 50%;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.8rem;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .menuButton:hover,
