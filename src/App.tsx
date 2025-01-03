@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useParams, Navigate } from 'react-router-dom'
 import { ChineseText } from './components/ChineseText'
 import { PrintableCards } from './components/PrintableCards'
@@ -21,6 +21,7 @@ import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, su
 import { ref, get, set } from 'firebase/database'
 import { db } from './config/firebase'
 import { User } from 'firebase/auth'
+import { ConfirmDialog } from './components/ConfirmDialog'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -96,6 +97,9 @@ function MainContent() {
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const { articleId } = useParams();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [wordToDelete, setWordToDelete] = useState<ChineseWord | null>(null);
+  const longPressTimeout = useRef<NodeJS.Timeout>();
 
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
@@ -380,6 +384,31 @@ function MainContent() {
   const articleWords = processedText.map(word => word.characters);
   const filteredWordBank = wordBank.filter(word => articleWords.includes(word.characters));
 
+  const handleWordLongPress = (word: ChineseWord) => {
+    setWordToDelete(word);
+    setShowConfirmDialog(true);
+  };
+
+  const handleWordTouchStart = (word: ChineseWord) => {
+    longPressTimeout.current = setTimeout(() => {
+      handleWordLongPress(word);
+    }, 500); // 500ms for long press
+  };
+
+  const handleWordTouchEnd = () => {
+    if (longPressTimeout.current) {
+      clearTimeout(longPressTimeout.current);
+    }
+  };
+
+  const handleDeleteWord = () => {
+    if (wordToDelete) {
+      setWordBank(prev => prev.filter(w => w.characters !== wordToDelete.characters));
+      setShowConfirmDialog(false);
+      setWordToDelete(null);
+    }
+  };
+
   return (
     <div className="app" style={{
       background: theme.colors.background,
@@ -457,7 +486,15 @@ function MainContent() {
               </h2>
               <div className="word-list">
                 {filteredWordBank.map((word, index) => (
-                  <div key={index} className="word-card">
+                  <div
+                    key={index}
+                    className="word-card"
+                    onTouchStart={() => handleWordTouchStart(word)}
+                    onTouchEnd={handleWordTouchEnd}
+                    onMouseDown={() => handleWordTouchStart(word)}
+                    onMouseUp={handleWordTouchEnd}
+                    onMouseLeave={handleWordTouchEnd}
+                  >
                     <div className="character">{word.characters}</div>
                     <div className="pinyin">{word.pinyin.join(' ')}</div>
                   </div>
@@ -483,6 +520,15 @@ function MainContent() {
       <ArticleNav
         isOpen={isNavOpen}
         onClose={() => setIsNavOpen(false)}
+      />
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        message={`确定要删除"${wordToDelete?.characters}"吗？`}
+        onConfirm={handleDeleteWord}
+        onCancel={() => {
+          setShowConfirmDialog(false);
+          setWordToDelete(null);
+        }}
       />
     </div>
   );
