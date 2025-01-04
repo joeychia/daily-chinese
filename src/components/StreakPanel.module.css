@@ -90,7 +90,7 @@
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
   border-radius: 8px;
-  margin: 2px;
+  max-width: none !important;
 }
 
 .calendar :global(.react-calendar__tile--now) {
@@ -99,11 +99,30 @@
 }
 
 .calendar :global(.react-calendar__month-view__weekdays) {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
   text-align: center;
   text-transform: none;
   font-weight: normal;
   font-size: 0.875em;
+  color: var(--theme-text);
+}
+
+.calendar :global(.react-calendar__month-view__days__day) {
+  color: var(--theme-text);
+}
+.calendar :global(.react-calendar__month-view__days__day--weekend) {
   color: var(--theme-secondary);
+}
+.calendar :global(.react-calendar__month-view__weekdays__weekday) {
+  padding: 0.5em;
+  text-align: center;
+  color: var(--theme-text);
+}
+
+.calendar :global(.react-calendar__month-view__weekdays__weekday abbr) {
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .calendar :global(.react-calendar__navigation) {

@@ -14,7 +14,7 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
   if (!isOpen) return null;
 
   const today = new Date();
-  const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  const [activeDate, setActiveDate] = React.useState(today);
 
   const formatDate = (date: Date) => {
     return date.toISOString().split('T')[0];
@@ -38,6 +38,12 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
       return <span data-testid="calendar-fire-emoji" className={styles.completedIcon}>🔥</span>;
     }
     return null;
+  };
+
+  const handleActiveStartDateChange = ({ activeStartDate }: { activeStartDate: Date | null }) => {
+    if (activeStartDate) {
+      setActiveDate(activeStartDate);
+    }
   };
 
   return (
@@ -64,17 +70,20 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
           <Calendar
             value={today}
             maxDate={today}
-            minDate={startDate}
             locale="zh-CN"
+            calendarType="iso8601"
+            formatShortWeekday={(locale, date) => ['一', '二', '三', '四', '五', '六', '日'][date.getDay() === 0 ? 6 : date.getDay() - 1]}
             tileClassName={tileClassName}
             tileContent={tileContent}
             showNeighboringMonth={false}
             prev2Label={null}
             next2Label={null}
+            prevLabel="←"
+            nextLabel="→"
             defaultView="month"
-            defaultActiveStartDate={today}
             view="month"
-            activeStartDate={today}
+            activeStartDate={activeDate}
+            onActiveStartDateChange={handleActiveStartDateChange}
           />
         </div>
 
