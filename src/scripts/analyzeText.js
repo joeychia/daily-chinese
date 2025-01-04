@@ -1,3 +1,5 @@
+// USAGE: node --loader ts-node/esm src/scripts/analyzeText.js "小王是一名大学生。每天早上七点钟，他准时起床。"
+
 import { getCharacterGrade } from '../data/characterGrades.ts';
 
 function analyzeText(text) {
