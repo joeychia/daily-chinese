@@ -31,10 +31,10 @@ export const subscribeToWordBank = (userId: string, callback: (wordBank: Chinese
   };
 };
 
-export const getTheme = async (userId: string): Promise<string | null> => {
+export const getTheme = async (userId: string): Promise<string> => {
   const userRef = ref(db, `users/${userId}/theme`);
   const snapshot = await get(userRef);
-  return snapshot.val();
+  return snapshot.val() || 'candy';
 };
 
 export const saveTheme = async (userId: string, theme: string): Promise<void> => {
@@ -45,10 +45,8 @@ export const saveTheme = async (userId: string, theme: string): Promise<void> =>
 export const subscribeToTheme = (userId: string, callback: (theme: string) => void) => {
   const userRef = ref(db, `users/${userId}/theme`);
   onValue(userRef, (snapshot) => {
-    const theme = snapshot.val();
-    if (theme) {
-      callback(theme);
-    }
+    const theme = snapshot.val() || 'candy';
+    callback(theme);
   });
 
   return () => {

@@ -97,7 +97,7 @@ function MainContent() {
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>('candy');
+  const [currentTheme, setCurrentTheme] = useState<string | null>(null);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [reading, setReading] = useState<Reading>(sampleReading);
@@ -311,7 +311,7 @@ function MainContent() {
     }
   };
 
-  // Load theme when user logs in
+  // Load user's theme when they log in
   useEffect(() => {
     if (!user) {
       setCurrentTheme('candy'); // Reset to default theme
@@ -320,18 +320,21 @@ function MainContent() {
 
     const loadTheme = async () => {
       try {
+        console.log('Loading theme for user:', user.id);
         const theme = await getTheme(user.id);
-        if (theme) {
-          setCurrentTheme(theme);
-        }
+        console.log('Theme loaded:', theme);
+        setCurrentTheme(theme);
       } catch (error) {
         console.error('Error loading theme:', error);
+        setCurrentTheme('candy'); // Fallback to default theme on error
       }
     };
+
     loadTheme();
 
     // Subscribe to theme changes
     const unsubscribe = subscribeToTheme(user.id, (theme: string) => {
+      console.log('Theme updated from subscription:', theme);
       setCurrentTheme(theme);
     });
 
@@ -340,12 +343,13 @@ function MainContent() {
     };
   }, [user]);
 
-  // Save theme when it changes
+  // Save theme when it changes, but only if it's not the initial load
   useEffect(() => {
-    if (!user) return;
+    if (!user || currentTheme === null) return;
 
     const saveUserTheme = async () => {
       try {
+        console.log('Saving theme to database:', currentTheme);
         await saveTheme(user.id, currentTheme);
       } catch (error) {
         console.error('Error saving theme:', error);
@@ -354,22 +358,13 @@ function MainContent() {
     saveUserTheme();
   }, [user, currentTheme]);
 
-  const handleThemeChange = async (themeId: string) => {
+  const handleThemeChange = (themeId: string) => {
     console.log('Changing theme:', {
       from: currentTheme,
       to: themeId,
       theme: themes.find(t => t.id === themeId)?.name
     });
     setCurrentTheme(themeId);
-
-    // Save theme to database
-    if (user) {
-      try {
-        await saveTheme(user.id, themeId);
-      } catch (error) {
-        console.error('Error saving theme:', error);
-      }
-    }
   };
 
   const toggleQuiz = () => {
@@ -379,7 +374,8 @@ function MainContent() {
     setShowQuiz(prev => !prev);
   };
 
-  const theme = themes.find(t => t.id === currentTheme) || themes[0];
+  // Use a default theme while loading
+  const theme = themes.find(t => t.id === (currentTheme || 'candy')) || themes[0];
   const wordCount = processedText.filter(word => /[\u4e00-\u9fa5]/.test(word.characters)).length;
   
   // Calculate total unfamiliar words (counting duplicates)
@@ -522,7 +518,7 @@ function MainContent() {
       <ThemePanel
         isOpen={isThemePanelOpen}
         onClose={() => setIsThemePanelOpen(false)}
-        currentTheme={currentTheme}
+        currentTheme={currentTheme || 'candy'}
         onThemeChange={handleThemeChange}
       />
       <Menu
