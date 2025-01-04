@@ -103,7 +103,6 @@ function MainContent() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [reading, setReading] = useState<Reading>(sampleReading);
   const [showQuiz, setShowQuiz] = useState(false);
-  const [isDbInitialized, setIsDbInitialized] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const { articleId } = useParams();
@@ -189,11 +188,8 @@ function MainContent() {
       try {
         await initializeDatabase();
         console.log('Database initialized');
-        setIsDbInitialized(true);
       } catch (error) {
         console.error('Failed to initialize database:', error);
-        // Still set as initialized to allow loading sample
-        setIsDbInitialized(true);
       }
     };
     init();
@@ -453,7 +449,6 @@ function MainContent() {
             {showQuiz && (
               <QuizPanel 
                 quizzes={reading.quizzes} 
-                articleId={articleId || reading.id}
                 onComplete={handleQuizComplete}
               />
             )}

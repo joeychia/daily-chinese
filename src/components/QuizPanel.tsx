@@ -2,91 +2,84 @@ import { useState } from 'react';
 import { Quiz } from '../types/reading';
 import styles from './QuizPanel.module.css';
 import { processChineseText } from '../utils/textProcessor';
-import { articleService } from '../services/articleService';
 import { analyticsService } from '../services/analyticsService';
+import { ChineseText } from './ChineseText';
 
 interface QuizPanelProps {
-  quiz: Quiz;
-  onClose: () => void;
-  userId?: string;
-  articleId?: string;
+  quizzes: Quiz[];
+  onComplete: () => void;
 }
 
-export function QuizPanel({ quiz, onClose, userId, articleId }: QuizPanelProps) {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<string[]>(Array(quiz.questions.length).fill(''));
+export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(quizzes.length).fill(-1));
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
-  const [startTime] = useState(Date.now());
+
+  const currentQuiz = quizzes[currentQuizIndex];
+  const processedQuestion = processChineseText(currentQuiz.question);
+  const processedOptions = currentQuiz.options.map(option => processChineseText(option));
 
   const handleSubmit = async () => {
-    const finalScore = selectedAnswers.filter(
-      (answer, index) => answer === quiz.questions[index].correctAnswer
-    ).length;
-    setScore(finalScore);
-    setShowResult(true);
+    if (selectedAnswers[currentQuizIndex] === -1) return;
 
-    // Track quiz completion
-    analyticsService.trackQuizCompletion(finalScore, quiz.questions.length);
+    const isCorrect = selectedAnswers[currentQuizIndex] === currentQuiz.correctOption;
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+    }
 
-    // Save quiz results if user is logged in
-    if (userId && articleId) {
-      const duration = Math.round((Date.now() - startTime) / 1000); // Convert to seconds
-      try {
-        await articleService.saveQuizCompletion(userId, articleId, finalScore, duration);
-      } catch (error) {
-        console.error('Error saving quiz completion:', error);
-      }
+    if (currentQuizIndex < quizzes.length - 1) {
+      setCurrentQuizIndex(prev => prev + 1);
+    } else {
+      setShowResult(true);
+      analyticsService.trackQuizCompletion(score + (isCorrect ? 1 : 0), quizzes.length);
+      onComplete();
     }
   };
+
+  if (showResult) {
+    return (
+      <div className={styles.quizPanel}>
+        <h2>测验结果</h2>
+        <p>得分：{Math.round((score / quizzes.length) * 100)}%</p>
+        <p>正确：{score} / {quizzes.length}</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.quizPanel}>
       <div className={styles.progress}>
-        问题 {currentQuestionIndex + 1} / {quiz.questions.length}
+        问题 {currentQuizIndex + 1} / {quizzes.length}
       </div>
       <div className={styles.question}>
-        <ChineseText text={quiz.questions[currentQuestionIndex].question} onWordPeek={() => {}} />
+        <ChineseText text={processedQuestion} onWordPeek={() => {}} />
       </div>
       <div className={styles.options}>
-        {quiz.questions[currentQuestionIndex].options.map((option, index) => (
+        {processedOptions.map((option, index) => (
           <button
             key={index}
             className={`${styles.option} ${
-              selectedAnswers[currentQuestionIndex] === option ? styles.selected : ''
-            } ${
-              showResult
-                ? selectedAnswers[currentQuestionIndex] === option
-                  ? styles.correct
-                  : selectedAnswers[currentQuestionIndex] === quiz.questions[currentQuestionIndex].correctAnswer
-                  ? styles.incorrect
-                  : ''
-                : ''
+              selectedAnswers[currentQuizIndex] === index ? styles.selected : ''
             }`}
-            onClick={() => setSelectedAnswers(prev => {
-              const newAnswers = [...prev];
-              newAnswers[currentQuestionIndex] = option;
-              return newAnswers;
-            })}
+            onClick={() => {
+              const newAnswers = [...selectedAnswers];
+              newAnswers[currentQuizIndex] = index;
+              setSelectedAnswers(newAnswers);
+            }}
           >
             <ChineseText text={option} onWordPeek={() => {}} />
           </button>
         ))}
       </div>
       <div className={styles.actions}>
-        {!showResult ? (
-          <button
-            className={styles.submitButton}
-            onClick={handleSubmit}
-            disabled={selectedAnswers[currentQuestionIndex] === ''}
-          >
-            提交答案
-          </button>
-        ) : (
-          <button className={styles.nextButton} onClick={() => setCurrentQuestionIndex(prev => prev + 1)}>
-            {currentQuestionIndex < quiz.questions.length - 1 ? '下一题' : '查看结果'}
-          </button>
-        )}
+        <button
+          className={styles.submitButton}
+          onClick={handleSubmit}
+          disabled={selectedAnswers[currentQuizIndex] === -1}
+        >
+          {currentQuizIndex < quizzes.length - 1 ? '下一题' : '完成测验'}
+        </button>
       </div>
     </div>
   );
