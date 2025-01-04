@@ -22,6 +22,7 @@ import { TopBar } from './components/TopBar'
 import { WordBankComponent } from './components/WordBankComponent'
 import { WordBank } from './components/WordBank'
 import { analyzeArticleDifficulty } from './utils/articleDifficulty'
+import { DifficultyDisplay } from './components/DifficultyDisplay'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -453,93 +454,6 @@ function MainContent() {
         <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
         <div className="article-metadata">
           <span>作者: {reading.author}</span>
-          <span 
-            className="difficulty-level" 
-            data-level={reading.difficultyLevel}
-          >
-            难度等级: {reading.difficultyLevel} 
-            ({getDifficultyLabel(reading.difficultyLevel)})
-            <div className="difficulty-tooltip">
-              <div className="level-stat">
-                <span>入门字 (1-300):</span>
-                <span>{reading.characterLevels.LEVEL_1.toFixed(1)}%</span>
-              </div>
-              <div className="level-stat-bar">
-                <div 
-                  className="level-stat-fill" 
-                  style={{ 
-                    width: `${reading.characterLevels.LEVEL_1}%`,
-                    backgroundColor: '#2e7d32'
-                  }} 
-                />
-              </div>
-              <div className="level-stat">
-                <span>初级字 (301-600):</span>
-                <span>{reading.characterLevels.LEVEL_2.toFixed(1)}%</span>
-              </div>
-              <div className="level-stat-bar">
-                <div 
-                  className="level-stat-fill" 
-                  style={{ 
-                    width: `${reading.characterLevels.LEVEL_2}%`,
-                    backgroundColor: '#827717'
-                  }} 
-                />
-              </div>
-              <div className="level-stat">
-                <span>中级字 (601-1000):</span>
-                <span>{reading.characterLevels.LEVEL_3.toFixed(1)}%</span>
-              </div>
-              <div className="level-stat-bar">
-                <div 
-                  className="level-stat-fill" 
-                  style={{ 
-                    width: `${reading.characterLevels.LEVEL_3}%`,
-                    backgroundColor: '#e65100'
-                  }} 
-                />
-              </div>
-              <div className="level-stat">
-                <span>高级字 (1001-1500):</span>
-                <span>{reading.characterLevels.LEVEL_4.toFixed(1)}%</span>
-              </div>
-              <div className="level-stat-bar">
-                <div 
-                  className="level-stat-fill" 
-                  style={{ 
-                    width: `${reading.characterLevels.LEVEL_4}%`,
-                    backgroundColor: '#c62828'
-                  }} 
-                />
-              </div>
-              <div className="level-stat">
-                <span>专家字 (1501-2000):</span>
-                <span>{reading.characterLevels.LEVEL_5.toFixed(1)}%</span>
-              </div>
-              <div className="level-stat-bar">
-                <div 
-                  className="level-stat-fill" 
-                  style={{ 
-                    width: `${reading.characterLevels.LEVEL_5}%`,
-                    backgroundColor: '#4e342e'
-                  }} 
-                />
-              </div>
-              <div className="level-stat">
-                <span>罕见字 (2000+):</span>
-                <span>{reading.characterLevels.LEVEL_6.toFixed(1)}%</span>
-              </div>
-              <div className="level-stat-bar">
-                <div 
-                  className="level-stat-fill" 
-                  style={{ 
-                    width: `${reading.characterLevels.LEVEL_6}%`,
-                    backgroundColor: '#757575'
-                  }} 
-                />
-              </div>
-            </div>
-          </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.5rem 0' }}>
           <Timer 
@@ -547,18 +461,22 @@ function MainContent() {
             isRunning={isReading}
             lastReadTime={lastReadTime}
           />
+          <span 
+            className="difficulty-level" 
+            data-level={reading.difficultyLevel}
+          >
+            难度: {reading.difficultyLevel}
+            <div className="difficulty-tooltip">
+              <DifficultyDisplay 
+                difficultyLevel={reading.difficultyLevel}
+                characterLevels={reading.characterLevels}
+              />
+            </div>
+          </span>
           <div>
             识字率：{Math.round((1 - unfamiliarWordsCount / wordCount) * 100)}% of {wordCount}
           </div>
         </div>
-        {reading.author && (
-          <div className="meta">
-            <span className="author">作者：{reading.author}</span>
-            {reading.sourceDate && (
-              <span className="date">日期：{reading.sourceDate}</span>
-            )}
-          </div>
-        )}
         {reading.tags && reading.tags.map((tag: string, index: number) => (
           <span key={index} className="tag">
             {tag}
@@ -625,23 +543,6 @@ function MainContent() {
     </div>
   );
 }
-
-const getDifficultyLabel = (level: number): string => {
-  switch (level) {
-    case 1:
-      return '入门';
-    case 2:
-      return '初级';
-    case 3:
-      return '中级';
-    case 4:
-      return '高级';
-    case 5:
-      return '专家';
-    default:
-      return '未知';
-  }
-};
 
 function App() {
   useEffect(() => {

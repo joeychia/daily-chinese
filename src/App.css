@@ -542,7 +542,6 @@ input, textarea {
 }
 
 .article-metadata {
-  display: flex;
   align-items: center;
   gap: 1rem;
   margin: 0.5rem 0;
@@ -551,10 +550,11 @@ input, textarea {
 
 .difficulty-level {
   position: relative;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  background-color: #f5f5f5;
+  cursor: help;
 }
 
 .difficulty-level[data-level="1"] { background-color: #e8f5e9; color: #2e7d32; }
@@ -564,22 +564,26 @@ input, textarea {
 .difficulty-level[data-level="5"] { background-color: #efebe9; color: #4e342e; }
 
 .difficulty-tooltip {
-  display: none;
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
   margin-top: 0.5rem;
-  padding: 1rem;
-  background-color: white;
-  border-radius: 4px;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 100;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  min-width: 300px;
+}
+
+.difficulty-tooltip .container {
+  margin: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  width: 300px;
 }
 
 .difficulty-level:hover .difficulty-tooltip {
-  display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
 .level-stat {
