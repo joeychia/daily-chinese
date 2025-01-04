@@ -15,6 +15,7 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(quizzes.length).fill(-1));
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [isChecking, setIsChecking] = useState(false);
 
   const currentQuiz = quizzes[currentQuizIndex];
   const processedQuestion = processChineseText(currentQuiz.question);
@@ -23,16 +24,22 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
   const handleSubmit = async () => {
     if (selectedAnswers[currentQuizIndex] === -1) return;
 
-    const isCorrect = selectedAnswers[currentQuizIndex] === currentQuiz.correctOption;
-    if (isCorrect) {
-      setScore(prev => prev + 1);
+    if (!isChecking) {
+      setIsChecking(true);
+      const isCorrect = selectedAnswers[currentQuizIndex] === currentQuiz.correctOption;
+      if (isCorrect) {
+        setScore(prev => prev + 1);
+      }
+      return;
     }
 
+    // Move to next question or show results
+    setIsChecking(false);
     if (currentQuizIndex < quizzes.length - 1) {
       setCurrentQuizIndex(prev => prev + 1);
     } else {
       setShowResult(true);
-      analyticsService.trackQuizCompletion(score + (isCorrect ? 1 : 0), quizzes.length);
+      analyticsService.trackQuizCompletion(score + 1, quizzes.length);
       onComplete();
     }
   };
@@ -56,21 +63,36 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
         <ChineseText text={processedQuestion} onWordPeek={() => {}} />
       </div>
       <div className={styles.options}>
-        {processedOptions.map((option, index) => (
-          <button
-            key={index}
-            className={`${styles.option} ${
-              selectedAnswers[currentQuizIndex] === index ? styles.selected : ''
-            }`}
-            onClick={() => {
-              const newAnswers = [...selectedAnswers];
-              newAnswers[currentQuizIndex] = index;
-              setSelectedAnswers(newAnswers);
-            }}
-          >
-            <ChineseText text={option} onWordPeek={() => {}} />
-          </button>
-        ))}
+        {processedOptions.map((option, index) => {
+          let optionClass = styles.option;
+          if (selectedAnswers[currentQuizIndex] === index) {
+            optionClass += ' ' + styles.selected;
+          }
+          if (isChecking) {
+            if (index === currentQuiz.correctOption) {
+              optionClass += ' ' + styles.correct;
+            } else if (selectedAnswers[currentQuizIndex] === index) {
+              optionClass += ' ' + styles.incorrect;
+            }
+          }
+          
+          return (
+            <button
+              key={index}
+              className={optionClass}
+              onClick={() => {
+                if (!isChecking) {
+                  const newAnswers = [...selectedAnswers];
+                  newAnswers[currentQuizIndex] = index;
+                  setSelectedAnswers(newAnswers);
+                }
+              }}
+              disabled={isChecking}
+            >
+              <ChineseText text={option} onWordPeek={() => {}} />
+            </button>
+          );
+        })}
       </div>
       <div className={styles.actions}>
         <button
@@ -78,7 +100,10 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
           onClick={handleSubmit}
           disabled={selectedAnswers[currentQuizIndex] === -1}
         >
-          {currentQuizIndex < quizzes.length - 1 ? '下一题' : '完成测验'}
+          {isChecking 
+            ? (currentQuizIndex < quizzes.length - 1 ? '下一题' : '完成测验')
+            : '检查答案'
+          }
         </button>
       </div>
     </div>
