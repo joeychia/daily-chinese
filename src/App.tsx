@@ -50,8 +50,10 @@ const convertQuiz = (dbQuiz: DatabaseQuiz): Quiz => ({
 });
 
 // Convert database article to application reading
-const convertArticle = (article: DatabaseArticle): Reading => {
-  const analysis = analyzeArticleDifficulty(article.content);
+const convertArticle = async (article: DatabaseArticle): Promise<Reading> => {
+  // Get article with difficulty level from cache or calculate if needed
+  const articleWithDifficulty = await articleService.getArticleWithDifficulty(article.id);
+  
   return {
     id: article.id,
     title: article.title,
@@ -62,8 +64,8 @@ const convertArticle = (article: DatabaseArticle): Reading => {
     isGenerated: article.isGenerated,
     generatedDate: article.generatedDate,
     sourceDate: article.generatedDate,
-    difficultyLevel: analysis.difficultyLevel,
-    characterLevels: analysis.levelDistribution
+    difficultyLevel: articleWithDifficulty.difficultyLevel,
+    characterLevels: articleWithDifficulty.characterLevels || analyzeArticleDifficulty(article.content).levelDistribution
   };
 };
 
@@ -215,7 +217,7 @@ function MainContent() {
               title: article.title
             });
             
-            setReading(convertArticle(article));
+            setReading(await convertArticle(article));
             return;
           }
         }
@@ -244,7 +246,7 @@ function MainContent() {
           // Save this article's ID as the last read
           localStorage.setItem('lastReadArticleId', randomArticle.id);
           
-          setReading(convertArticle(randomArticle));
+          setReading(await convertArticle(randomArticle));
         } else if (articles.length > 0) {
           // If no other articles available, use any article
           console.log('No unread articles, using random article from all');
@@ -253,7 +255,7 @@ function MainContent() {
           
           localStorage.setItem('lastReadArticleId', randomArticle.id);
           
-          setReading(convertArticle(randomArticle));
+          setReading(await convertArticle(randomArticle));
         } else {
           console.log('No articles found in database, falling back to sample reading');
           localStorage.removeItem('lastReadArticleId');

@@ -176,13 +176,15 @@ export const articleService = {
   calculateAndSyncDifficulty: async (articleId: string, content: string) => {
     try {
       const analysis = analyzeArticleDifficulty(content);
-      const difficultyLevel = analysis.difficultyLevel;
       
-      // Update the article with the calculated difficulty level
+      // Update the article with both difficulty level and character levels
       const articleRef = ref(db, `articles/${articleId}`);
-      await update(articleRef, { difficultyLevel });
+      await update(articleRef, { 
+        difficultyLevel: analysis.difficultyLevel,
+        characterLevels: analysis.levelDistribution
+      });
       
-      return difficultyLevel;
+      return analysis;
     } catch (error) {
       console.error('Error calculating/syncing difficulty level:', error);
       throw error;
@@ -201,9 +203,11 @@ export const articleService = {
 
       const article = snapshot.val();
       
-      // If difficulty level doesn't exist, calculate and sync it
-      if (article.difficultyLevel === undefined) {
-        article.difficultyLevel = await articleService.calculateAndSyncDifficulty(articleId, article.content);
+      // If difficulty level or character levels don't exist, calculate and sync them
+      if (article.difficultyLevel === undefined || article.characterLevels === undefined) {
+        const analysis = await articleService.calculateAndSyncDifficulty(articleId, article.content);
+        article.difficultyLevel = analysis.difficultyLevel;
+        article.characterLevels = analysis.levelDistribution;
       }
 
       return article;
