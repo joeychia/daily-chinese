@@ -46,6 +46,13 @@ export const articleService = {
     return [];
   },
 
+  createArticle: async (article: DatabaseArticle): Promise<void> => {
+    const articleRef = ref(db, `articles/${article.id}`);
+    await set(articleRef, article);
+    // Calculate and sync difficulty level
+    await articleService.calculateAndSyncDifficulty(article.id, article.content);
+  },
+
   getArticleById: async (id: string): Promise<DatabaseArticle | null> => {
     const articleRef = ref(db, `articles/${id}`);
     const snapshot = await get(articleRef);

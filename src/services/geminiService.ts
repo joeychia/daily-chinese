@@ -19,15 +19,26 @@ export interface GenerationOptions {
 
 // Helper function to sanitize JSON string
 const sanitizeJsonString = (str: string): string => {
+  // Remove any markdown code block markers
+  str = str.replace(/```(json)?\n?/g, '');
+  
   // Remove any potential control characters
-  return str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
-    // Ensure proper quote usage
-    .replace(/[""]/g, '"')
-    // Remove any potential leading/trailing non-JSON content
-    .replace(/^[^{]*({.*})[^}]*$/, '$1')
-    // Fix any double quotes within text
-    .replace(/(?<!\\)\\"/g, '"')
+  str = str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+  
+  // Ensure proper quote usage
+  str = str.replace(/[""]/g, '"');
+  
+  // Remove any potential leading/trailing non-JSON content
+  str = str.replace(/^[^{]*({[\s\S]*})[^}]*$/, '$1');
+  
+  // Fix any double quotes within text
+  str = str.replace(/(?<!\\)\\"/g, '"')
     .replace(/\\\\"/g, '\\"');
+  
+  // Remove any trailing commas before closing brackets/braces
+  str = str.replace(/,(\s*[}\]])/g, '$1');
+  
+  return str;
 };
 
 export const geminiService = {
@@ -150,11 +161,11 @@ export const geminiService = {
     
     Important:
     - Use simplified Chinese characters in the questions and options
-    - Keep questions at an intermediate level (HSK 3-4)
-    - Make sure questions test understanding, not just vocabulary
+    - Keep questions at an easy level (HSK 1-2)
+    - Make sure 1 of questions test understanding, not just vocabulary
     - Each question should have 4 options
     
-    Format the response as a JSON object with the following structure:
+    Format the response as a JSON object with the following structure (do not include any markdown formatting or backticks):
     {
       "title": "标题",
       "content": "原文内容(保持不变)",
@@ -163,7 +174,7 @@ export const geminiService = {
         {
           "question": "问题",
           "options": ["选项1", "选项2", "选项3", "选项4"],
-          "correctAnswer": 0 // index of correct option
+          "correctAnswer": 0
         },
         ...
       ]
@@ -172,6 +183,20 @@ export const geminiService = {
     const result = await model.generateContent([systemPrompt, sourceText]);
     const response = result.response;
     const text = response.text();
-    return JSON.parse(text);
+    
+    // Extract JSON from the response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to parse generated content");
+    }
+    
+    const sanitizedJson = sanitizeJsonString(jsonMatch[0]);
+    try {
+      return JSON.parse(sanitizedJson) as GeneratedArticle;
+    } catch (error) {
+      console.error('Raw response:', text);
+      console.error('Sanitized JSON:', sanitizedJson);
+      throw new Error('Failed to parse JSON response from Gemini');
+    }
   }
 }; 

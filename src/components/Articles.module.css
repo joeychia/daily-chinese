@@ -1,105 +1,315 @@
 .container {
-  padding: 20px;
-  max-width: 800px;
+  padding: 2rem;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.searchInput {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.sourceTextInput {
-  width: 100%;
-  height: 150px;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.searchInput {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  font-size: 1rem;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  min-width: 200px;
+}
+
+.createButton {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.createButton:hover {
+  background: var(--secondary-color);
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalContent h2 {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+}
+
+.methodSelector {
+  background: var(--background);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.methodButton {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.methodButton.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.textInput {
+  width: 100%;
+  min-height: 200px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin-bottom: 1rem;
   resize: vertical;
 }
 
-.lengthInput {
-  width: 100px;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
 }
 
-.primaryButton {
-  background-color: #1890ff;
+.cancelButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.submitButton {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
   color: white;
-  padding: 10px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 20px;
 }
 
-.primaryButton:disabled {
-  background-color: #ccc;
+.submitButton:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.articleList {
+.articleGrid {
   display: grid;
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
 }
 
 .articleCard {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.articleTitle {
-  margin: 0 0 10px 0;
-  font-size: 1.5em;
+.articleCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.articleMeta {
-  color: #666;
-  margin-bottom: 10px;
-  font-size: 0.9em;
+.articleCard h2 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
 }
 
-.articleTags {
+.author {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.tags {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .tag {
-  background-color: #f0f0f0;
-  padding: 4px 8px;
+  background: var(--background);
+  color: var(--text-primary);
+  padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.9em;
+  font-size: 0.8rem;
 }
 
-.articleContent {
+.preview {
+  color: var(--text-primary);
+  opacity: 0.8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.previewContent {
   white-space: pre-wrap;
-  margin-bottom: 20px;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 4px;
+  margin: 1rem 0;
+  max-height: 300px;
+  overflow-y: auto;
+  line-height: 1.6;
 }
 
-.editButton {
-  background-color: #52c41a;
-  color: white;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
+.quizPreview {
+  margin-top: 1.5rem;
 }
 
-.deleteButton {
-  background-color: #f5222d;
-  color: white;
-  padding: 6px 12px;
-  border: none;
+.quizPreview h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}
+
+.quizItem {
+  background: var(--background);
+  padding: 1rem;
   border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.quizItem p {
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.quizItem ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.quizItem li {
+  padding: 0.5rem;
+  margin: 0.25rem 0;
+  border-radius: 4px;
+  background: var(--card-bg);
+}
+
+.quizItem .correctOption {
+  background: var(--primary-color);
+  color: white;
+}
+
+.preview h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+}
+
+.lengthSelector {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lengthSelector label {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.lengthControl {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--card-bg);
+  padding: 0.25rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.lengthButton {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 1.25rem;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lengthButton:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.lengthInput {
+  width: 4rem;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1rem;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.lengthInput::-webkit-inner-spin-button,
+.lengthInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 } 
