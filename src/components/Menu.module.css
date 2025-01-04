@@ -64,10 +64,13 @@
   cursor: pointer;
   color: var(--theme-text);
   transition: background-color 0.2s;
+  text-decoration: none;
+  display: block;
 }
 
 .menuItem:hover {
   background-color: var(--theme-highlight);
+  text-decoration: none;
 }
 
 .search {

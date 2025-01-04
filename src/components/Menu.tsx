@@ -76,6 +76,14 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
           <div className={styles.menuItem} onClick={() => { navigate('/wordbank'); onClose(); }}>
             我的生词本
           </div>
+          <a 
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdjIDOY5gif53bOwFd53I_F6IpC40CQl3AE4ROuxiAcfW4Y-g/viewform?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.menuItem}
+          >
+            反馈
+          </a>
         </div>
         
         <div className={styles.search}>
