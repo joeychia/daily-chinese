@@ -21,31 +21,34 @@
   .cardGrid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 0.5cm;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 0.2cm;
     padding: 1cm;
     page-break-after: always;
+    height: calc(100vh - 2cm);
+    box-sizing: border-box;
   }
 
   /* Individual card styling */
   .printCard {
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    padding: 0.5cm;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.3cm;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    aspect-ratio: 1;
+    min-height: 0;
     break-inside: avoid;
   }
 
   .printCharacter {
-    font-size: 32px;
-    margin-bottom: 0.3cm;
+    font-size: 24px;
+    margin-bottom: 0.2cm;
   }
 
   .printPinyin {
-    font-size: 16px;
+    font-size: 14px;
     color: #666;
   }
 } 

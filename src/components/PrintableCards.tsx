@@ -6,10 +6,10 @@ interface PrintableCardsProps {
 }
 
 export const PrintableCards: React.FC<PrintableCardsProps> = ({ words }) => {
-  // Split words into groups of 25 for each page
+  // Split words into groups of 30 (5x6) for each page
   const pages = [];
-  for (let i = 0; i < words.length; i += 25) {
-    pages.push(words.slice(i, i + 25));
+  for (let i = 0; i < words.length; i += 30) {
+    pages.push(words.slice(i, i + 30));
   }
 
   return (

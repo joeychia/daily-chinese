@@ -13,7 +13,7 @@
 }
 
 /* Content width constraint for specific pages */
-.content {
+.content  {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
@@ -26,11 +26,10 @@
 .content:not(.word-bank-page) {
   max-width: 1280px;
 }
-
-/* Word Bank Page specific styles */
-.word-bank-page {
-  padding: 2rem;
+.word-bank-page.content {
+  padding: 0;
 }
+/* Word Bank Page specific styles */
 
 .word-bank-page .word-list {
   grid-template-columns: repeat(5, 1fr);

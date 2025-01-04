@@ -42,11 +42,7 @@ export const StreakDisplay: React.FC<{ refreshTrigger?: number }> = ({ refreshTr
           <span className={styles.streakCount}>{currentStreak}</span>
           <span className={styles.streakLabel}>天</span>
         </div>
-        {longestStreak > 0 && longestStreak > currentStreak && (
-          <div className={styles.bestStreak}>
-            最长连续：{longestStreak}天
-          </div>
-        )}
+
       </div>
       <StreakPanel 
         isOpen={isOpen}
