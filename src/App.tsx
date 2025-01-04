@@ -23,6 +23,7 @@ import { WordBankComponent } from './components/WordBankComponent'
 import { WordBank } from './components/WordBank'
 import { analyzeArticleDifficulty } from './utils/articleDifficulty'
 import { DifficultyDisplay } from './components/DifficultyDisplay'
+import { analyticsService } from './services/analyticsService'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -198,79 +199,37 @@ function MainContent() {
     init();
   }, []);
 
-  // Load article based on ID or random if none specified
+  // Load article when articleId changes
   useEffect(() => {
-    if (!isDbInitialized) {
-      console.log('Waiting for database initialization...');
-      return;
-    }
-
     const loadArticle = async () => {
-      console.log('Loading article...', { articleId });
+      if (!articleId) return;
+      
       try {
-        if (articleId) {
-          // Load specific article
-          const article = await articleService.getArticleById(articleId);
-          if (article) {
-            console.log('Successfully loaded article:', {
-              id: article.id,
-              title: article.title
-            });
-            
-            setReading(await convertArticle(article));
-            return;
-          }
+        const article = await articleService.getArticleById(articleId);
+        if (!article) {
+          setError('Article not found');
+          return;
         }
-
-        // Load random article if no ID or article not found
-        const articles = await articleService.getAllArticles();
+        const convertedArticle = await convertArticle(article);
+        setReading(convertedArticle);
+        setProcessedText(processChineseText(convertedArticle.content));
         
-        // Get last read article ID from localStorage
-        const lastReadId = localStorage.getItem('lastReadArticleId');
-        console.log('Last read article ID:', lastReadId);
-        
-        // Filter out the last read article and get available articles
-        const availableArticles = articles.filter(article => article.id !== lastReadId);
-        console.log('Available articles:', availableArticles.length);
-
-        if (availableArticles.length > 0) {
-          // Get a random article from the filtered list
-          const randomIndex = Math.floor(Math.random() * availableArticles.length);
-          const randomArticle = availableArticles[randomIndex];
-          console.log('Successfully loaded random article:', {
-            id: randomArticle.id,
-            title: randomArticle.title,
-            isGenerated: randomArticle.isGenerated
-          });
-          
-          // Save this article's ID as the last read
-          localStorage.setItem('lastReadArticleId', randomArticle.id);
-          
-          setReading(await convertArticle(randomArticle));
-        } else if (articles.length > 0) {
-          // If no other articles available, use any article
-          console.log('No unread articles, using random article from all');
-          const randomIndex = Math.floor(Math.random() * articles.length);
-          const randomArticle = articles[randomIndex];
-          
-          localStorage.setItem('lastReadArticleId', randomArticle.id);
-          
-          setReading(await convertArticle(randomArticle));
-        } else {
-          console.log('No articles found in database, falling back to sample reading');
-          localStorage.removeItem('lastReadArticleId');
-          setReading(sampleReading);
-        }
+        // Track article view with enhanced metrics
+        analyticsService.trackArticleView(articleId, article.title, {
+          difficulty: convertedArticle.difficultyLevel,
+          wordCount: processChineseText(article.content).length,
+          author: article.author,
+          tags: article.tags,
+          isGenerated: article.isGenerated
+        });
       } catch (error) {
         console.error('Error loading article:', error);
-        console.log('Falling back to sample reading');
-        localStorage.removeItem('lastReadArticleId');
-        setReading(sampleReading);
+        setError('Failed to load article');
       }
     };
 
     loadArticle();
-  }, [isDbInitialized, articleId]);
+  }, [articleId]);
 
   useEffect(() => {
     console.log('Loading reading content:', { 
@@ -303,11 +262,8 @@ function MainContent() {
 
   const handleWordPeek = (word: ChineseWord) => {
     if (!wordBank.some(w => w.characters === word.characters)) {
-      console.log('Adding word to word bank:', {
-        character: word.characters,
-        pinyin: word.pinyin.join(' ')
-      });
       setWordBank(prev => [...prev, word]);
+      analyticsService.trackWordBankAdd(word.characters, word.pinyin);
     }
   };
 
@@ -365,6 +321,7 @@ function MainContent() {
       theme: themes.find(t => t.id === themeId)?.name
     });
     setCurrentTheme(themeId);
+    analyticsService.trackThemeChange(themeId);
   };
 
   const toggleQuiz = () => {
