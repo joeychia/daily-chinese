@@ -106,9 +106,7 @@ export const articleService = {
     }
 
     // Check if the last read was yesterday
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
     if (currentStreak.lastReadDate === yesterdayStr) {
       // Maintain streak

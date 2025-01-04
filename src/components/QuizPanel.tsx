@@ -74,7 +74,7 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
       </div>
       <div className={styles.actions}>
         <button
-          className={styles.submitButton}
+          className={styles.button}
           onClick={handleSubmit}
           disabled={selectedAnswers[currentQuizIndex] === -1}
         >
