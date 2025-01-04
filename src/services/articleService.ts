@@ -76,7 +76,7 @@ export const articleService = {
   async updateUserStreak(userId: string): Promise<void> {
     const streakRef = ref(db, `users/${userId}/streak`);
     const snapshot = await get(streakRef);
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA');
 
     if (!snapshot.exists()) {
       // Initialize streak for first-time user
@@ -146,7 +146,7 @@ export const articleService = {
     const currentSnapshot = await get(userArticleRef);
     const currentData = currentSnapshot.exists() ? currentSnapshot.val() : {};
     
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA');
     
     // Merge new data with existing data
     const newData = {
