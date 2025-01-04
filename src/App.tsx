@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, useParams, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useParams, Navigate, useNavigate } from 'react-router-dom'
 import { ChineseText } from './components/ChineseText'
 import { ThemePanel } from './components/ThemePanel'
 import { QuizPanel } from './components/QuizPanel'
@@ -111,6 +111,7 @@ function MainContent() {
   const [isReading, setIsReading] = useState<boolean>(true);
   const [lastReadTime, setLastReadTime] = useState<number | undefined>();
   const [streakRefreshCounter, setStreakRefreshCounter] = useState(0);
+  const navigate = useNavigate();
 
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
@@ -384,6 +385,26 @@ function MainContent() {
       console.error('Error saving reading time:', error);
     }
   };
+
+  // Load random article for homepage
+  useEffect(() => {
+    const loadRandomArticle = async () => {
+      if (!articleId) {
+        try {
+          const articles = await articleService.getAllArticles();
+          if (articles.length > 0) {
+            const randomIndex = Math.floor(Math.random() * articles.length);
+            navigate(`/article/${articles[randomIndex].id}`);
+          }
+        } catch (error) {
+          console.error('Error loading random article:', error);
+          setError('Failed to load random article');
+        }
+      }
+    };
+
+    loadRandomArticle();
+  }, [articleId, navigate]);
 
   return (
     <div className="app" style={{
