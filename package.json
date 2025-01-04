@@ -10,9 +10,11 @@
     "preview": "vite preview",
     "generate-ranks": "node src/scripts/generateCharacterRanks.js",
     "generate-grades": "node src/scripts/generateCharacterGrades.js",
-    "test": "jest"
+    "test": "jest",
+    "deploy": "vite build && firebase deploy --only hosting:daily-chinese-reading"
   },
   "dependencies": {
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@google/generative-ai": "^0.21.0",
     "@types/react-router-dom": "^5.3.3",
     "firebase": "^11.1.0",
