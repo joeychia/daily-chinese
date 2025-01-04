@@ -477,11 +477,7 @@ function MainContent() {
             识字率：{Math.round((1 - unfamiliarWordsCount / wordCount) * 100)}% of {wordCount}
           </div>
         </div>
-        {reading.tags && reading.tags.map((tag: string, index: number) => (
-          <span key={index} className="tag">
-            {tag}
-          </span>
-        ))}
+        
         {isLoading && <div>Loading...</div>}
         {error && <div style={{ color: 'red' }}>Error: {error}</div>}
         {!isLoading && !error && processedText.length > 0 && (

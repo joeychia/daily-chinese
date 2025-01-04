@@ -103,28 +103,30 @@ export const WordBank: React.FC = () => {
   const theme = themes.find(t => t.id === currentTheme) || themes[0];
 
   return (
-    <div className={styles.container} style={{
-      background: theme.colors.background,
-      color: theme.colors.text,
-      '--theme-primary': theme.colors.primary,
-      '--theme-secondary': theme.colors.secondary,
-      '--theme-card-bg': theme.colors.cardBackground,
-      '--theme-card-border': theme.colors.cardBorder,
-      '--theme-highlight': theme.colors.highlight,
-    } as React.CSSProperties}>
-      <div className={styles.header}>
-        <button className={styles.backButton} onClick={() => navigate(-1)}>
-          ←
-        </button>
-        <h1>我的生词本 ({wordBank.length})</h1>
+    <div className="content word-bank-page">
+      <div className={styles.container} style={{
+        background: theme.colors.background,
+        color: theme.colors.text,
+        '--theme-primary': theme.colors.primary,
+        '--theme-secondary': theme.colors.secondary,
+        '--theme-card-bg': theme.colors.cardBackground,
+        '--theme-card-border': theme.colors.cardBorder,
+        '--theme-highlight': theme.colors.highlight,
+      } as React.CSSProperties}>
+        <div className={styles.header}>
+          <button className={styles.backButton} onClick={() => navigate(-1)}>
+            ←
+          </button>
+          <h1>我的生词本 ({wordBank.length})</h1>
+        </div>
+        <WordBankComponent
+          words={wordBank}
+          title="全部生词"
+          onDeleteWord={handleDeleteWord}
+          onWordToDelete={(_) => {}}
+          showSavedIndicator={showSavedIndicator}
+        />
       </div>
-      <WordBankComponent
-        words={wordBank}
-        title="全部生词"
-        onDeleteWord={handleDeleteWord}
-        onWordToDelete={(_) => {}}
-        showSavedIndicator={showSavedIndicator}
-      />
     </div>
   );
 }; 
