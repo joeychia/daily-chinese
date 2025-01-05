@@ -17,6 +17,7 @@ export interface DatabaseArticle {
   isGenerated: boolean;
   generatedDate: string;
   quizzes: DatabaseQuiz[];
+  createdBy?: string;  // Name of the user who created the article
 }
 
 export interface UserArticleData {

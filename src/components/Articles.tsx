@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Articles.module.css';
 import { articleService, DatabaseArticle } from '../services/articleService';
 import { geminiService } from '../services/geminiService';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Articles() {
   const [articles, setArticles] = useState<DatabaseArticle[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -17,6 +17,7 @@ export default function Articles() {
   const [generatedPreview, setGeneratedPreview] = useState<DatabaseArticle | null>(null);
   const [articleLength, setArticleLength] = useState<number>(300);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadArticles();
@@ -38,12 +39,9 @@ export default function Articles() {
     navigate(`/article/${articleId}`);
   };
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
   const handleCreateArticle = async () => {
     if (!prompt && !sourceText) return;
+    if (!user) return;
     
     setIsGenerating(true);
     try {
@@ -71,7 +69,8 @@ export default function Articles() {
           tags: generatedArticle.tags,
           quizzes: generatedArticle.quizzes,
           isGenerated: true,
-          generatedDate: new Date().toISOString()
+          generatedDate: new Date().toISOString(),
+          createdBy: user.displayName || user.email || 'Unknown User'
         };
 
         setGeneratedPreview(newArticle);
@@ -104,16 +103,6 @@ export default function Articles() {
     setGeneratedPreview(null);
   };
 
-  const filteredArticles = articles.filter(article => {
-    const searchTermLower = searchTerm.toLowerCase();
-    return (
-      article.title.toLowerCase().includes(searchTermLower) ||
-      article.author.toLowerCase().includes(searchTermLower) ||
-      article.content.toLowerCase().includes(searchTermLower) ||
-      article.tags.some(tag => tag.toLowerCase().includes(searchTermLower))
-    );
-  });
-
   if (isLoading) {
     return <div className={styles.loading}>Loading articles...</div>;
   }
@@ -126,21 +115,34 @@ export default function Articles() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>文章列表</h1>
-        <div className={styles.actions}>
-          <input
-            type="text"
-            placeholder="搜索文章..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className={styles.searchInput}
-          />
-          <button 
-            className={styles.createButton}
-            onClick={() => setShowCreateModal(true)}
+        <button 
+          className={styles.createButton}
+          onClick={() => setShowCreateModal(true)}
+        >
+          创建文章
+        </button>
+      </div>
+
+      <div className={styles.articleGrid}>
+        {articles.map(article => (
+          <div
+            key={article.id}
+            className={styles.articleCard}
+            onClick={() => handleArticleClick(article.id)}
           >
-            创建文章
-          </button>
-        </div>
+            <h2>{article.title}</h2>
+            <div className={styles.tags}>
+              {article.tags.map((tag: string, index: number) => (
+                <span key={index} className={styles.tag}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+            {article.createdBy && (
+              <p className={styles.creator}>提供者：{article.createdBy}</p>
+            )}
+          </div>
+        ))}
       </div>
 
       {showCreateModal && (
@@ -154,19 +156,19 @@ export default function Articles() {
                     className={`${styles.methodButton} ${createMethod === 'prompt' ? styles.active : ''}`}
                     onClick={() => setCreateMethod('prompt')}
                   >
-                    从提示词创建
+                    从提示词创建文章
                   </button>
                   <button
                     className={`${styles.methodButton} ${createMethod === 'rewrite' ? styles.active : ''}`}
                     onClick={() => setCreateMethod('rewrite')}
                   >
-                    改写文章
+                    改写文章生成测验
                   </button>
                   <button
                     className={`${styles.methodButton} ${createMethod === 'metadata' ? styles.active : ''}`}
                     onClick={() => setCreateMethod('metadata')}
                   >
-                    生成元数据
+                    保留原文生成测验
                   </button>
                 </div>
 
@@ -277,29 +279,6 @@ export default function Articles() {
           </div>
         </div>
       )}
-
-      <div className={styles.articleGrid}>
-        {filteredArticles.map(article => (
-          <div
-            key={article.id}
-            className={styles.articleCard}
-            onClick={() => handleArticleClick(article.id)}
-          >
-            <h2>{article.title}</h2>
-            <p className={styles.author}>作者：{article.author}</p>
-            <div className={styles.tags}>
-              {article.tags.map((tag: string, index: number) => (
-                <span key={index} className={styles.tag}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <p className={styles.preview}>
-              {article.content.slice(0, 100)}...
-            </p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 } 
