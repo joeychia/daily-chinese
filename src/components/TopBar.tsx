@@ -54,14 +54,18 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <div className={styles.topBar}>
-      <button className={styles.menuButton} onClick={onMenuClick}>
-        ☰
-      </button>
+      <div className={styles.leftSection}>
+        <button className={styles.menuButton} onClick={onMenuClick}>
+          ☰
+        </button>
+        <div className={styles.logoSection} onClick={() => navigate('/')}>
+          <img src={`${import.meta.env.BASE_URL}rooster.png`} alt="Daily Chinese" className={styles.logo} />
+        </div>
+      </div>
       <div className={styles.rightSection}>
-        <StreakDisplay refreshTrigger={refreshTrigger} />
+        <StreakDisplay />
         <button className={styles.wordBankButton} onClick={handleWordBankClick}>
-          <span className={styles.badge}>{wordCount}</span>
-          📚
+          生词本 ({wordCount})
         </button>
         <button className={styles.themeButton} onClick={onThemeClick}>
           {themeEmoji}

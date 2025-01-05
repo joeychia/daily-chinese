@@ -2,18 +2,41 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 1rem;
-  background: var(--theme-card-bg);
-  border-bottom: 1px solid var(--theme-border);
+  padding: 0.75rem 1rem;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.menuButton {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   cursor: pointer;
-  padding: 0.5rem;
-  color: var(--theme-text);
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+
+.logoSection:hover {
+  opacity: 0.8;
+}
+
+.logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .rightSection {
@@ -22,44 +45,30 @@
   gap: 1rem;
 }
 
+.menuButton,
+.themeButton,
 .wordBankButton {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  color: var(--text-primary);
   cursor: pointer;
   padding: 0.5rem;
-  color: var(--theme-text);
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.themeButton {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-}
-
-.badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: var(--theme-primary);
-  color: white;
-  border-radius: 50%;
-  padding: 0.2rem 0.4rem;
-  font-size: 0.8rem;
-  min-width: 1.2rem;
-  height: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 0.95rem;
 }
 
 .menuButton:hover,
-.wordBankButton:hover,
-.themeButton:hover {
-  opacity: 0.8;
+.themeButton:hover,
+.wordBankButton:hover {
+  background: var(--background);
+}
+
+.wordBankButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
 } 
