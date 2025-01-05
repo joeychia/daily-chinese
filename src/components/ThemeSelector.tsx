@@ -12,7 +12,6 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
 }) => {
   return (
     <div className={styles.themeSelector}>
-      <h3 className={styles.title}>主题选择</h3>
       <div className={styles.themeGrid}>
         {themes.map((theme) => (
           <button
