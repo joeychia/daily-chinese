@@ -18,6 +18,7 @@ export interface DatabaseArticle {
   generatedDate: string;
   quizzes: DatabaseQuiz[];
   createdBy?: string;  // Name of the user who created the article
+  visibility: string;
 }
 
 export interface UserArticleData {

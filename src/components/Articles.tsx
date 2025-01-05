@@ -16,6 +16,7 @@ export default function Articles() {
   const [createMethod, setCreateMethod] = useState<'prompt' | 'rewrite' | 'metadata'>('prompt');
   const [generatedPreview, setGeneratedPreview] = useState<DatabaseArticle | null>(null);
   const [articleLength, setArticleLength] = useState<number>(300);
+  const [isPrivate, setIsPrivate] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -26,7 +27,10 @@ export default function Articles() {
   const loadArticles = async () => {
     try {
       const fetchedArticles = await articleService.getAllArticles();
-      setArticles(fetchedArticles);
+      const visibleArticles = fetchedArticles.filter(article => 
+        article.visibility === 'public' || article.visibility === user?.id
+      );
+      setArticles(visibleArticles);
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading articles:', error);
@@ -84,15 +88,20 @@ export default function Articles() {
   };
 
   const handleConfirmSave = async () => {
-    if (!generatedPreview) return;
+    if (!generatedPreview || !user) return;
     
     try {
-      await articleService.createArticle(generatedPreview);
+      const articleToSave = {
+        ...generatedPreview,
+        visibility: isPrivate ? user.id : 'public'
+      };
+      await articleService.createArticle(articleToSave);
       await loadArticles();
       setShowCreateModal(false);
       setPrompt('');
       setSourceText('');
       setGeneratedPreview(null);
+      setIsPrivate(false);
     } catch (error) {
       console.error('Error saving article:', error);
       setError('Failed to save article');
@@ -101,6 +110,7 @@ export default function Articles() {
 
   const handleCancelSave = () => {
     setGeneratedPreview(null);
+    setIsPrivate(false);
   };
 
   if (isLoading) {
@@ -259,6 +269,16 @@ export default function Articles() {
                       </div>
                     ))}
                   </div>
+                </div>
+                <div className={styles.visibilityControl}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={isPrivate}
+                      onChange={(e) => setIsPrivate(e.target.checked)}
+                    />
+                    仅对我可见
+                  </label>
                 </div>
                 <div className={styles.modalActions}>
                   <button

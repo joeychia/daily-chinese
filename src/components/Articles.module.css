@@ -295,4 +295,26 @@
 .quizItem .correctOption {
   background: var(--primary-color);
   color: white;
+}
+
+.visibilityControl {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: var(--background);
+  border-radius: 4px;
+}
+
+.visibilityControl label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.visibilityControl input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
 } 
