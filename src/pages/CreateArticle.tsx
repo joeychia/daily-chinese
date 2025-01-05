@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './CreateArticle.module.css';
 import { articleService, DatabaseArticle } from '../services/articleService';
 import { geminiService } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
+import { getWordBank } from '../services/userDataService';
+import { ChineseWord } from '../types/reading';
+import WordSelectionModal from '../components/WordSelectionModal';
 
 type Step = 'mode' | 'input' | 'preview' | 'save';
+type CreateMethod = 'prompt' | 'rewrite' | 'metadata' | 'wordbank';
 
 export default function CreateArticle() {
   const [currentStep, setCurrentStep] = useState<Step>('mode');
@@ -13,16 +17,46 @@ export default function CreateArticle() {
   const [prompt, setPrompt] = useState('');
   const [sourceText, setSourceText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [createMethod, setCreateMethod] = useState<'prompt' | 'rewrite' | 'metadata'>('prompt');
+  const [createMethod, setCreateMethod] = useState<CreateMethod>('prompt');
   const [generatedPreview, setGeneratedPreview] = useState<DatabaseArticle | null>(null);
   const [articleLength, setArticleLength] = useState<number>(300);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [selectedWords, setSelectedWords] = useState<ChineseWord[]>([]);
+  const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  useEffect(() => {
+    const loadWordBank = async () => {
+      if (!user) return;
+      
+      setIsLoading(true);
+      try {
+        const words = await getWordBank(user.id);
+        setWordBank(words);
+        if (createMethod === 'wordbank') {
+          const shuffled = [...words].sort(() => 0.5 - Math.random());
+          setSelectedWords(shuffled.slice(0, 5));
+        }
+      } catch (err) {
+        console.error('Error loading word bank:', err);
+        setError('加载生词本失败');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadWordBank();
+  }, [user, createMethod]);
+
   const handleCreateArticle = async () => {
-    if (!prompt && !sourceText) return;
     if (!user) return;
+    if (createMethod === 'wordbank' && selectedWords.length === 0) {
+      setError('请至少选择一个词');
+      return;
+    }
     
     setIsGenerating(true);
     try {
@@ -38,6 +72,11 @@ export default function CreateArticle() {
           break;
         case 'metadata':
           generatedArticle = await geminiService.generateMetadata(sourceText);
+          break;
+        case 'wordbank':
+          const wordsText = selectedWords.map(word => `${word.characters}（${word.pinyin.join(' ')}）`).join('、');
+          const wordbankPrompt = `请创建一篇包含以下词语的文章：${wordsText}。请确保自然地运用这些词语，使文章流畅有趣。`;
+          generatedArticle = await geminiService.generateArticle(wordbankPrompt, options);
           break;
       }
 
@@ -92,9 +131,29 @@ export default function CreateArticle() {
     setCurrentStep('input');
   };
 
-  const handleMethodSelect = (method: 'prompt' | 'rewrite' | 'metadata') => {
+  const handleMethodSelect = (method: CreateMethod) => {
     setCreateMethod(method);
     setCurrentStep('input');
+    setError(null);
+    setSelectedWords([]);
+  };
+
+  const toggleWordSelection = (word: ChineseWord) => {
+    setSelectedWords(prev => {
+      if (prev.includes(word)) {
+        return prev.filter(w => w !== word);
+      }
+      if (prev.length >= 10) {
+        setError('最多只能选择10个词');
+        return prev;
+      }
+      return [...prev, word];
+    });
+  };
+
+  const handleRandomSelection = () => {
+    const shuffled = [...wordBank].sort(() => 0.5 - Math.random());
+    setSelectedWords(shuffled.slice(0, 5));
   };
 
   const renderStepIndicator = () => (
@@ -115,73 +174,83 @@ export default function CreateArticle() {
   );
 
   const renderModeSelection = () => (
-    <div className={styles.methodSelector}>
-      <button
-        className={`${styles.methodButton} ${createMethod === 'prompt' ? styles.active : ''}`}
-        onClick={() => handleMethodSelect('prompt')}
-      >
-        从提示词创建文章
-      </button>
-      <button
-        className={`${styles.methodButton} ${createMethod === 'rewrite' ? styles.active : ''}`}
-        onClick={() => handleMethodSelect('rewrite')}
-      >
-        改写文章生成测验
-      </button>
-      <button
-        className={`${styles.methodButton} ${createMethod === 'metadata' ? styles.active : ''}`}
-        onClick={() => handleMethodSelect('metadata')}
-      >
-        保留原文生成测验
-      </button>
+    <div className={styles.modeSelection}>
+      <h2>选择创建方式</h2>
+      <div className={styles.modeButtons}>
+        <button onClick={() => handleMethodSelect('prompt')}>
+          从提示词创建
+        </button>
+        <button onClick={() => handleMethodSelect('rewrite')}>
+          改写文章
+        </button>
+        <button onClick={() => handleMethodSelect('metadata')}>
+          使用原文
+        </button>
+        <button onClick={() => handleMethodSelect('wordbank')}>
+          从生词本创建
+        </button>
+      </div>
     </div>
   );
 
+  const renderSelectedWords = () => {
+    if (selectedWords.length === 0) return null;
+
+    return (
+      <div className={styles.selectedWordsSection}>
+        <div className={styles.selectedWordsHeader}>
+          <h4>随机生词</h4>
+          <button onClick={() => setIsModalOpen(true)} className={styles.selectMoreButton}>
+            选择生词 ({selectedWords.length}/10)
+          </button>
+        </div>
+        <div className={styles.selectedWordsList}>
+          {selectedWords.map((word) => (
+            <div key={word.characters} className={styles.selectedWordItem}>
+              {word.characters}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderInputStep = () => (
-    <>
-      {createMethod !== 'metadata' && (
-        <div className={styles.lengthSelector}>
-          <label htmlFor="articleLength">文章长度：</label>
-          <div className={styles.lengthControl}>
-            <button
-              className={styles.lengthButton}
-              onClick={() => setArticleLength(prev => Math.max(50, prev - 50))}
-            >
-              -
-            </button>
-            <input
-              id="articleLength"
-              type="number"
-              value={articleLength}
-              readOnly
-              className={styles.lengthInput}
-            />
-            <button
-              className={styles.lengthButton}
-              onClick={() => setArticleLength(prev => Math.min(1000, prev + 50))}
-            >
-              +
-            </button>
-          </div>
+    <div className={styles.inputStep}>
+      {createMethod === 'wordbank' && renderSelectedWords()}
+      {createMethod === 'prompt' && (
+        <div className={styles.inputGroup}>
+          <label>输入提示词：</label>
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="请输入提示词..."
+          />
         </div>
       )}
-
-      {createMethod === 'prompt' ? (
-        <textarea
-          placeholder="输入提示词..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          className={styles.textInput}
-        />
-      ) : (
-        <textarea
-          placeholder="输入原文..."
-          value={sourceText}
-          onChange={(e) => setSourceText(e.target.value)}
-          className={styles.textInput}
-        />
+      {(createMethod === 'rewrite' || createMethod === 'metadata') && (
+        <div className={styles.inputGroup}>
+          <label>输入原文：</label>
+          <textarea
+            value={sourceText}
+            onChange={(e) => setSourceText(e.target.value)}
+            placeholder="请输入要处理的文章..."
+          />
+        </div>
       )}
-    </>
+      {createMethod !== 'metadata' && (
+        <div className={styles.inputGroup}>
+          <label>文章长度（字数）：</label>
+          <input
+            type="number"
+            value={articleLength}
+            onChange={(e) => setArticleLength(Number(e.target.value))}
+            min={100}
+            max={1000}
+          />
+        </div>
+      )}
+    </div>
   );
 
   const renderPreviewStep = () => (
@@ -290,6 +359,13 @@ export default function CreateArticle() {
       <div className={styles.actions}>
         {renderActions()}
       </div>
+      <WordSelectionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        words={wordBank}
+        selectedWords={selectedWords}
+        onWordSelect={toggleWordSelection}
+      />
     </div>
   );
 } 
