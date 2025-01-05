@@ -184,13 +184,10 @@
 }
 
 .lengthSelector {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background: var(--background);
-  border-radius: 4px;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .lengthSelector label {
@@ -201,27 +198,21 @@
 .lengthControl {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: var(--card-bg);
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
+  gap: 4px;
 }
 
 .lengthButton {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 24px;
+  height: 24px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--background);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  background: var(--card-bg);
   color: var(--text-primary);
-  font-size: 1.5rem;
   cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
+  border-radius: 4px;
 }
 
 .lengthButton:hover {
@@ -230,21 +221,29 @@
 }
 
 .lengthInput {
-  width: 3rem;
-  padding: 0.5rem;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 1.25rem;
+  width: 60px;
+  height: 24px;
   text-align: center;
-  -moz-appearance: textfield;
-  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border-radius: 4px;
+  padding: 0 4px;
 }
 
 .lengthInput::-webkit-inner-spin-button,
 .lengthInput::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.preview {
+  color: var(--text-primary);
+}
+
+.preview h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
 }
 
 .previewContent {
@@ -256,10 +255,12 @@
   max-height: 300px;
   overflow-y: auto;
   line-height: 1.6;
+  color: var(--text-primary);
 }
 
 .quizPreview {
   margin-top: 1.5rem;
+  color: var(--text-primary);
 }
 
 .quizPreview h4 {
@@ -272,11 +273,13 @@
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 1rem;
+  color: var(--text-primary);
 }
 
 .quizItem p {
   margin: 0 0 0.5rem 0;
   font-weight: 500;
+  color: var(--text-primary);
 }
 
 .quizItem ul {
@@ -290,6 +293,7 @@
   margin: 0.25rem 0;
   border-radius: 4px;
   background: var(--card-bg);
+  color: var(--text-primary);
 }
 
 .quizItem .correctOption {

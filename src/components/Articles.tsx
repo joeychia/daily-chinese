@@ -28,7 +28,9 @@ export default function Articles() {
     try {
       const fetchedArticles = await articleService.getAllArticles();
       const visibleArticles = fetchedArticles.filter(article => 
-        article.visibility === 'public' || article.visibility === user?.id
+        !article.visibility ||
+        article.visibility === 'public' || 
+        article.visibility === user?.id
       );
       setArticles(visibleArticles);
       setIsLoading(false);
@@ -74,7 +76,8 @@ export default function Articles() {
           quizzes: generatedArticle.quizzes,
           isGenerated: true,
           generatedDate: new Date().toISOString(),
-          createdBy: user.displayName || user.email || 'Unknown User'
+          createdBy: user.displayName || user.email || 'Unknown User',
+          visibility: 'public'
         };
 
         setGeneratedPreview(newArticle);
@@ -148,9 +151,9 @@ export default function Articles() {
                 </span>
               ))}
             </div>
-            {article.createdBy && (
-              <p className={styles.creator}>提供者：{article.createdBy}</p>
-            )}
+            <p className={styles.creator}>
+              提供者：{article.createdBy || '每日一读'}
+            </p>
           </div>
         ))}
       </div>
@@ -184,7 +187,7 @@ export default function Articles() {
 
                 {createMethod !== 'metadata' && (
                   <div className={styles.lengthSelector}>
-                    <label htmlFor="articleLength">文章长度（字数）：</label>
+                    <label htmlFor="articleLength">文章长度：</label>
                     <div className={styles.lengthControl}>
                       <button
                         className={styles.lengthButton}

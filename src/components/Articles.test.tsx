@@ -155,17 +155,33 @@ describe('Articles Component', () => {
     // Open modal
     fireEvent.click(screen.getByText('创建文章'));
     
-    // Find length input
+    // Find length input and buttons
     const lengthInput = screen.getByRole('spinbutton');
+    const decrementButton = screen.getByText('-');
+    const incrementButton = screen.getByText('+');
+    
+    // Initial value should be 300
     expect(lengthInput).toHaveValue(300);
     
-    // Decrease length
-    fireEvent.click(screen.getByText('-'));
+    // Test decrement
+    fireEvent.click(decrementButton);
     expect(lengthInput).toHaveValue(250);
     
-    // Increase length
-    fireEvent.click(screen.getByText('+'));
-    expect(lengthInput).toHaveValue(300);
+    // Test decrement limit
+    for (let i = 0; i < 10; i++) {
+      fireEvent.click(decrementButton);
+    }
+    expect(lengthInput).toHaveValue(50); // Should not go below 50
+    
+    // Test increment
+    fireEvent.click(incrementButton);
+    expect(lengthInput).toHaveValue(100);
+    
+    // Test increment limit
+    for (let i = 0; i < 30; i++) {
+      fireEvent.click(incrementButton);
+    }
+    expect(lengthInput).toHaveValue(1000); // Should not go above 1000
   });
 
   test('saves generated article', async () => {
@@ -331,5 +347,76 @@ describe('Articles Component', () => {
     // Private article from other user should not be visible
     expect(screen.queryByText('私密文章')).not.toBeInTheDocument();
     expect(screen.queryByText('私密')).not.toBeInTheDocument();
+  });
+
+  test('shows articles without visibility field as public', async () => {
+    // Add an article without visibility field to mock data
+    const articlesWithoutVisibility = [
+      ...mockArticles,
+      {
+        id: '4',
+        title: '无可见性设置的文章',
+        content: '内容',
+        author: '作者',
+        tags: ['标签'],
+        quizzes: [],
+        isGenerated: false,
+        generatedDate: new Date().toISOString(),
+        createdBy: 'Test User'
+      }
+    ];
+    
+    // Override the mock implementation for this test
+    articleService.getAllArticles = vi.fn().mockResolvedValue(articlesWithoutVisibility);
+    
+    renderWithRouter(<Articles />);
+    
+    // Wait for loading to finish
+    await waitFor(() => {
+      expect(screen.queryByText('Loading articles...')).not.toBeInTheDocument();
+    });
+    
+    // Public articles and article without visibility should be visible
+    expect(screen.getByText('测试文章1')).toBeInTheDocument();
+    expect(screen.getByText('测试文章2')).toBeInTheDocument();
+    expect(screen.getByText('无可见性设置的文章')).toBeInTheDocument();
+    
+    // Private article from other user should still not be visible
+    expect(screen.queryByText('私密文章')).not.toBeInTheDocument();
+  });
+
+  test('shows default creator for articles without createdBy field', async () => {
+    // Add an article without createdBy field to mock data
+    const articlesWithoutCreator = [
+      ...mockArticles,
+      {
+        id: '5',
+        title: '无创建者文章',
+        content: '内容',
+        author: '作者',
+        tags: ['标签'],
+        quizzes: [],
+        isGenerated: false,
+        generatedDate: new Date().toISOString(),
+        visibility: 'public'
+      }
+    ];
+    
+    // Override the mock implementation for this test
+    articleService.getAllArticles = vi.fn().mockResolvedValue(articlesWithoutCreator);
+    
+    renderWithRouter(<Articles />);
+    
+    // Wait for loading to finish
+    await waitFor(() => {
+      expect(screen.queryByText('Loading articles...')).not.toBeInTheDocument();
+    });
+    
+    // Check that the article without creator shows default value
+    expect(screen.getByText('提供者：每日一读')).toBeInTheDocument();
+    
+    // Check that articles with creator show their creator
+    const creatorElements = screen.getAllByText('提供者：Test User');
+    expect(creatorElements).toHaveLength(2); // Two articles with Test User as creator
   });
 }); 
