@@ -58,14 +58,11 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button className={styles.menuButton} onClick={onMenuClick}>
           ☰
         </button>
-        <div className={styles.logoSection} onClick={() => navigate('/')}>
-          <img src={`${import.meta.env.BASE_URL}rooster.png`} alt="Daily Chinese" className={styles.logo} />
-        </div>
       </div>
       <div className={styles.rightSection}>
         <StreakDisplay />
-        <button className={styles.wordBankButton} onClick={handleWordBankClick}>
-          生词本 ({wordCount})
+        <button className={styles.wordBankButton} onClick={handleWordBankClick} title="生词本">
+          📝 <span className={styles.count}>{wordCount}</span>
         </button>
         <button className={styles.themeButton} onClick={onThemeClick}>
           {themeEmoji}
