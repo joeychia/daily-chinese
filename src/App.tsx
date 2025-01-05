@@ -15,7 +15,7 @@ import { initializeDatabase } from './scripts/initializeDb'
 import { articleService } from './services/articleService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
-import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, subscribeToTheme } from './services/userDataService'
+import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, subscribeToTheme, userDataService } from './services/userDataService'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { Timer } from './components/Timer'
 import { TopBar } from './components/TopBar'
@@ -25,6 +25,7 @@ import { analyzeArticleDifficulty } from './utils/articleDifficulty'
 import { DifficultyDisplay } from './components/DifficultyDisplay'
 import { analyticsService } from './services/analyticsService'
 import CreateArticle from './pages/CreateArticle'
+import { Progress } from './pages/Progress'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -258,11 +259,15 @@ function MainContent() {
     }
   }, [reading]);
 
-  const handleWordPeek = (word: ChineseWord) => {
+  const handleWordPeek = async (word: ChineseWord) => {
     if (!wordBank.some(w => w.characters === word.characters)) {
       setWordBank(prev => [...prev, word]);
       analyticsService.trackWordBankAdd(word.characters, word.pinyin);
     }
+
+    // Update character mastery for each character in the word
+    const characters = word.characters.split('');
+    await userDataService.updateCharacterMastery(characters, 0);
   };
 
   // Load user's theme when they log in
@@ -599,6 +604,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <WordBank />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <Progress />
               </ProtectedRoute>
             }
           />

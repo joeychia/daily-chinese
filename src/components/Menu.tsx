@@ -70,6 +70,9 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
           <div className={styles.menuItem} onClick={handleArticlesClick}>
             文章列表
           </div>
+          <div className={styles.menuItem} onClick={() => navigate('/progress')}>
+            学习进度
+          </div>
           <div className={styles.menuItem} onClick={() => navigate('/wordbank')}>
             我的生词本
           </div>

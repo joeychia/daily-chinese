@@ -1,78 +1,126 @@
-import { ref, get, set, onValue, off } from 'firebase/database';
 import { db } from '../config/firebase';
+import { ref, get, set, onValue, off, update } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import { ChineseWord } from '../types/reading';
 
-export interface ArticleProgress {
-  readingDuration: number;  // in seconds
-  quizScore?: number;      // score out of 100
-  completedAt?: string;    // ISO date string
+export interface CharacterMasteryData {
+  [character: string]: number;
 }
 
-export const getWordBank = async (userId: string): Promise<ChineseWord[]> => {
-  const userRef = ref(db, `users/${userId}/wordBank`);
-  const snapshot = await get(userRef);
-  return snapshot.val() || [];
-};
+class UserDataService {
+  // Character Mastery Methods
+  async getCharacterMastery(): Promise<CharacterMasteryData> {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error('No user logged in');
 
-export const saveWordBank = async (userId: string, wordBank: ChineseWord[]): Promise<void> => {
-  const userRef = ref(db, `users/${userId}/wordBank`);
-  await set(userRef, wordBank);
-};
+      const masteryRef = ref(db, `users/${user.uid}/characterMastery`);
+      const snapshot = await get(masteryRef);
+      return snapshot.val() || {};
+    } catch (error) {
+      console.error('Error getting character mastery:', error);
+      throw error;
+    }
+  }
 
-export const subscribeToWordBank = (userId: string, callback: (wordBank: ChineseWord[]) => void) => {
-  const userRef = ref(db, `users/${userId}/wordBank`);
-  onValue(userRef, (snapshot) => {
-    const wordBank = snapshot.val() || [];
-    callback(wordBank);
-  });
+  async updateCharacterMastery(characters: string[], mastery: number) {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error('No user logged in');
 
-  return () => {
-    off(userRef);
-  };
-};
+      const masteryRef = ref(db, `users/${user.uid}/characterMastery`);
+      const snapshot = await get(masteryRef);
+      const currentMastery = snapshot.val() || {};
+      
+      const updates: CharacterMasteryData = {};
+      characters.forEach(char => {
+        updates[char] = mastery;
+      });
 
-export const getTheme = async (userId: string): Promise<string> => {
-  const userRef = ref(db, `users/${userId}/theme`);
-  const snapshot = await get(userRef);
-  return snapshot.val() || 'candy';
-};
+      await update(masteryRef, updates);
+    } catch (error) {
+      console.error('Error updating character mastery:', error);
+      throw error;
+    }
+  }
 
-export const saveTheme = async (userId: string, theme: string): Promise<void> => {
-  const userRef = ref(db, `users/${userId}/theme`);
-  await set(userRef, theme);
-};
+  // Word Bank Methods
+  async getWordBank(userId: string): Promise<ChineseWord[]> {
+    try {
+      const userRef = ref(db, `users/${userId}/wordBank`);
+      const snapshot = await get(userRef);
+      return snapshot.val() || [];
+    } catch (error) {
+      console.error('Error getting word bank:', error);
+      throw error;
+    }
+  }
 
-export const subscribeToTheme = (userId: string, callback: (theme: string) => void) => {
-  const userRef = ref(db, `users/${userId}/theme`);
-  onValue(userRef, (snapshot) => {
-    const theme = snapshot.val() || 'candy';
-    callback(theme);
-  });
+  async saveWordBank(userId: string, wordBank: ChineseWord[]): Promise<void> {
+    try {
+      const userRef = ref(db, `users/${userId}/wordBank`);
+      await set(userRef, wordBank);
+    } catch (error) {
+      console.error('Error saving word bank:', error);
+      throw error;
+    }
+  }
 
-  return () => {
-    off(userRef);
-  };
-};
+  subscribeToWordBank(userId: string, callback: (wordBank: ChineseWord[]) => void) {
+    const userRef = ref(db, `users/${userId}/wordBank`);
+    onValue(userRef, (snapshot) => {
+      const wordBank = snapshot.val() || [];
+      callback(wordBank);
+    });
 
-export const saveQuizCompletion = async (
-  userId: string,
-  articleId: string,
-  score: number,
-  duration: number
-): Promise<void> => {
-  const userArticleRef = ref(db, `users/${userId}/articles/${articleId}`);
-  
-  // Get existing data first
-  const snapshot = await get(userArticleRef);
-  const existingData = snapshot.val() || {};
-  
-  // Merge with new data
-  const updatedData = {
-    ...existingData,
-    quizScore: score,
-    readingDuration: duration,
-    completedAt: new Date().toISOString(),
-  };
+    return () => {
+      off(userRef);
+    };
+  }
 
-  await set(userArticleRef, updatedData);
-}; 
+  // Theme Methods
+  async getTheme(userId: string): Promise<string> {
+    try {
+      const userRef = ref(db, `users/${userId}/theme`);
+      const snapshot = await get(userRef);
+      return snapshot.val() || 'candy';
+    } catch (error) {
+      console.error('Error getting theme:', error);
+      throw error;
+    }
+  }
+
+  async saveTheme(userId: string, theme: string): Promise<void> {
+    try {
+      const userRef = ref(db, `users/${userId}/theme`);
+      await set(userRef, theme);
+    } catch (error) {
+      console.error('Error saving theme:', error);
+      throw error;
+    }
+  }
+
+  subscribeToTheme(userId: string, callback: (theme: string) => void) {
+    const userRef = ref(db, `users/${userId}/theme`);
+    onValue(userRef, (snapshot) => {
+      const theme = snapshot.val() || 'candy';
+      callback(theme);
+    });
+
+    return () => {
+      off(userRef);
+    };
+  }
+}
+
+export const userDataService = new UserDataService();
+
+// Export individual functions for backward compatibility
+export const getWordBank = (userId: string) => userDataService.getWordBank(userId);
+export const saveWordBank = (userId: string, wordBank: ChineseWord[]) => userDataService.saveWordBank(userId, wordBank);
+export const subscribeToWordBank = (userId: string, callback: (wordBank: ChineseWord[]) => void) => userDataService.subscribeToWordBank(userId, callback);
+export const getTheme = (userId: string) => userDataService.getTheme(userId);
+export const saveTheme = (userId: string, theme: string) => userDataService.saveTheme(userId, theme);
+export const subscribeToTheme = (userId: string, callback: (theme: string) => void) => userDataService.subscribeToTheme(userId, callback); 

@@ -4,6 +4,7 @@ import styles from './QuizPanel.module.css';
 import { processChineseText } from '../utils/textProcessor';
 import { analyticsService } from '../services/analyticsService';
 import { ChineseText } from './ChineseText';
+import { userDataService } from '../services/userDataService';
 
 interface QuizPanelProps {
   quizzes: Quiz[];
@@ -16,10 +17,16 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isChecking, setIsChecking] = useState(false);
+  const [clickedCharacters, setClickedCharacters] = useState<string[]>([]);
+  const articleText = quizzes.map(q => q.question).join('');
 
   const currentQuiz = quizzes[currentQuizIndex];
   const processedQuestion = processChineseText(currentQuiz.question);
   const processedOptions = currentQuiz.options.map(option => processChineseText(option));
+
+  const handleCharacterClick = (char: string) => {
+    setClickedCharacters(prev => [...prev, char]);
+  };
 
   const handleSubmit = async () => {
     if (selectedAnswers[currentQuizIndex] === -1) return;
@@ -42,6 +49,19 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
       analyticsService.trackQuizCompletion(score + 1, quizzes.length);
       onComplete();
     }
+
+    // Update character mastery based on clicked characters
+    const uniqueClickedChars = Array.from(new Set(clickedCharacters));
+    if (uniqueClickedChars.length > 0) {
+      await userDataService.updateCharacterMastery(uniqueClickedChars, 0);
+    }
+
+    // Get all unique characters from the article text
+    const allChars = Array.from(new Set(articleText.split('')));
+    const masteredChars = allChars.filter(char => !clickedCharacters.includes(char));
+    if (masteredChars.length > 0) {
+      await userDataService.updateCharacterMastery(masteredChars, 3);
+    }
   };
 
   if (showResult) {
@@ -60,7 +80,10 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
         问题 {currentQuizIndex + 1} / {quizzes.length}
       </div>
       <div className={styles.question}>
-        <ChineseText text={processedQuestion} onWordPeek={() => {}} />
+        <ChineseText 
+          text={processChineseText(currentQuiz.question)}
+          onWordPeek={(word) => handleCharacterClick(word.characters)}
+        />
       </div>
       <div className={styles.options}>
         {processedOptions.map((option, index) => {
