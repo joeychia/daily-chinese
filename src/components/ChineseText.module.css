@@ -10,7 +10,7 @@
 
 .textContainer {
   font-size: 1.5rem;
-  line-height: 2;
+  line-height: 1.75;
   position: relative;
   padding: 1rem;
   white-space: pre-wrap;
@@ -24,9 +24,9 @@ h1 .textContainer {
 }
 
 .wordContainer {
-  display: inline;
+  display: inline-block;
   position: relative;
-  padding: 0 2px;
+  padding: 0 1px;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -38,7 +38,7 @@ h1 .textContainer {
 
 .wordBankDot {
   position: absolute;
-  top: -4px;
+  top: 2px;
   left: 50%;
   transform: translateX(-50%);
   width: 4px;
@@ -53,50 +53,27 @@ h1 .textContainer {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--theme-card-bg);
+  background-color: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
-  border-radius: 8px;
-  padding: 4px 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+  white-space: nowrap;
   z-index: 100;
-  white-space: nowrap;
-  text-align: center;
-  margin-bottom: 4px;
-  pointer-events: none;
   opacity: 0;
-  transition: opacity 0.1s ease;
-}
-
-.pinyinPopup.visible {
-  opacity: 1;
-}
-
-.pinyinPopup::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 4px solid var(--theme-card-border);
-}
-
-.character {
-  font-size: 1.75rem;
-  font-weight: 500;
-  margin-bottom: 0;
-  line-height: 1.2;
-  color: var(--theme-text);
-  white-space: nowrap;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: -7px;
 }
 
 .pinyin {
-  font-size: 1rem;
-  color: var(--theme-secondary);
-  font-weight: 500;
+  font-size: 0.9em;
+  color: var(--theme-text);
   line-height: 1;
-  white-space: nowrap;
+}
+
+.visible {
+  opacity: 1;
 }
 
 .interactive {

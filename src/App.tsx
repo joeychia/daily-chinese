@@ -25,7 +25,6 @@ import { analyzeArticleDifficulty } from './utils/articleDifficulty'
 import { DifficultyDisplay } from './components/DifficultyDisplay'
 import { analyticsService } from './services/analyticsService'
 import CreateArticle from './pages/CreateArticle'
-import Article from './pages/Article'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -513,10 +512,48 @@ function MainContent() {
   );
 }
 
+function RandomArticle() {
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadRandomArticle = async () => {
+      try {
+        const articles = await articleService.getAllArticles();
+        if (articles.length > 0) {
+          const randomIndex = Math.floor(Math.random() * articles.length);
+          navigate(`/article/${articles[randomIndex].id}`, { replace: true });
+        }
+      } catch (error) {
+        console.error('Error loading random article:', error);
+        setError('Failed to load random article');
+      }
+    };
+
+    loadRandomArticle();
+  }, [navigate]);
+
+  if (error) {
+    return <div style={{ color: 'red' }}>Error: {error}</div>;
+  }
+
+  return <div>Loading random article...</div>;
+}
+
 function App() {
   useEffect(() => {
     console.log('App: Initializing database...');
     initializeDatabase();
+
+    // Disable right-click context menu
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+    };
   }, []);
 
   console.log('App: Rendering');
@@ -525,7 +562,14 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Navigate to="/articles" replace />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <RandomArticle />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/articles"
             element={

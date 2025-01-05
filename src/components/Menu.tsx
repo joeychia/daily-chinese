@@ -47,7 +47,12 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
   };
 
   const handleHomeClick = () => {
-    navigate('/');
+    navigate('/', { replace: true });
+    onClose();
+  };
+
+  const handleArticlesClick = () => {
+    navigate('/articles');
     onClose();
   };
 
@@ -68,9 +73,9 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }) => {
         
         <div className={styles.menuItems}>
           <div className={styles.menuItem} onClick={handleHomeClick}>
-            阅读
+            随机阅读
           </div>
-          <div className={styles.menuItem} onClick={() => { navigate('/articles'); onClose(); }}>
+          <div className={styles.menuItem} onClick={handleArticlesClick}>
             文章列表
           </div>
           <div className={styles.menuItem} onClick={() => { navigate('/wordbank'); onClose(); }}>
