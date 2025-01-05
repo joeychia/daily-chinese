@@ -99,17 +99,17 @@ export default function CreateArticle() {
 
   const renderStepIndicator = () => (
     <div className={styles.stepIndicator}>
-      <div className={`${styles.step} ${currentStep === 'mode' ? styles.active : ''}`}>
-        1. 选择创建方式
+      <div className={`${styles.step} ${currentStep === 'mode' ? styles.active : ''}`} data-number="1">
+        选择创建方式
       </div>
-      <div className={`${styles.step} ${currentStep === 'input' ? styles.active : ''}`}>
-        2. 输入内容
+      <div className={`${styles.step} ${currentStep === 'input' ? styles.active : ''}`} data-number="2">
+        输入内容
       </div>
-      <div className={`${styles.step} ${currentStep === 'preview' ? styles.active : ''}`}>
-        3. 预览文章
+      <div className={`${styles.step} ${currentStep === 'preview' ? styles.active : ''}`} data-number="3">
+        预览文章
       </div>
-      <div className={`${styles.step} ${currentStep === 'save' ? styles.active : ''}`}>
-        4. 保存
+      <div className={`${styles.step} ${currentStep === 'save' ? styles.active : ''}`} data-number="4">
+        保存
       </div>
     </div>
   );
