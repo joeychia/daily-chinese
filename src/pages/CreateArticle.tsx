@@ -73,11 +73,15 @@ export default function CreateArticle() {
         case 'metadata':
           generatedArticle = await geminiService.generateMetadata(sourceText);
           break;
-        case 'wordbank':
-          const wordsText = selectedWords.map(word => `${word.characters}（${word.pinyin.join(' ')}）`).join('、');
-          const wordbankPrompt = `请创建一篇包含以下词语的文章：${wordsText}。请确保自然地运用这些词语，使文章流畅有趣。`;
+        case 'wordbank': {
+          const wordsText = selectedWords.map(word => word.characters).join('、');
+          let wordbankPrompt = `请创建一篇文章，要求自然地运用以下词语：${wordsText}。`;
+          if (prompt.trim()) {
+            wordbankPrompt += ` 额外要求：${prompt.trim()}`;
+          }
           generatedArticle = await geminiService.generateArticle(wordbankPrompt, options);
           break;
+        }
       }
 
       if (generatedArticle) {
@@ -99,7 +103,7 @@ export default function CreateArticle() {
       }
     } catch (error) {
       console.error('Error generating article:', error);
-      setError('Failed to generate article');
+      setError('生成文章失败，请重试');
     } finally {
       setIsGenerating(false);
     }
@@ -217,7 +221,19 @@ export default function CreateArticle() {
 
   const renderInputStep = () => (
     <div className={styles.inputStep}>
-      {createMethod === 'wordbank' && renderSelectedWords()}
+      {createMethod === 'wordbank' && (
+        <>
+          {renderSelectedWords()}
+          <div className={styles.inputGroup}>
+            <label>输入提示词（可选）：</label>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="可以输入额外的要求，比如文章主题、风格等..."
+            />
+          </div>
+        </>
+      )}
       {createMethod === 'prompt' && (
         <div className={styles.inputGroup}>
           <label>输入提示词：</label>
