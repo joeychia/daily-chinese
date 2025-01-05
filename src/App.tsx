@@ -24,6 +24,8 @@ import { WordBank } from './components/WordBank'
 import { analyzeArticleDifficulty } from './utils/articleDifficulty'
 import { DifficultyDisplay } from './components/DifficultyDisplay'
 import { analyticsService } from './services/analyticsService'
+import CreateArticle from './pages/CreateArticle'
+import Article from './pages/Article'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -523,11 +525,20 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<Navigate to="/articles" replace />} />
           <Route
-            path="/"
+            path="/articles"
             element={
               <ProtectedRoute>
-                <MainContent />
+                <Articles />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-article"
+            element={
+              <ProtectedRoute>
+                <CreateArticle />
               </ProtectedRoute>
             }
           />
@@ -536,14 +547,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainContent />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/articles"
-            element={
-              <ProtectedRoute>
-                <Articles />
               </ProtectedRoute>
             }
           />
