@@ -1,14 +1,11 @@
 import React from 'react';
 import { ChineseWord } from '../data/sampleText';
 import { PrintableCards } from './PrintableCards';
-import { ConfirmDialog } from './ConfirmDialog';
 import styles from './WordBankComponent.module.css';
 
 interface WordBankComponentProps {
   words: ChineseWord[];
   title: string;
-  onDeleteWord: (word: ChineseWord) => void;
-  onWordToDelete: (word: ChineseWord | null) => void;
   onWordClick: (word: ChineseWord) => void;
   showSavedIndicator?: boolean;
 }
@@ -16,15 +13,10 @@ interface WordBankComponentProps {
 export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   words,
   title,
-  onDeleteWord,
-  onWordToDelete,
   onWordClick,
   showSavedIndicator = false,
 }) => {
   const [showPrintPreview, setShowPrintPreview] = React.useState(false);
-  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
-  const [wordToDelete, setWordToDelete] = React.useState<ChineseWord | null>(null);
-  const longPressTimeout = React.useRef<NodeJS.Timeout>();
 
   const handlePrint = () => {
     setShowPrintPreview(true);
@@ -32,39 +24,6 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
       window.print();
       setShowPrintPreview(false);
     }, 100);
-  };
-
-  const handleWordTouchStart = (word: ChineseWord) => {
-    longPressTimeout.current = setTimeout(() => {
-      setWordToDelete(word);
-      onWordToDelete(word);
-      setShowConfirmDialog(true);
-    }, 500);
-  };
-
-  const handleWordTouchEnd = () => {
-    if (longPressTimeout.current) {
-      clearTimeout(longPressTimeout.current);
-    }
-  };
-
-  const handleWordClick = (word: ChineseWord, event: React.MouseEvent) => {
-    if (longPressTimeout.current) {
-      clearTimeout(longPressTimeout.current);
-    }
-    // Only trigger click if it wasn't a long press
-    if (!showConfirmDialog) {
-      onWordClick(word);
-    }
-  };
-
-  const handleDeleteConfirm = () => {
-    if (wordToDelete) {
-      onDeleteWord(wordToDelete);
-      setShowConfirmDialog(false);
-      setWordToDelete(null);
-      onWordToDelete(null);
-    }
   };
 
   return (
@@ -80,12 +39,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
           <div
             key={index}
             className={styles.wordCard}
-            onTouchStart={() => handleWordTouchStart(word)}
-            onTouchEnd={handleWordTouchEnd}
-            onMouseDown={() => handleWordTouchStart(word)}
-            onMouseUp={handleWordTouchEnd}
-            onMouseLeave={handleWordTouchEnd}
-            onClick={(e) => handleWordClick(word, e)}
+            onClick={() => onWordClick(word)}
           >
             <div className={styles.character}>{word.characters}</div>
           </div>
@@ -97,15 +51,6 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
         </button>
       )}
       {showPrintPreview && <PrintableCards words={words} />}
-      <ConfirmDialog
-        isOpen={showConfirmDialog}
-        message={`确定要删除"${wordToDelete?.characters}"吗？`}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => {
-          setShowConfirmDialog(false);
-          setWordToDelete(null);
-        }}
-      />
     </div>
   );
 }; 
