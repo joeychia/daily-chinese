@@ -1,4 +1,5 @@
 import { ref, get, set, onValue, off, update } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import { db } from '../config/firebase';
 import { auth } from '../config/firebase';
 import { ChineseWord } from '../data/sampleText';
