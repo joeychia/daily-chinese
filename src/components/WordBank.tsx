@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ChineseWord } from '../data/sampleText';
-import { getWordBank, subscribeToWordBank, saveWordBank, getTheme } from '../services/userDataService';
+import { getWordBank, subscribeToWordBank, saveWordBank, getTheme, getCharacterMastery, updateCharacterMastery } from '../services/userDataService';
 import { WordBankComponent } from './WordBankComponent';
+import { TestWordModal } from './TestWordModal';
 import { themes } from '../config/themes';
 import styles from './WordBank.module.css';
 
@@ -13,6 +14,9 @@ export const WordBank: React.FC = () => {
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('candy');
+  const [selectedWord, setSelectedWord] = useState<ChineseWord | null>(null);
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [masteryData, setMasteryData] = useState<Record<string, number>>({});
 
   // Load theme
   useEffect(() => {
@@ -32,6 +36,22 @@ export const WordBank: React.FC = () => {
       }
     };
     loadTheme();
+  }, [user]);
+
+  // Load mastery data
+  useEffect(() => {
+    if (!user) return;
+
+    const loadMasteryData = async () => {
+      try {
+        const data = await getCharacterMastery();
+        setMasteryData(data || {});
+      } catch (error) {
+        console.error('Error loading mastery data:', error);
+      }
+    };
+
+    loadMasteryData();
   }, [user]);
 
   useEffect(() => {
@@ -72,7 +92,6 @@ export const WordBank: React.FC = () => {
           timestamp: new Date().toISOString()
         });
         
-        // Show saved indicator for 5 seconds
         setShowSavedIndicator(true);
         setTimeout(() => {
           setShowSavedIndicator(false);
@@ -82,8 +101,7 @@ export const WordBank: React.FC = () => {
       }
     };
 
-    // Start periodic sync
-    const syncInterval = setInterval(syncWordBank, 60000); // Sync every minute
+    const syncInterval = setInterval(syncWordBank, 60000);
 
     return () => {
       clearTimeout(syncTimeout);
@@ -100,6 +118,38 @@ export const WordBank: React.FC = () => {
     });
   };
 
+  const handleWordClick = (word: ChineseWord) => {
+    setSelectedWord(word);
+    setShowTestModal(true);
+  };
+
+  const handleTestCorrect = async () => {
+    if (!user || !selectedWord) return;
+
+    const currentMastery = masteryData[selectedWord.characters] ?? -1;
+    const newMastery = currentMastery + 1;
+
+    // Update mastery data
+    const newMasteryData = {
+      ...masteryData,
+      [selectedWord.characters]: newMastery
+    };
+    setMasteryData(newMasteryData);
+    await updateCharacterMastery(selectedWord.characters, newMastery);
+
+    // Only close and remove if mastery is >= 3
+    if (newMastery >= 3) {
+      handleDeleteWord(selectedWord);
+      setSelectedWord(null);
+      setShowTestModal(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedWord(null);
+    setShowTestModal(false);
+  };
+
   const theme = themes.find(t => t.id === currentTheme) || themes[0];
 
   return (
@@ -112,6 +162,7 @@ export const WordBank: React.FC = () => {
         '--theme-card-bg': theme.colors.cardBackground,
         '--theme-card-border': theme.colors.cardBorder,
         '--theme-highlight': theme.colors.highlight,
+        '--theme-text': theme.colors.text,
       } as React.CSSProperties}>
         <div className={styles.header}>
           <button className={styles.backButton} onClick={() => navigate(-1)}>
@@ -125,6 +176,14 @@ export const WordBank: React.FC = () => {
           onDeleteWord={handleDeleteWord}
           onWordToDelete={(_) => {}}
           showSavedIndicator={showSavedIndicator}
+          onWordClick={handleWordClick}
+        />
+        <TestWordModal
+          word={selectedWord}
+          isOpen={showTestModal}
+          onClose={handleCloseModal}
+          onCorrect={handleTestCorrect}
+          mastery={selectedWord ? (masteryData[selectedWord.characters] ?? -1) : -1}
         />
       </div>
     </div>

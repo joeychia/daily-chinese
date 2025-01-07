@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Mock Firebase environment variables
 const mockEnv = {
@@ -15,37 +16,48 @@ const mockEnv = {
 Object.assign(process.env, mockEnv);
 
 // Mock Firebase modules
-jest.mock('firebase/app', () => ({
-  initializeApp: jest.fn(() => ({})),
-  getApp: jest.fn(() => ({}))
+vi.mock('firebase/app', () => ({
+  initializeApp: vi.fn(() => ({})),
+  getApp: vi.fn(() => ({}))
 }));
 
-jest.mock('firebase/database', () => ({
-  getDatabase: jest.fn(() => ({})),
-  ref: jest.fn(() => ({})),
-  get: jest.fn(() => Promise.resolve({ val: () => ({}) })),
-  set: jest.fn(() => Promise.resolve()),
-  onValue: jest.fn((_ref, callback) => {
+vi.mock('firebase/database', () => ({
+  getDatabase: vi.fn(() => ({})),
+  ref: vi.fn(() => ({})),
+  get: vi.fn(() => Promise.resolve({ val: () => ({}) })),
+  set: vi.fn(() => Promise.resolve()),
+  onValue: vi.fn((_ref, callback) => {
     callback({ val: () => ({}) });
     return () => {};
   }),
-  off: jest.fn()
+  off: vi.fn()
 }));
 
-jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(() => ({
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({
     currentUser: null,
-    onAuthStateChanged: jest.fn()
+    onAuthStateChanged: vi.fn()
   })),
-  signInWithPopup: jest.fn(),
-  GoogleAuthProvider: jest.fn(),
-  onAuthStateChanged: jest.fn((_auth, callback) => {
+  signInWithPopup: vi.fn(),
+  GoogleAuthProvider: vi.fn(),
+  onAuthStateChanged: vi.fn((_auth, callback) => {
     callback(null);
     return () => {};
   })
 }));
 
-jest.mock('firebase/analytics', () => ({
-  getAnalytics: jest.fn(() => ({})),
-  logEvent: jest.fn()
-})); 
+vi.mock('firebase/analytics', () => ({
+  getAnalytics: vi.fn(() => ({})),
+  logEvent: vi.fn()
+}));
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(() => null),
+  setItem: vi.fn(),
+  clear: vi.fn(),
+  removeItem: vi.fn(),
+  key: vi.fn(() => null),
+  length: 0
+} as Storage;
+global.localStorage = localStorageMock; 

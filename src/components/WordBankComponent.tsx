@@ -9,6 +9,7 @@ interface WordBankComponentProps {
   title: string;
   onDeleteWord: (word: ChineseWord) => void;
   onWordToDelete: (word: ChineseWord | null) => void;
+  onWordClick: (word: ChineseWord) => void;
   showSavedIndicator?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   title,
   onDeleteWord,
   onWordToDelete,
+  onWordClick,
   showSavedIndicator = false,
 }) => {
   const [showPrintPreview, setShowPrintPreview] = React.useState(false);
@@ -43,6 +45,16 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   const handleWordTouchEnd = () => {
     if (longPressTimeout.current) {
       clearTimeout(longPressTimeout.current);
+    }
+  };
+
+  const handleWordClick = (word: ChineseWord, event: React.MouseEvent) => {
+    if (longPressTimeout.current) {
+      clearTimeout(longPressTimeout.current);
+    }
+    // Only trigger click if it wasn't a long press
+    if (!showConfirmDialog) {
+      onWordClick(word);
     }
   };
 
@@ -73,9 +85,9 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
             onMouseDown={() => handleWordTouchStart(word)}
             onMouseUp={handleWordTouchEnd}
             onMouseLeave={handleWordTouchEnd}
+            onClick={(e) => handleWordClick(word, e)}
           >
             <div className={styles.character}>{word.characters}</div>
-            <div className={styles.pinyin}>{word.pinyin.join(' ')}</div>
           </div>
         ))}
       </div>

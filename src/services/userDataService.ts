@@ -1,7 +1,7 @@
-import { db } from '../config/firebase';
 import { ref, get, set, onValue, off, update } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
-import { ChineseWord } from '../types/reading';
+import { db } from '../config/firebase';
+import { auth } from '../config/firebase';
+import { ChineseWord } from '../data/sampleText';
 
 export interface CharacterMasteryData {
   [character: string]: number;
@@ -123,4 +123,21 @@ export const saveWordBank = (userId: string, wordBank: ChineseWord[]) => userDat
 export const subscribeToWordBank = (userId: string, callback: (wordBank: ChineseWord[]) => void) => userDataService.subscribeToWordBank(userId, callback);
 export const getTheme = (userId: string) => userDataService.getTheme(userId);
 export const saveTheme = (userId: string, theme: string) => userDataService.saveTheme(userId, theme);
-export const subscribeToTheme = (userId: string, callback: (theme: string) => void) => userDataService.subscribeToTheme(userId, callback); 
+export const subscribeToTheme = (userId: string, callback: (theme: string) => void) => userDataService.subscribeToTheme(userId, callback);
+
+export const getCharacterMastery = async (): Promise<Record<string, number>> => {
+  const user = auth.currentUser;
+  if (!user) throw new Error('No user logged in');
+
+  const masteryRef = ref(db, `users/${user.uid}/characterMastery`);
+  const snapshot = await get(masteryRef);
+  return snapshot.val() || {};
+};
+
+export const updateCharacterMastery = async (character: string, mastery: number): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user) throw new Error('No user logged in');
+
+  const masteryRef = ref(db, `users/${user.uid}/characterMastery/${character}`);
+  await set(masteryRef, mastery);
+}; 
