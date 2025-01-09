@@ -18,6 +18,12 @@ export interface DailyStats {
   unknown: number;
 }
 
+export interface ArticleFeedback {
+  enjoyment: number;  // 1-3
+  difficulty: number; // 1-3
+  timestamp: string;
+}
+
 class UserDataService {
   // Character Mastery Methods
   async getCharacterMastery(): Promise<CharacterMasteryData> {
@@ -192,4 +198,22 @@ export const updateCharacterMastery = async (character: string, mastery: number)
 
   const masteryRef = ref(db, `users/${user.uid}/characterMastery/${character}`);
   await set(masteryRef, mastery);
+};
+
+export const saveArticleFeedback = async (
+  userId: string,
+  articleId: string,
+  feedback: { enjoyment: number; difficulty: number }
+): Promise<void> => {
+  const userArticleRef = ref(db, `users/${userId}/articles/${articleId}`);
+  const currentSnapshot = await get(userArticleRef);
+  const currentData = currentSnapshot.exists() ? currentSnapshot.val() : {};
+
+  await update(userArticleRef, {
+    ...currentData,
+    feedback: {
+      ...feedback,
+      timestamp: new Date().toISOString()
+    }
+  });
 }; 

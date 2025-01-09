@@ -51,11 +51,13 @@ import { ChineseText } from './ChineseText';
 import { userDataService } from '../services/userDataService';
 
 interface QuizPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
   quizzes: Quiz[];
-  onComplete: () => void;
+  onComplete: (score: number) => void;
 }
 
-export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
+export function QuizPanel({ isOpen, onClose, quizzes, onComplete }: QuizPanelProps) {
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(quizzes.length).fill(-1));
   const [showResult, setShowResult] = useState(false);
@@ -91,7 +93,8 @@ export function QuizPanel({ quizzes, onComplete }: QuizPanelProps) {
     } else {
       setShowResult(true);
       analyticsService.trackQuizCompletion(score + 1, quizzes.length);
-      onComplete();
+      onComplete(score);
+      onClose();
     }
 
     // Update character mastery based on clicked characters
