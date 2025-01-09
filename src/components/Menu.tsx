@@ -1,14 +1,48 @@
+/**
+ * Menu Component Requirements
+ * 
+ * Features:
+ * 1. Navigation:
+ *    - Home link
+ *    - Articles list
+ *    - Progress tracking
+ *    - Word bank
+ *    - Feedback
+ * 
+ * 2. User Management:
+ *    - Display user profile via UserMenu
+ *    - Show user's name before dropdown
+ *    - Handle authentication state
+ *    - Proper color contrast for text
+ * 
+ * 3. Responsive Design:
+ *    - Mobile-friendly layout
+ *    - Collapsible menu on small screens
+ *    - Touch-friendly targets
+ * 
+ * 4. Theme Integration:
+ *    - Consistent with app theme
+ *    - Proper color variables usage
+ *    - Visual feedback on interactions
+ */
+
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { UserMenu } from './UserMenu';
 import styles from './Menu.module.css';
 
 interface MenuProps {
+  /** Whether the menu is currently open */
   isOpen: boolean;
+  /** Callback to close the menu */
   onClose: () => void;
 }
 
-export function Menu({ isOpen, onClose }: MenuProps) {
+export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
+  const handleFeedbackClick = (): void => {
+    onClose();
+  };
+
   return (
     <div className={`${styles.menu} ${isOpen ? styles.open : ''}`}>
       <div className={styles.menuContent}>
@@ -17,7 +51,13 @@ export function Menu({ isOpen, onClose }: MenuProps) {
             <img src={`${import.meta.env.BASE_URL}rooster.png`} alt="Logo" className={styles.logo} />
             <h2>每日一读</h2>
           </div>
-          <button className={styles.closeButton} onClick={onClose}>×</button>
+          <button 
+            className={styles.closeButton} 
+            onClick={onClose}
+            aria-label="关闭菜单"
+          >
+            ×
+          </button>
         </div>
         <div className={styles.authSection}>
           <UserMenu />
@@ -32,7 +72,7 @@ export function Menu({ isOpen, onClose }: MenuProps) {
             href="https://docs.google.com/forms/d/e/1FAIpQLSdjIDOY5gif53bOwFd53I_F6IpC40CQl3AE4ROuxiAcfW4Y-g/viewform?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
-            onClick={onClose}
+            onClick={handleFeedbackClick}
           >
             反馈
           </a>
@@ -41,4 +81,4 @@ export function Menu({ isOpen, onClose }: MenuProps) {
       <div className={styles.overlay} onClick={onClose}></div>
     </div>
   );
-} 
+}; 

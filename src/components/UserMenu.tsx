@@ -1,3 +1,30 @@
+/**
+ * UserMenu Component Requirements
+ * 
+ * Features:
+ * 1. Display user profile:
+ *    - Show avatar (initial letter if no photo)
+ *    - Show display name (fallback to email or user ID)
+ *    - Show email in dropdown
+ * 
+ * 2. Name editing:
+ *    - Allow editing display name
+ *    - Validate empty name
+ *    - Show error messages
+ *    - Update UI immediately after successful change
+ * 
+ * 3. Authentication:
+ *    - Show login/signup buttons when not logged in
+ *    - Show logout button in dropdown when logged in
+ *    - Handle auth state changes
+ * 
+ * 4. UI/UX:
+ *    - Dropdown menu with smooth animation
+ *    - Click outside to close
+ *    - Keyboard support (Enter to save, Escape to cancel)
+ *    - Loading and error states
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut, updateProfile } from 'firebase/auth';
@@ -17,7 +44,7 @@ export const UserMenu: React.FC = () => {
     setNewDisplayName(user?.displayName || '');
   }, [user?.displayName]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (): Promise<void> => {
     try {
       await signOut(auth);
       setIsDropdownOpen(false);
@@ -26,33 +53,33 @@ export const UserMenu: React.FC = () => {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = (): void => {
     navigate('/login');
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = (): void => {
     navigate('/login?signup=true');
   };
 
-  const getDisplayName = () => {
+  const getDisplayName = (): string => {
     if (user?.displayName) return user.displayName;
     if (user?.email) return user.email;
-    return user?.id;
+    return user?.id || '';
   };
 
-  const getInitial = () => {
+  const getInitial = (): string => {
     if (user?.displayName) return user.displayName[0].toUpperCase();
     if (user?.email) return user.email[0].toUpperCase();
-    return user?.id[0].toUpperCase();
+    return (user?.id?.[0] || '').toUpperCase();
   };
 
-  const handleEditClick = () => {
+  const handleEditClick = (): void => {
     setIsEditing(true);
     setNewDisplayName(user?.displayName || '');
     setError(null);
   };
 
-  const handleSaveDisplayName = async () => {
+  const handleSaveDisplayName = async (): Promise<void> => {
     if (!auth.currentUser || !user) return;
     
     const trimmedName = newDisplayName.trim();
@@ -81,12 +108,12 @@ export const UserMenu: React.FC = () => {
     }
   };
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = (): void => {
     setIsEditing(false);
     setError(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter') {
       handleSaveDisplayName();
     } else if (e.key === 'Escape') {
