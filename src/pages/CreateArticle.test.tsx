@@ -63,8 +63,8 @@ describe('CreateArticle', () => {
     renderComponent();
     expect(screen.getByRole('heading', { name: '选择创建方式' })).toBeInTheDocument();
     expect(screen.getByText('从提示词创建')).toBeInTheDocument();
-    expect(screen.getByText('改写文章')).toBeInTheDocument();
-    expect(screen.getByText('使用原文')).toBeInTheDocument();
+    expect(screen.getByText('改写文章生成测试')).toBeInTheDocument();
+    expect(screen.getByText('使用原文生成测试')).toBeInTheDocument();
   });
 
   it('moves to input step when a method is selected', () => {
@@ -83,14 +83,14 @@ describe('CreateArticle', () => {
     
     // Check rewrite method
     renderComponent();
-    fireEvent.click(screen.getByText('改写文章'));
+    fireEvent.click(screen.getByText('改写文章生成测试'));
     const rewriteLengthInput = screen.getByRole('spinbutton', { name: '文章长度（字数）：' });
     expect(rewriteLengthInput).toBeInTheDocument();
   });
 
   it('hides length selector for metadata method', () => {
     renderComponent();
-    fireEvent.click(screen.getByText('使用原文'));
+    fireEvent.click(screen.getByText('使用原文生成测试'));
     expect(screen.queryByText('文章长度：')).not.toBeInTheDocument();
   });
 

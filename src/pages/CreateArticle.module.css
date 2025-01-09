@@ -316,22 +316,6 @@
   font-weight: 600;
 }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.tag {
-  background: var(--background);
-  color: var(--text-primary);
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  border: 1px solid var(--border-color);
-}
-
 .previewContent {
   white-space: pre-wrap;
   padding: 1rem;
@@ -410,4 +394,60 @@
   width: 1rem;
   height: 1rem;
   cursor: pointer;
+}
+
+.quizList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.quizItem {
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.quizQuestion {
+  margin-bottom: 1rem;
+}
+
+.questionNumber {
+  font-weight: bold;
+  color: var(--theme-primary);
+  margin-right: 0.5rem;
+}
+
+.quizOptions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--theme-background);
+}
+
+.optionLabel {
+  font-weight: bold;
+  margin-right: 0.5rem;
+  color: var(--theme-primary);
+}
+
+.correctOption {
+  background: var(--theme-highlight);
+}
+
+.correctMark {
+  margin-left: auto;
+  color: var(--theme-primary);
+  font-weight: bold;
 } 

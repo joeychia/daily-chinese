@@ -1,3 +1,46 @@
+/**
+ * CreateArticle Feature Requirements
+ * 
+ * Purpose:
+ * Provides an interface for creating Chinese reading articles with various generation methods,
+ * customization options, and quiz generation.
+ * 
+ * Core Features:
+ * 1. Multiple Creation Methods:
+ *    - Prompt-based generation (从提示词创建)
+ *    - Article rewriting (改写文章生成测试)
+ *    - Metadata generation (使用原文生成测试)
+ *    - Word bank-based generation (从生词本创建)
+ * 
+ * 2. Article Configuration:
+ *    - Customizable article length (100-1000 characters)
+ *    - Visibility control (public/private)
+ * 
+ * 3. Word Bank Integration:
+ *    - Select up to 10 words from personal word bank
+ *    - Random word selection
+ *    - Custom prompt with selected words
+ * 
+ * 4. Step-by-Step Creation Process:
+ *    - Mode selection
+ *    - Content input
+ *    - Preview
+ *    - Save
+ * 
+ * 5. Preview Features:
+ *    - Title preview
+ *    - Content preview
+ *    - Tag display
+ *    - Quiz preview with correct answers
+ * 
+ * Technical Requirements:
+ * - Input validation and length constraints
+ * - Accessibility support
+ * - Real-time preview
+ * - Firebase integration for storage
+ * - Authentication integration
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './CreateArticle.module.css';
@@ -185,10 +228,10 @@ export default function CreateArticle() {
           从提示词创建
         </button>
         <button onClick={() => handleMethodSelect('rewrite')}>
-          改写文章
+          改写文章生成测试
         </button>
         <button onClick={() => handleMethodSelect('metadata')}>
-          使用原文
+          使用原文生成测试
         </button>
         <button onClick={() => handleMethodSelect('wordbank')}>
           从生词本创建
@@ -284,28 +327,35 @@ export default function CreateArticle() {
     <>
       <div className={styles.preview}>
         <h3>{generatedPreview?.title}</h3>
-        <div className={styles.tags}>
-          {generatedPreview?.tags.map((tag, index) => (
-            <span key={index} className={styles.tag}>{tag}</span>
-          ))}
-        </div>
         <div className={styles.previewContent}>
           {generatedPreview?.content}
         </div>
         <div className={styles.quizPreview}>
           <h4>测验题目</h4>
-          {generatedPreview?.quizzes.map((quiz, index) => (
-            <div key={index} className={styles.quizItem}>
-              <p>{quiz.question}</p>
-              <ul>
-                {quiz.options.map((option, optIndex) => (
-                  <li key={optIndex} className={optIndex === quiz.correctAnswer ? styles.correctOption : ''}>
-                    {option}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className={styles.quizList}>
+            {generatedPreview?.quizzes.map((quiz, index) => (
+              <div key={index} className={styles.quizItem}>
+                <div className={styles.quizQuestion}>
+                  <span className={styles.questionNumber}>问题 {index + 1}:</span>
+                  <p>{quiz.question}</p>
+                </div>
+                <ul className={styles.quizOptions}>
+                  {quiz.options.map((option, optIndex) => (
+                    <li 
+                      key={optIndex} 
+                      className={`${styles.option} ${optIndex === quiz.correctAnswer ? styles.correctOption : ''}`}
+                    >
+                      <span className={styles.optionLabel}>{String.fromCharCode(65 + optIndex)}.</span>
+                      {option}
+                      {optIndex === quiz.correctAnswer && (
+                        <span className={styles.correctMark}>✓</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <div className={styles.visibilityControl}>
