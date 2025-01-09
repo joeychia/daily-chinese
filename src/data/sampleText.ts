@@ -1,59 +1,73 @@
 export interface ChineseWord {
   characters: string;
   pinyin: string[];
+  meaning: string;  // English or other language translation
 }
 
 export const sampleText: ChineseWord[] = [
   {
     characters: "小明",
-    pinyin: ["xiǎo", "míng"]
+    pinyin: ["xiǎo", "míng"],
+    meaning: ""
   },
   {
     characters: "今天",
-    pinyin: ["jīn", "tiān"]
+    pinyin: ["jīn", "tiān"],
+    meaning: ""
   },
   {
     characters: "去",
-    pinyin: ["qù"]
+    pinyin: ["qù"],
+    meaning: ""
   },
   {
     characters: "公园",
-    pinyin: ["gōng", "yuán"]
+    pinyin: ["gōng", "yuán"],
+    meaning: ""
   },
   {
     characters: "散步",
-    pinyin: ["sàn", "bù"]
+    pinyin: ["sàn", "bù"],
+    meaning: ""
   },
   {
     characters: "。",
-    pinyin: [""]
+    pinyin: [""],
+    meaning: ""
   },
   {
     characters: "天气",
-    pinyin: ["tiān", "qì"]
+    pinyin: ["tiān", "qì"],
+    meaning: ""
   },
   {
     characters: "很",
-    pinyin: ["hěn"]
+    pinyin: ["hěn"],
+    meaning: ""
   },
   {
     characters: "好",
-    pinyin: ["hǎo"]
+    pinyin: ["hǎo"],
+    meaning: ""
   },
   {
     characters: "，",
-    pinyin: [""]
+    pinyin: [""],
+    meaning: ""
   },
   {
     characters: "阳光",
-    pinyin: ["yáng", "guāng"]
+    pinyin: ["yáng", "guāng"],
+    meaning: ""
   },
   {
     characters: "明媚",
-    pinyin: ["míng", "mèi"]
+    pinyin: ["míng", "mèi"],
+    meaning: ""
   },
   {
     characters: "。",
-    pinyin: [""]
+    pinyin: [""],
+    meaning: ""
   }
 ]; 
