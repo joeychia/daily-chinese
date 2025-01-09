@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { articleService, UserStreak } from '../services/articleService';
+import { streakService, UserStreak } from '../services/streakService';
 import { StreakPanel } from './StreakPanel';
 import styles from './StreakDisplay.module.css';
 
@@ -13,7 +13,7 @@ export const StreakDisplay: React.FC<{ refreshTrigger?: number }> = ({ refreshTr
     if (!user) return;
 
     const loadStreak = async () => {
-      const userStreak = await articleService.getUserStreak(user.id);
+      const userStreak = await streakService.getUserStreak(user.id);
       setStreak(userStreak || {
         currentStreak: 0,
         longestStreak: 0,
@@ -42,7 +42,6 @@ export const StreakDisplay: React.FC<{ refreshTrigger?: number }> = ({ refreshTr
           <span className={styles.streakCount}>{currentStreak}</span>
           <span className={styles.streakLabel}>天</span>
         </div>
-
       </div>
       <StreakPanel 
         isOpen={isOpen}

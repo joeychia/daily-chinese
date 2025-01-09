@@ -1,6 +1,7 @@
 import { ref, get, set, update } from 'firebase/database';
 import { db } from '../config/firebase';
 import { analyzeArticleDifficulty } from '../utils/articleDifficulty';
+import { streakService } from './streakService';
 
 interface DatabaseQuiz {
   question: string;
@@ -27,14 +28,6 @@ export interface UserArticleData {
   quizScores?: number[];
   wordBank?: string[];
   lastReadDate?: string;  // ISO date string
-}
-
-export interface UserStreak {
-  currentStreak: number;
-  longestStreak: number;
-  lastReadDate: string;  // ISO date string
-  streakStartDate: string;  // ISO date string
-  completedDates: string[];  // Array of ISO date strings for completed days
 }
 
 export const articleService = {
@@ -73,79 +66,6 @@ export const articleService = {
     return null;
   },
 
-  getUserStreak: async (userId: string): Promise<UserStreak | null> => {
-    const streakRef = ref(db, `users/${userId}/streak`);
-    const snapshot = await get(streakRef);
-    if (snapshot.exists()) {
-      return snapshot.val();
-    }
-    return null;
-  },
-
-  async updateUserStreak(userId: string): Promise<void> {
-    const streakRef = ref(db, `users/${userId}/streak`);
-    const snapshot = await get(streakRef);
-    const today = new Date().toLocaleDateString('en-CA');
-
-    if (!snapshot.exists()) {
-      // Initialize streak for first-time user
-      await set(streakRef, {
-        currentStreak: 1,
-        longestStreak: 1,
-        lastReadDate: today,
-        streakStartDate: today,
-        completedDates: [today]
-      });
-      return;
-    }
-
-    const currentStreak = snapshot.val();
-    if (currentStreak.lastReadDate === today) {
-      // Already read today, maintain current streak
-      // Ensure today's date is in completedDates without duplicates
-      const completedDates = currentStreak.completedDates || [];
-      if (!completedDates.includes(today)) {
-        completedDates.push(today);
-      }
-      await set(streakRef, {
-        ...currentStreak,
-        completedDates
-      });
-      return;
-    }
-
-    // Check if the last read was yesterday
-    const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-    if (currentStreak.lastReadDate === yesterdayStr) {
-      // Maintain streak
-      const newStreak = currentStreak.currentStreak + 1;
-      const longestStreak = Math.max(newStreak, currentStreak.longestStreak);
-      // Add today's date to completedDates if not already present
-      const completedDates = [...(currentStreak.completedDates || [])];
-      if (!completedDates.includes(today)) {
-        completedDates.push(today);
-      }
-
-      await set(streakRef, {
-        ...currentStreak,
-        currentStreak: newStreak,
-        longestStreak,
-        lastReadDate: today,
-        completedDates
-      });
-    } else {
-      // Break streak and start new one
-      await set(streakRef, {
-        ...currentStreak,
-        currentStreak: 1,
-        lastReadDate: today,
-        streakStartDate: today,
-        completedDates: [today]
-      });
-    }
-  },
-
   saveUserArticleData: async (
     userId: string, 
     articleId: string, 
@@ -175,7 +95,7 @@ export const articleService = {
     
     // Update streak when article is completed
     if (data.lastReadTime) {
-      await articleService.updateUserStreak(userId);
+      await streakService.updateUserStreak(userId);
     }
   },
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import Calendar from 'react-calendar';
-import { UserStreak } from '../services/articleService';
+import { UserStreak } from '../services/streakService';
 import styles from './StreakPanel.module.css';
 import 'react-calendar/dist/Calendar.css';
 
