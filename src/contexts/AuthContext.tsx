@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../config/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, onIdTokenChanged } from 'firebase/auth';
 
 interface AuthUser {
   id: string;
@@ -11,11 +11,21 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
+  setUser: (user: AuthUser | null) => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
-  loading: true
+  loading: true,
+  setUser: () => {},
+  signIn: async () => {},
+  signInWithGoogle: async () => {},
+  signUp: async () => {},
+  signOut: async () => {}
 });
 
 export const useAuth = () => {
@@ -27,7 +37,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    // Listen for auth state changes
+    const unsubscribeAuthState = onAuthStateChanged(auth, (user) => {
       setUser(user ? {
         id: user.uid,
         email: user.email,
@@ -36,11 +47,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    return unsubscribe;
+    // Listen for token changes (which includes profile updates)
+    const unsubscribeTokenChange = onIdTokenChanged(auth, (user) => {
+      setUser(user ? {
+        id: user.uid,
+        email: user.email,
+        displayName: user.displayName
+      } : null);
+    });
+
+    return () => {
+      unsubscribeAuthState();
+      unsubscribeTokenChange();
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      setUser,
+      signIn: async () => {}, 
+      signInWithGoogle: async () => {}, 
+      signUp: async () => {}, 
+      signOut: async () => {} 
+    }}>
       {children}
     </AuthContext.Provider>
   );

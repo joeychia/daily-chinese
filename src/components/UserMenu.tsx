@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './UserMenu.module.css';
 
 export const UserMenu: React.FC = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -53,7 +53,7 @@ export const UserMenu: React.FC = () => {
   };
 
   const handleSaveDisplayName = async () => {
-    if (!auth.currentUser) return;
+    if (!auth.currentUser || !user) return;
     
     const trimmedName = newDisplayName.trim();
     if (!trimmedName) {
@@ -65,8 +65,13 @@ export const UserMenu: React.FC = () => {
       await updateProfile(auth.currentUser, {
         displayName: trimmedName
       });
-      // Force a refresh of the user object
-      auth.currentUser.reload();
+      
+      // Create a new user object with updated display name
+      const updatedUser = {
+        ...user,
+        displayName: trimmedName
+      };
+      setUser(updatedUser);
       setIsEditing(false);
       setError(null);
       setIsDropdownOpen(false);

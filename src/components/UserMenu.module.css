@@ -25,25 +25,25 @@
 }
 
 .loginButton {
-  background: var(--theme-primary);
+  background: var(--primary-color);
   color: white;
   border: none;
 }
 
 .loginButton:hover {
-  background: var(--theme-highlight);
+  background: var(--primary-hover);
   transform: translateY(-1px);
 }
 
 .signUpButton {
   background: transparent;
-  color: var(--theme-text);
-  border: 1px solid var(--theme-card-border);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .signUpButton:hover {
-  border-color: var(--theme-primary);
-  color: var(--theme-primary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
   transform: translateY(-1px);
 }
 
@@ -59,7 +59,7 @@
 }
 
 .trigger:hover {
-  background: var(--theme-card-bg);
+  background: var(--card-bg);
 }
 
 .userTrigger {
@@ -71,7 +71,7 @@
 .userName {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--theme-text);
+  color: var(--text-primary);
   max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -82,7 +82,7 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background: var(--theme-primary);
+  background: var(--primary-color);
   color: white;
   display: flex;
   align-items: center;
@@ -106,8 +106,8 @@
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background: var(--theme-card-bg);
-  border: 1px solid var(--theme-card-border);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   min-width: 200px;
@@ -130,7 +130,7 @@
 
 .name {
   font-weight: 500;
-  color: var(--text);
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -142,7 +142,7 @@
 
 .email {
   font-size: 0.75rem;
-  color: var(--theme-secondary);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -150,7 +150,7 @@
 
 .dropdownDivider {
   height: 1px;
-  background: var(--theme-card-border);
+  background: var(--border-color);
   margin: 0.5rem 0;
 }
 
@@ -185,7 +185,7 @@
 .editButton {
   background: none;
   border: none;
-  color: var(--secondary);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   padding: 2px 6px;
   border-radius: 4px;
@@ -195,7 +195,7 @@
 
 .editButton:hover {
   background: rgba(var(--primary-rgb), 0.1);
-  color: var(--primary);
+  color: var(--primary-color);
 }
 
 .editNameForm {
@@ -205,18 +205,18 @@
 .editNameInput {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--cardBorder);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.875rem;
-  background: var(--cardBackground);
-  color: var(--text);
+  background: var(--card-bg);
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .editNameInput:focus {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--primary-color);
   outline-offset: 0;
-  border-color: var(--primary);
+  border-color: var(--primary-color);
 }
 
 .editButtons {
@@ -237,23 +237,23 @@
 }
 
 .saveButton {
-  background: var(--primary);
+  background: var(--primary-color);
   color: white;
 }
 
 .saveButton:hover {
-  background: var(--highlight);
+  background: var(--primary-hover);
 }
 
 .cancelButton {
   background: transparent;
-  border: 1px solid var(--cardBorder);
-  color: var(--text);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .cancelButton:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .error {
