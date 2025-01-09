@@ -8,6 +8,16 @@ export interface CharacterMasteryData {
   [character: string]: number;
 }
 
+export interface DailyStats {
+  date: string;  // ISO date string (YYYY-MM-DD)
+  totalChars: number;
+  mastered: number;
+  familiar: number;
+  learned: number;
+  notFamiliar: number;
+  unknown: number;
+}
+
 class UserDataService {
   // Character Mastery Methods
   async getCharacterMastery(): Promise<CharacterMasteryData> {
@@ -113,6 +123,47 @@ class UserDataService {
     return () => {
       off(userRef);
     };
+  }
+
+  async saveDailyStats(stats: Omit<DailyStats, 'date'>): Promise<void> {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error('No user logged in');
+
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const statsRef = ref(db, `users/${user.uid}/dailyStats/${today}`);
+      
+      await set(statsRef, {
+        date: today,
+        ...stats
+      });
+    } catch (error) {
+      console.error('Error saving daily stats:', error);
+      throw error;
+    }
+  }
+
+  async getDailyStats(days: number = 30): Promise<DailyStats[]> {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error('No user logged in');
+
+      const statsRef = ref(db, `users/${user.uid}/dailyStats`);
+      const snapshot = await get(statsRef);
+      const stats = snapshot.val() || {};
+
+      // Convert to array and sort by date
+      const statsArray = Object.values(stats) as DailyStats[];
+      statsArray.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      // Return only the specified number of days
+      return statsArray.slice(0, days);
+    } catch (error) {
+      console.error('Error getting daily stats:', error);
+      throw error;
+    }
   }
 }
 

@@ -26,6 +26,8 @@ import { DifficultyDisplay } from './components/DifficultyDisplay'
 import { analyticsService } from './services/analyticsService'
 import CreateArticle from './pages/CreateArticle'
 import { Progress } from './pages/Progress'
+import { characterGrades } from './data/characterGrades'
+import { calculateStats } from './pages/Progress'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -382,13 +384,29 @@ function MainContent() {
     const readingTime = endTime - startTime;
     
     try {
+      // Save reading time
       await articleService.saveUserArticleData(user.id, articleId, {
         lastReadTime: readingTime
       });
+
+      // Calculate and save daily stats using Progress.tsx's calculateStats
+      const masteryData = await userDataService.getCharacterMastery();
+      const allChars = Object.values(characterGrades).flat();
+      const stats = calculateStats(allChars, masteryData);
+
+      await userDataService.saveDailyStats({
+        totalChars: stats.total,
+        mastered: stats.mastered,
+        familiar: stats.familiar,
+        learned: stats.learned,
+        notFamiliar: stats.notFamiliar,
+        unknown: stats.unknown
+      });
+      
       // Trigger streak refresh
       setStreakRefreshCounter(prev => prev + 1);
     } catch (error) {
-      console.error('Error saving reading time:', error);
+      console.error('Error saving reading data:', error);
     }
   };
 

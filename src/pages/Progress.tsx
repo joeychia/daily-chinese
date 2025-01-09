@@ -1,8 +1,30 @@
 import { useState, useEffect } from 'react';
 import { characterGrades } from '../data/characterGrades';
-import { userDataService } from '../services/userDataService';
+import { userDataService, DailyStats } from '../services/userDataService';
 import { useAuth } from '../contexts/AuthContext';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 import styles from './Progress.module.css';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface CharacterMastery {
   character: string;
@@ -18,9 +40,34 @@ interface GradeStats {
   mastered: number;
 }
 
+export const calculateStats = (chars: string[], masteryData: Record<string, number>): GradeStats => {
+  const stats: GradeStats = {
+    total: chars.length,
+    unknown: 0,
+    notFamiliar: 0,
+    learned: 0,
+    familiar: 0,
+    mastered: 0
+  };
+
+  chars.forEach(char => {
+    const mastery = masteryData[char] ?? -1;
+    switch (mastery) {
+      case -1: stats.unknown++; break;
+      case 0: stats.notFamiliar++; break;
+      case 1: stats.learned++; break;
+      case 2: stats.familiar++; break;
+      case 3: stats.mastered++; break;
+    }
+  });
+
+  return stats;
+};
+
 export const Progress = () => {
   const { user, loading: authLoading } = useAuth();
   const [masteryData, setMasteryData] = useState<Record<string, number>>({});
+  const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUnknownByGrade, setShowUnknownByGrade] = useState<Record<string, boolean>>({
@@ -40,15 +87,19 @@ export const Progress = () => {
   };
 
   useEffect(() => {
-    const loadMasteryData = async () => {
+    const loadData = async () => {
       if (!user) return;
       
       try {
         setError(null);
-        const data = await userDataService.getCharacterMastery();
-        setMasteryData(data || {});
+        const [mastery, stats] = await Promise.all([
+          userDataService.getCharacterMastery(),
+          userDataService.getDailyStats(30) // Get last 30 days
+        ]);
+        setMasteryData(mastery || {});
+        setDailyStats(stats);
       } catch (error) {
-        console.error('Error loading mastery data:', error);
+        console.error('Error loading data:', error);
         setError('加载数据失败，请稍后再试');
       } finally {
         setLoading(false);
@@ -56,7 +107,7 @@ export const Progress = () => {
     };
 
     if (!authLoading) {
-      loadMasteryData();
+      loadData();
     }
   }, [user, authLoading]);
 
@@ -82,33 +133,88 @@ export const Progress = () => {
     }
   };
 
-  const calculateStats = (chars: string[]): GradeStats => {
-    const stats: GradeStats = {
-      total: chars.length,
-      unknown: 0,
-      notFamiliar: 0,
-      learned: 0,
-      familiar: 0,
-      mastered: 0
-    };
-
-    chars.forEach(char => {
-      const mastery = masteryData[char] ?? -1;
-      switch (mastery) {
-        case -1: stats.unknown++; break;
-        case 0: stats.notFamiliar++; break;
-        case 1: stats.learned++; break;
-        case 2: stats.familiar++; break;
-        case 3: stats.mastered++; break;
-      }
-    });
-
-    return stats;
-  };
-
   const calculateOverallStats = (): GradeStats => {
     const allChars = Object.values(characterGrades).flat();
-    return calculateStats(allChars);
+    return calculateStats(allChars, masteryData);
+  };
+
+  // Prepare chart data
+  const chartData = {
+    labels: dailyStats.map(stat => {
+      const date = new Date(stat.date);
+      return `${date.getMonth() + 1}/${date.getDate()}`;
+    }),
+    datasets: [
+      {
+        label: '已掌握',
+        data: dailyStats.map(stat => stat.mastered),
+        borderColor: '#67C23A',
+        backgroundColor: '#67C23A',
+        tension: 0.4,
+      },
+      {
+        label: '熟悉',
+        data: dailyStats.map(stat => stat.familiar),
+        borderColor: '#F4E04D',
+        backgroundColor: '#F4E04D',
+        tension: 0.4,
+      },
+      {
+        label: '学习中',
+        data: dailyStats.map(stat => stat.learned),
+        borderColor: '#E6A23C',
+        backgroundColor: '#E6A23C',
+        tension: 0.4,
+      },
+      {
+        label: '不熟',
+        data: dailyStats.map(stat => stat.notFamiliar),
+        borderColor: '#F56C6C',
+        backgroundColor: '#F56C6C',
+        tension: 0.4,
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          color: 'var(--text-primary)'
+        }
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: 'var(--text-secondary)'
+        }
+      },
+      y: {
+        grid: {
+          color: 'var(--border-color)'
+        },
+        ticks: {
+          color: 'var(--text-secondary)'
+        }
+      }
+    }
   };
 
   if (authLoading || loading) {
@@ -133,6 +239,15 @@ export const Progress = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>学习进度</h1>
+      
+      {/* Daily Progress Trend */}
+      <div className={styles.trendSection}>
+        <h2>学习趋势（近30天）</h2>
+        <div className={styles.chartContainer}>
+          <Line data={chartData} options={chartOptions} />
+        </div>
+      </div>
+
       <div className={styles.overallStats}>
         <h2>总体进度</h2>
         <div className={styles.statsGrid}>
@@ -145,7 +260,7 @@ export const Progress = () => {
         </div>
       </div>
       {(Object.entries(characterGrades) as [keyof typeof gradeNames, string[]][]).map(([grade, chars]) => {
-        const stats = calculateStats(chars);
+        const stats = calculateStats(chars, masteryData);
         return (
           <div key={grade} className={styles.gradeSection}>
             <h2 className={styles.gradeTitle}>
