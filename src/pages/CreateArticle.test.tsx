@@ -61,36 +61,36 @@ describe('CreateArticle', () => {
 
   it('starts at mode selection step', () => {
     renderComponent();
-    expect(screen.getByText('选择创建方式')).toBeInTheDocument();
-    expect(screen.getByText('从提示词创建文章')).toBeInTheDocument();
-    expect(screen.getByText('改写文章生成测验')).toBeInTheDocument();
-    expect(screen.getByText('保留原文生成测验')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '选择创建方式' })).toBeInTheDocument();
+    expect(screen.getByText('从提示词创建')).toBeInTheDocument();
+    expect(screen.getByText('改写文章')).toBeInTheDocument();
+    expect(screen.getByText('使用原文')).toBeInTheDocument();
   });
 
   it('moves to input step when a method is selected', () => {
     renderComponent();
-    fireEvent.click(screen.getByText('从提示词创建文章'));
+    fireEvent.click(screen.getByText('从提示词创建'));
     expect(screen.getByPlaceholderText('输入提示词...')).toBeInTheDocument();
   });
 
   it('shows length selector for prompt and rewrite methods', () => {
     // Check prompt method
     renderComponent();
-    fireEvent.click(screen.getByText('从提示词创建文章'));
-    const promptLengthInput = screen.getByRole('spinbutton', { name: '文章长度：' });
+    fireEvent.click(screen.getByText('从提示词创建'));
+    const promptLengthInput = screen.getByRole('spinbutton', { name: '文章长度（字数）：' });
     expect(promptLengthInput).toBeInTheDocument();
     cleanup();
     
     // Check rewrite method
     renderComponent();
-    fireEvent.click(screen.getByText('改写文章生成测验'));
-    const rewriteLengthInput = screen.getByRole('spinbutton', { name: '文章长度：' });
+    fireEvent.click(screen.getByText('改写文章'));
+    const rewriteLengthInput = screen.getByRole('spinbutton', { name: '文章长度（字数）：' });
     expect(rewriteLengthInput).toBeInTheDocument();
   });
 
   it('hides length selector for metadata method', () => {
     renderComponent();
-    fireEvent.click(screen.getByText('保留原文生成测验'));
+    fireEvent.click(screen.getByText('使用原文'));
     expect(screen.queryByText('文章长度：')).not.toBeInTheDocument();
   });
 
@@ -98,7 +98,7 @@ describe('CreateArticle', () => {
     renderComponent();
     
     // Select prompt method and enter text
-    fireEvent.click(screen.getByText('从提示词创建文章'));
+    fireEvent.click(screen.getByText('从提示词创建'));
     fireEvent.change(screen.getByPlaceholderText('输入提示词...'), {
       target: { value: '测试提示词' }
     });
@@ -116,7 +116,7 @@ describe('CreateArticle', () => {
     renderComponent();
     
     // Generate and preview article
-    fireEvent.click(screen.getByText('从提示词创建文章'));
+    fireEvent.click(screen.getByText('从提示词创建'));
     fireEvent.change(screen.getByPlaceholderText('输入提示词...'), {
       target: { value: '测试提示词' }
     });
@@ -143,7 +143,7 @@ describe('CreateArticle', () => {
     renderComponent();
     
     // Generate and preview article
-    fireEvent.click(screen.getByText('从提示词创建文章'));
+    fireEvent.click(screen.getByText('从提示词创建'));
     fireEvent.change(screen.getByPlaceholderText('输入提示词...'), {
       target: { value: '测试提示词' }
     });
@@ -169,48 +169,37 @@ describe('CreateArticle', () => {
     renderComponent();
     
     // Go to input step
-    fireEvent.click(screen.getByText('从提示词创建文章'));
+    fireEvent.click(screen.getByText('从提示词创建'));
     expect(screen.getByPlaceholderText('输入提示词...')).toBeInTheDocument();
     
     // Return to mode selection
     fireEvent.click(screen.getByText('上一步'));
-    expect(screen.getByText('从提示词创建文章')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '选择创建方式' })).toBeInTheDocument();
   });
 
-  it('adjusts article length with increment/decrement buttons', () => {
+  it('adjusts article length with input', () => {
     renderComponent();
     
     // Go to input step
-    fireEvent.click(screen.getByText('从提示词创建文章'));
+    fireEvent.click(screen.getByText('从提示词创建'));
     
-    // Get initial value
-    const input = screen.getByRole('spinbutton') as HTMLInputElement;
-    expect(input.value).toBe('300');
-    
-    // Increment
-    fireEvent.click(screen.getByText('+'));
-    expect(input.value).toBe('350');
-    
-    // Decrement
-    fireEvent.click(screen.getByText('-'));
-    expect(input.value).toBe('300');
+    // Get input and change value
+    const input = screen.getByRole('spinbutton', { name: '文章长度（字数）：' });
+    fireEvent.change(input, { target: { value: '500' } });
+    expect(input).toHaveValue(500);
   });
 
   it('enforces article length limits', () => {
     renderComponent();
-    fireEvent.click(screen.getByText('从提示词创建文章'));
-    const input = screen.getByRole('spinbutton') as HTMLInputElement;
+    fireEvent.click(screen.getByText('从提示词创建'));
+    const input = screen.getByRole('spinbutton', { name: '文章长度（字数）：' }) as HTMLInputElement;
     
-    // Test minimum limit (50)
-    for (let i = 0; i < 10; i++) {
-      fireEvent.click(screen.getByText('-'));
-    }
-    expect(input.value).toBe('50');
+    // Test minimum limit
+    fireEvent.change(input, { target: { value: '50' } });
+    expect(Number(input.value)).toBeGreaterThanOrEqual(100);
     
-    // Test maximum limit (1000)
-    for (let i = 0; i < 30; i++) {
-      fireEvent.click(screen.getByText('+'));
-    }
-    expect(input.value).toBe('1000');
+    // Test maximum limit
+    fireEvent.change(input, { target: { value: '1500' } });
+    expect(Number(input.value)).toBeLessThanOrEqual(1000);
   });
 }); 

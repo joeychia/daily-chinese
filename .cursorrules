@@ -1,0 +1,115 @@
+# DailyChinese Product Requirements
+
+## Core Features
+
+auth:
+  - User registration (email/password and Google Sign-in)
+  - Protected routes
+  - Session management
+  - Profile management
+
+reading:
+  - Interactive Chinese text with pinyin
+  - Press-and-hold pinyin reveal
+  - Reading timer
+  - Progress tracking
+  - Difficulty indicators
+  - Character mastery
+  - Comprehension quizzes
+
+articles:
+  - Public article library
+  - Article creation
+  - Visibility controls
+  - Metadata management
+  - Random article selection
+  - Difficulty analysis
+
+vocabulary:
+  - Personal word bank
+  - Word management
+  - Character mastery tracking
+  - Retention statistics
+  - Cross-session sync
+
+progress:
+  - Reading streak
+  - Mastery statistics
+  - Time tracking
+  - Quiz results
+  - Analytics visualization
+
+themes:
+  - Multiple options
+  - Per-user persistence
+  - UI color customization
+  - Quick switching
+
+navigation:
+  - Responsive menu
+  - Quick access features
+  - Article list
+  - Progress view
+  - Word bank view
+
+## Technical Stack
+
+frontend:
+  - React
+  - TypeScript
+  - Firebase Auth
+  - Real-time sync
+  - Responsive design
+  - PWA support
+
+backend:
+  - Firebase
+  - User data storage
+  - Article storage
+  - Progress tracking
+  - Authentication
+  - Real-time updates
+
+test:
+  - vitest
+  
+## Data Models
+
+user_data:
+  - Auth info
+  - Reading progress
+  - Word bank
+  - Theme preferences
+  - Reading streak
+  - Character mastery
+
+article:
+  - id: string
+  - title: string
+  - author: string
+  - content: string
+  - tags: string[]
+  - isGenerated: boolean
+  - generatedDate: string
+  - quizzes: Quiz[]
+  - difficultyLevel: number
+  - characterLevels: Record<string, number>
+  - visibility: public | userId
+  - createdBy?: string
+
+character_mastery:
+  - character: string
+  - level: number
+  - lastReviewed: number
+
+## Future Enhancements
+
+generation:
+  - Dynamic story generation
+  - Additional sample texts
+  - Enhanced difficulty levels
+  - Advanced vocabulary tools
+  - Expanded quiz types
+  - Social features
+  - Progress sharing
+  - Advanced analytics 

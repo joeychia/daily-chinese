@@ -95,7 +95,7 @@ export default function CreateArticle() {
           isGenerated: true,
           generatedDate: new Date().toISOString(),
           createdBy: user.displayName || user.email || 'Unknown User',
-          visibility: 'public'
+          visibility: isPrivate ? user.id : 'public'
         };
 
         setGeneratedPreview(newArticle);
@@ -240,7 +240,7 @@ export default function CreateArticle() {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="请输入提示词..."
+            placeholder="输入提示词..."
           />
         </div>
       )}
@@ -256,13 +256,24 @@ export default function CreateArticle() {
       )}
       {createMethod !== 'metadata' && (
         <div className={styles.inputGroup}>
-          <label>文章长度（字数）：</label>
+          <label htmlFor="articleLength">文章长度（字数）：</label>
           <input
+            id="articleLength"
             type="number"
             value={articleLength}
-            onChange={(e) => setArticleLength(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              if (value < 100) {
+                setArticleLength(100);
+              } else if (value > 1000) {
+                setArticleLength(1000);
+              } else {
+                setArticleLength(value);
+              }
+            }}
             min={100}
             max={1000}
+            aria-label="文章长度（字数）："
           />
         </div>
       )}
