@@ -474,10 +474,47 @@ function MainContent() {
               </button>
             </div>
             {showQuiz && (
-              <QuizPanel 
-                quizzes={reading.quizzes} 
-                onComplete={handleQuizComplete}
-              />
+              <>
+                <QuizPanel 
+                  quizzes={reading.quizzes} 
+                  onComplete={handleQuizComplete}
+                />
+                {!isReading && (
+                  <div className="post-quiz-actions">
+                    <button 
+                      className="readMoreButton"
+                      onClick={async () => {
+                        try {
+                          const articles = await articleService.getAllArticles();
+                          // Filter articles that are either public or owned by the user
+                          const accessibleArticles = articles.filter(article => 
+                            article.visibility === 'public' || article.visibility === user?.id
+                          );
+                          
+                          // Find current article index
+                          const currentIndex = accessibleArticles.findIndex(a => a.id === articleId);
+                          
+                          // Get next article (or wrap around to first)
+                          const nextArticle = accessibleArticles[currentIndex + 1] || accessibleArticles[0];
+                          
+                          if (nextArticle) {
+                            // Reset quiz state before navigation
+                            setShowQuiz(false);
+                            setIsReading(true);
+                            navigate(`/article/${nextArticle.id}`);
+                          } else {
+                            navigate('/articles');
+                          }
+                        } catch (error) {
+                          console.error('Error navigating to next article:', error);
+                        }
+                      }}
+                    >
+                      再读一篇
+                    </button>
+                  </div>
+                )}
+              </>
             )}
             {filteredWordBank.length > 0 && (
               <WordBankComponent

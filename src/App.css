@@ -808,3 +808,25 @@ textarea:focus {
 .actionButton:active {
   transform: translateY(0);
 }
+
+.post-quiz-actions {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.readMoreButton {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  background: var(--theme-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.readMoreButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
