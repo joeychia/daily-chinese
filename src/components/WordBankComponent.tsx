@@ -56,12 +56,14 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
     setMasteryData(newMasteryData);
     await updateCharacterMastery(selectedWord.characters, newMastery);
 
-    // Only close and remove if mastery is >= 3
+    // Remove word from word bank if mastery level reaches 3
     if (newMastery >= 3) {
       onWordDelete?.(selectedWord);
-      setSelectedWord(null);
-      setShowTestModal(false);
     }
+
+    // Close modal after successful test
+    setSelectedWord(null);
+    setShowTestModal(false);
   };
 
   const handleCloseModal = () => {
@@ -77,6 +79,17 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
     }, 100);
   };
 
+  const getMasteryColor = (mastery: number) => {
+    switch (mastery) {
+      case -1: return '#909399'; // gray
+      case 0: return '#F56C6C'; // red
+      case 1: return '#E6A23C'; // orange
+      case 2: return '#F4E04D'; // yellow
+      case 3: return '#67C23A'; // green
+      default: return '#909399';
+    }
+  };
+
   return (
     <div className={styles.wordBankContainer}>
       <div className={styles.header}>
@@ -84,17 +97,24 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
         {showSavedIndicator && <span className={styles.savedIndicator}>已保存</span>}
       </div>
       <div className={styles.wordList}>
-        {words.map((word) => (
-          <div 
-            key={word.characters} 
-            className={styles.wordItem}
-            data-mastery={masteryData[word.characters] ?? -1}
-          >
-            <div className={styles.wordContent} onClick={() => handleWordClick(word)}>
-              <span className={styles.characters}>{word.characters}</span>
+        {words.map((word) => {
+          const mastery = masteryData[word.characters] ?? -1;
+          return (
+            <div 
+              key={word.characters} 
+              className={styles.wordItem}
+            >
+              <div className={styles.wordContent} onClick={() => handleWordClick(word)}>
+                <span 
+                  className={styles.characters}
+                  style={{ color: getMasteryColor(mastery) }}
+                >
+                  {word.characters}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {words.length > 0 && (
         <button className={styles.printButton} onClick={handlePrint}>

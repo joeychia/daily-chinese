@@ -44,27 +44,6 @@
   cursor: pointer;
 }
 
-/* Mastery level colors */
-.wordItem[data-mastery="-1"] {
-  background: var(--theme-card-bg);
-  border-color: var(--theme-card-border);
-}
-
-.wordItem[data-mastery="0"] {
-  background: rgba(var(--theme-primary-rgb), 0.05);
-  border-color: rgba(var(--theme-primary-rgb), 0.1);
-}
-
-.wordItem[data-mastery="1"] {
-  background: rgba(var(--theme-primary-rgb), 0.1);
-  border-color: rgba(var(--theme-primary-rgb), 0.2);
-}
-
-.wordItem[data-mastery="2"] {
-  background: rgba(var(--theme-primary-rgb), 0.15);
-  border-color: rgba(var(--theme-primary-rgb), 0.3);
-}
-
 .wordItem:hover {
   border-color: var(--theme-primary);
   transform: translateY(-1px);
@@ -83,7 +62,7 @@
 .characters {
   font-size: 1.2em;
   font-weight: 500;
-  color: var(--theme-text);
+  transition: color 0.2s ease;
 }
 
 .printButton {
