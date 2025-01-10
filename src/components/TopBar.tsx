@@ -60,7 +60,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
       </div>
       <div className={styles.rightSection}>
-        <StreakDisplay />
+        <StreakDisplay refreshTrigger={refreshTrigger} />
         <button className={styles.wordBankButton} onClick={handleWordBankClick} title="生词本">
           📝 <span className={styles.count}>{wordCount}</span>
         </button>
