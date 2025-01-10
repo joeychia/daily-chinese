@@ -514,25 +514,16 @@ function MainContent() {
                       className="readMoreButton"
                       onClick={async () => {
                         try {
-                          const articles = await articleService.getAllArticles();
-                          // Filter articles that are either public or owned by the user
-                          const accessibleArticles = articles.filter(article => 
-                            article.visibility === 'public' || article.visibility === user?.id
-                          );
-                          
-                          // Find current article index
-                          const currentIndex = accessibleArticles.findIndex(a => a.id === articleId);
-                          
-                          // Get next article (or wrap around to first)
-                          const nextArticle = accessibleArticles[currentIndex + 1] || accessibleArticles[0];
-                          
-                          if (nextArticle) {
-                            // Reset quiz state before navigation
-                            setShowQuiz(false);
-                            setIsReading(true);
-                            navigate(`/article/${nextArticle.id}`);
-                          } else {
-                            navigate('/articles');
+                          if (user?.id) {
+                            const nextArticle = await articleService.getFirstUnreadArticle(user.id);
+                            if (nextArticle) {
+                              // Reset quiz state before navigation
+                              setShowQuiz(false);
+                              setIsReading(true);
+                              navigate(`/article/${nextArticle.id}`);
+                            } else {
+                              navigate('/articles');
+                            }
                           }
                         } catch (error) {
                           console.error('Error navigating to next article:', error);
@@ -591,29 +582,40 @@ function MainContent() {
 function RandomArticle() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const loadRandomArticle = async () => {
+    const loadFirstUnreadArticle = async () => {
+      if (!user) return;
+      
       try {
-        const articles = await articleService.getAllArticles();
-        if (articles.length > 0) {
-          const randomIndex = Math.floor(Math.random() * articles.length);
-          navigate(`/article/${articles[randomIndex].id}`, { replace: true });
+        // Try to get first unread article
+        const unreadArticle = await articleService.getFirstUnreadArticle(user.id);
+        
+        if (unreadArticle) {
+          navigate(`/article/${unreadArticle.id}`, { replace: true });
+        } else {
+          // If no unread articles, get all articles and pick a random one
+          const articles = await articleService.getAllArticles();
+          if (articles.length > 0) {
+            const randomIndex = Math.floor(Math.random() * articles.length);
+            navigate(`/article/${articles[randomIndex].id}`, { replace: true });
+          }
         }
       } catch (error) {
-        console.error('Error loading random article:', error);
-        setError('Failed to load random article');
+        console.error('Error loading article:', error);
+        setError('Failed to load article');
       }
     };
 
-    loadRandomArticle();
-  }, [navigate]);
+    loadFirstUnreadArticle();
+  }, [navigate, user]);
 
   if (error) {
     return <div style={{ color: 'red' }}>Error: {error}</div>;
   }
 
-  return <div>Loading random article...</div>;
+  return <div>Loading article...</div>;
 }
 
 function App() {

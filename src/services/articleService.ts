@@ -41,6 +41,26 @@ export const articleService = {
     return [];
   },
 
+  getFirstUnreadArticle: async (userId: string): Promise<DatabaseArticle | null> => {
+    // Get all articles
+    const articles = await articleService.getAllArticles();
+    
+    // Get user's reading history
+    const userArticlesRef = ref(db, `users/${userId}/articles`);
+    const snapshot = await get(userArticlesRef);
+    const readArticles = snapshot.exists() ? Object.keys(snapshot.val()) : [];
+    
+    // Find first article that hasn't been read
+    const unreadArticle = articles.find(article => 
+      // Article should be either public or owned by the user
+      (article.visibility === 'public' || article.visibility === userId) &&
+      // And not in read articles
+      !readArticles.includes(article.id)
+    );
+    
+    return unreadArticle || null;
+  },
+
   createArticle: async (article: DatabaseArticle): Promise<void> => {
     const articleRef = ref(db, `articles/${article.id}`);
     await set(articleRef, article);
