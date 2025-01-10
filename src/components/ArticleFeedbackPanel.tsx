@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styles from './ArticleFeedbackPanel.module.css';
 import { useAuth } from '../contexts/AuthContext';
 import { saveArticleFeedback } from '../services/userDataService';
+import { useNavigate } from 'react-router-dom';
+import { articleService } from '../services/articleService';
 
 interface ArticleFeedbackPanelProps {
   isOpen: boolean;
@@ -17,8 +19,10 @@ export const ArticleFeedbackPanel: React.FC<ArticleFeedbackPanelProps> = ({
   articleId
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [selectedEnjoyment, setSelectedEnjoyment] = useState<number>(-1);
   const [selectedDifficulty, setSelectedDifficulty] = useState<number>(-1);
+  const [showActions, setShowActions] = useState(false);
 
   if (!isOpen) return null;
 
@@ -35,12 +39,66 @@ export const ArticleFeedbackPanel: React.FC<ArticleFeedbackPanelProps> = ({
       // Call the onSubmit callback
       onSubmit({ enjoyment: selectedEnjoyment, difficulty: selectedDifficulty });
       
-      // Close the panel
-      onClose();
+      // Show post-feedback actions
+      setShowActions(true);
     } catch (error) {
       console.error('Error saving feedback:', error);
     }
   };
+
+  const handleReadMore = async () => {
+    try {
+      const articles = await articleService.getAllArticles();
+      // Filter articles that are either public or owned by the user
+      const accessibleArticles = articles.filter(article => 
+        article.visibility === 'public' || article.visibility === user?.id
+      );
+      
+      // Find current article index
+      const currentIndex = accessibleArticles.findIndex(a => a.id === articleId);
+      
+      // Get next article (or wrap around to first)
+      const nextArticle = accessibleArticles[currentIndex + 1] || accessibleArticles[0];
+      
+      if (nextArticle) {
+        navigate(`/article/${nextArticle.id}`);
+      } else {
+        navigate('/articles');
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error navigating to next article:', error);
+    }
+  };
+
+  const handleCreateArticle = () => {
+    navigate('/create-article');
+    onClose();
+  };
+
+  if (showActions) {
+    return (
+      <>
+        <div className={styles.overlay} onClick={onClose} />
+        <div className={styles.panel}>
+          <div className={styles.header}>
+            <h2>感谢您的反馈！</h2>
+            <button className={styles.closeButton} onClick={onClose}>✕</button>
+          </div>
+          <div className={styles.content}>
+            <div className={styles.actionsPanel}>
+              <button className={styles.actionButton} onClick={handleReadMore}>
+                再读一篇
+              </button>
+              <button className={styles.actionButton} onClick={handleCreateArticle}>
+                创建文章
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
