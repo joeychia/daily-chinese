@@ -84,7 +84,9 @@ export const streakService = {
     }
 
     // Check if the last read was yesterday
-    const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString('en-CA');
 
     if (streakData.lastReadDate === yesterdayStr) {
       // Continue streak
