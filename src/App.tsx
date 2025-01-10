@@ -28,6 +28,7 @@ import CreateArticle from './pages/CreateArticle'
 import { Progress } from './pages/Progress'
 import { characterGrades } from './data/characterGrades'
 import { calculateStats } from './pages/Progress'
+import { ArticleFeedbackPanel } from './components/ArticleFeedbackPanel'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -116,6 +117,7 @@ function MainContent() {
   const [lastReadTime, setLastReadTime] = useState<number | undefined>();
   const [streakRefreshCounter, setStreakRefreshCounter] = useState(0);
   const navigate = useNavigate();
+  const [isFeedbackPanelOpen, setIsFeedbackPanelOpen] = useState(false);
 
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
@@ -405,6 +407,9 @@ function MainContent() {
       
       // Trigger streak refresh
       setStreakRefreshCounter(prev => prev + 1);
+
+      // Show feedback panel after quiz completion
+      setIsFeedbackPanelOpen(true);
     } catch (error) {
       console.error('Error saving reading data:', error);
     }
@@ -429,6 +434,10 @@ function MainContent() {
 
     loadRandomArticle();
   }, [articleId, navigate]);
+
+  const handleFeedbackSubmit = async (feedback: { enjoyment: number; difficulty: number }) => {
+    analyticsService.trackArticleFeedback(articleId!, feedback);
+  };
 
   return (
     <div className="app" style={{
@@ -496,6 +505,8 @@ function MainContent() {
                 <QuizPanel 
                   quizzes={reading.quizzes} 
                   onComplete={handleQuizComplete}
+                  isOpen={showQuiz}
+                  onClose={() => setShowQuiz(false)}
                 />
                 {!isReading && (
                   <div className="post-quiz-actions">
@@ -538,8 +549,7 @@ function MainContent() {
               <WordBankComponent
                 words={filteredWordBank}
                 title="本文生词"
-                onDeleteWord={handleDeleteWord}
-                onWordToDelete={setWordToDelete}
+                onWordDelete={setWordToDelete}
                 showSavedIndicator={showSavedIndicator}
               />
             )}
@@ -567,6 +577,12 @@ function MainContent() {
           setShowConfirmDialog(false);
           setWordToDelete(null);
         }}
+      />
+      <ArticleFeedbackPanel
+        isOpen={isFeedbackPanelOpen}
+        onClose={() => setIsFeedbackPanelOpen(false)}
+        onSubmit={handleFeedbackSubmit}
+        articleId={articleId!}
       />
     </div>
   );
