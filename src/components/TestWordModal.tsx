@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChineseWord } from '../data/sampleText';
 import styles from './TestWordModal.module.css';
+import { pinyin } from 'pinyin-pro';
 
 interface TestWordModalProps {
   word: ChineseWord | null;
@@ -57,18 +58,15 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
 
   if (!isOpen || !word) return null;
 
-  const removeToneMarks = (pinyin: string) => {
-    // First normalize Unicode tone marks to normal letters
-    const normalized = pinyin.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    // Then remove tone numbers and spaces
-    return normalized.replace(/[1-5]/g, '').replace(/\s+/g, '').toLowerCase().trim();
-  };
-
   const handleCheck = () => {
-    const normalizedInput = removeToneMarks(input);
-    const correctPinyin = removeToneMarks(word.pinyin.join(''));
+    const userInput = input.trim().toLowerCase();
+    
+    // Get all possible pinyin readings for the character
+    const readings = pinyin(word.characters, { toneType: 'none', multiple: true, type: 'array' });
+    const possibleReadings = Array.isArray(readings) ? readings : [readings];
+    const lowerCaseReadings = possibleReadings.map(reading => reading.toLowerCase());
 
-    if (normalizedInput === correctPinyin) {
+    if (lowerCaseReadings.includes(userInput)) {
       setError(false);
       setShowSuccess(true);
       if (!isTestedToday) {
