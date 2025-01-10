@@ -65,7 +65,7 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
         <nav>
           <Link to="/" onClick={onClose}>首页</Link>
           <Link to="/articles" onClick={onClose}>文章列表</Link>
-          <Link to="/create" onClick={onClose}>创建文章</Link>
+          <Link to="/create-article" onClick={onClose}>创建文章</Link>
           <Link to="/wordbank" onClick={onClose}>生词本</Link>
           <Link to="/progress" onClick={onClose}>学习进度</Link>
           <a 

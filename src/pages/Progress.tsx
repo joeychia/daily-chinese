@@ -139,36 +139,37 @@ export const Progress = () => {
   };
 
   // Prepare chart data
+  const sortedDailyStats = dailyStats.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const chartData = {
-    labels: dailyStats.map(stat => {
+    labels: sortedDailyStats.map(stat => {
       const date = new Date(stat.date);
       return `${date.getMonth() + 1}/${date.getDate()}`;
     }),
     datasets: [
       {
         label: '已掌握',
-        data: dailyStats.map(stat => stat.mastered),
+        data: sortedDailyStats.map(stat => stat.mastered),
         borderColor: '#67C23A',
         backgroundColor: '#67C23A',
         tension: 0.4,
       },
       {
         label: '熟悉',
-        data: dailyStats.map(stat => stat.familiar),
+        data: sortedDailyStats.map(stat => stat.familiar),
         borderColor: '#F4E04D',
         backgroundColor: '#F4E04D',
         tension: 0.4,
       },
       {
         label: '学习中',
-        data: dailyStats.map(stat => stat.learned),
+        data: sortedDailyStats.map(stat => stat.learned),
         borderColor: '#E6A23C',
         backgroundColor: '#E6A23C',
         tension: 0.4,
       },
       {
         label: '不熟',
-        data: dailyStats.map(stat => stat.notFamiliar),
+        data: sortedDailyStats.map(stat => stat.notFamiliar),
         borderColor: '#F56C6C',
         backgroundColor: '#F56C6C',
         tension: 0.4,
