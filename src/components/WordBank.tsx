@@ -13,6 +13,7 @@ export const WordBank: React.FC = () => {
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('candy');
+  const [pointsRefreshTrigger, setPointsRefreshTrigger] = useState(0);
 
   // Load theme
   useEffect(() => {
@@ -123,6 +124,7 @@ export const WordBank: React.FC = () => {
           title="全部生词"
           showSavedIndicator={showSavedIndicator}
           onWordDelete={handleDeleteWord}
+          onPointsUpdate={() => setPointsRefreshTrigger(prev => prev + 1)}
         />
       </div>
     </div>

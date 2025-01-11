@@ -24,7 +24,33 @@ export interface ArticleFeedback {
   timestamp: string;
 }
 
-class UserDataService {
+export interface UserDataService {
+  // Character Mastery Methods
+  getCharacterMastery: () => Promise<CharacterMasteryData>;
+  updateCharacterMastery: (characters: string[], mastery: number) => Promise<void>;
+
+  // Word Bank Methods
+  getWordBank: (userId: string) => Promise<ChineseWord[]>;
+  saveWordBank: (userId: string, wordBank: ChineseWord[]) => Promise<void>;
+  subscribeToWordBank: (userId: string, callback: (wordBank: ChineseWord[]) => void) => void;
+
+  // Theme Methods
+  getTheme: (userId: string) => Promise<string>;
+  saveTheme: (userId: string, theme: string) => Promise<void>;
+  subscribeToTheme: (userId: string, callback: (theme: string) => void) => void;
+
+  // Daily Stats Methods
+  saveDailyStats: (stats: Omit<DailyStats, 'date'>) => Promise<void>;
+  getDailyStats: (days: number) => Promise<DailyStats[]>;
+
+  // Article Feedback Methods
+  saveArticleFeedback: (userId: string, articleId: string, feedback: { enjoyment: number; difficulty: number }) => Promise<void>;
+
+  // Article Read Status Methods
+  hasReadArticle: (userId: string, articleId: string) => Promise<boolean>;
+}
+
+class UserDataServiceImpl implements UserDataService {
   // Character Mastery Methods
   async getCharacterMastery(): Promise<CharacterMasteryData> {
     try {
@@ -171,9 +197,33 @@ class UserDataService {
       throw error;
     }
   }
+
+  async hasReadArticle(userId: string, articleId: string): Promise<boolean> {
+    try {
+      const userRef = ref(db, `users/${userId}/articles/${articleId}`);
+      const snapshot = await get(userRef);
+      return snapshot.exists();
+    } catch (error) {
+      console.error('Error checking article read status:', error);
+      return false;
+    }
+  }
+
+  async saveArticleFeedback(
+    userId: string,
+    articleId: string,
+    feedback: { enjoyment: number; difficulty: number }
+  ): Promise<void> {
+    try {
+      const feedbackRef = ref(db, `users/${userId}/articles/${articleId}/feedback`);
+      await set(feedbackRef, feedback);
+    } catch (error) {
+      console.error('Error saving article feedback:', error);
+    }
+  }
 }
 
-export const userDataService = new UserDataService();
+export const userDataService = new UserDataServiceImpl();
 
 // Export individual functions for backward compatibility
 export const getWordBank = (userId: string) => userDataService.getWordBank(userId);

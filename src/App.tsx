@@ -118,6 +118,7 @@ function MainContent() {
   const [streakRefreshCounter, setStreakRefreshCounter] = useState(0);
   const navigate = useNavigate();
   const [isFeedbackPanelOpen, setIsFeedbackPanelOpen] = useState(false);
+  const [pointsRefreshTrigger, setPointsRefreshTrigger] = useState(0);
 
   // Process title for pinyin support
   const processedTitle = processChineseText(reading.title);
@@ -453,7 +454,8 @@ function MainContent() {
         onMenuClick={() => setIsNavOpen(true)}
         onThemeClick={() => setIsThemePanelOpen(true)}
         themeEmoji={theme.emoji}
-        refreshTrigger={streakRefreshCounter}
+        refreshTrigger={pointsRefreshTrigger}
+        streakRefreshTrigger={streakRefreshCounter}
       />
       <div className="content">
         <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
@@ -507,6 +509,8 @@ function MainContent() {
                   onComplete={handleQuizComplete}
                   isOpen={showQuiz}
                   onClose={() => setShowQuiz(false)}
+                  articleId={articleId || ''}
+                  onPointsUpdate={() => setPointsRefreshTrigger(prev => prev + 1)}
                 />
                 {!isReading && (
                   <div className="post-quiz-actions">
@@ -542,6 +546,7 @@ function MainContent() {
                 title="本文生词"
                 onWordDelete={setWordToDelete}
                 showSavedIndicator={showSavedIndicator}
+                onPointsUpdate={() => setPointsRefreshTrigger(prev => prev + 1)}
               />
             )}
           </>

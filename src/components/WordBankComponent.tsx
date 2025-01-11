@@ -12,13 +12,15 @@ export interface WordBankComponentProps {
   title: string;
   showSavedIndicator?: boolean;
   onWordDelete?: (word: ChineseWord) => void;
+  onPointsUpdate?: () => void;
 }
 
 export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   words,
   title,
   showSavedIndicator = false,
-  onWordDelete
+  onWordDelete,
+  onPointsUpdate
 }) => {
   const { user } = useAuth();
   const [selectedWord, setSelectedWord] = useState<ChineseWord | null>(null);
@@ -57,6 +59,9 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
         updateCharacterMastery(selectedWord.characters, newMastery),
         rewardsService.recordWordBankTest(user.id, selectedWord.characters)
       ]);
+
+      // Call onPointsUpdate after points are awarded
+      onPointsUpdate?.();
 
       // Update local state
       setMasteryData(prev => ({

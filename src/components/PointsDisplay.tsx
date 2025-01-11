@@ -5,13 +5,13 @@ import styles from './PointsDisplay.module.css';
 
 interface PointsDisplayProps {
   refreshTrigger: number;
+  streakRefreshTrigger?: number;
 }
 
-export const PointsDisplay: React.FC<PointsDisplayProps> = ({ refreshTrigger }) => {
+export const PointsDisplay: React.FC<PointsDisplayProps> = ({ refreshTrigger, streakRefreshTrigger = 0 }) => {
   const { user } = useAuth();
   const [points, setPoints] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [lastPoints, setLastPoints] = useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -22,23 +22,22 @@ export const PointsDisplay: React.FC<PointsDisplayProps> = ({ refreshTrigger }) 
     const loadPoints = async () => {
       try {
         const pointsData = await rewardsService.getPoints(user.id);
-        if (pointsData.total !== lastPoints) {
+        if (pointsData.total !== points) {
           setIsAnimating(true);
           setTimeout(() => setIsAnimating(false), 1000);
-          setLastPoints(pointsData.total);
+          setPoints(pointsData.total);
         }
-        setPoints(pointsData.total);
       } catch (error) {
         console.error('Error loading points:', error);
       }
     };
 
     loadPoints();
-  }, [user, refreshTrigger, lastPoints]);
+  }, [user, refreshTrigger, streakRefreshTrigger]);
 
   return (
     <span className={`${styles.container} ${isAnimating ? styles.animate : ''}`}>
-      🏅 {points} XP
+      💰 {points} XP
     </span>
   );
 }; 

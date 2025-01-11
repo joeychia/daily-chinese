@@ -12,13 +12,15 @@ interface TopBarProps {
   onThemeClick: () => void;
   themeEmoji: string;
   refreshTrigger: number;
+  streakRefreshTrigger: number;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   onMenuClick,
   onThemeClick,
   themeEmoji,
-  refreshTrigger
+  refreshTrigger,
+  streakRefreshTrigger
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -61,8 +63,11 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
       </div>
       <div className={styles.rightSection}>
-        <PointsDisplay refreshTrigger={refreshTrigger} />
-        <StreakDisplay refreshTrigger={refreshTrigger} />
+        <PointsDisplay 
+          refreshTrigger={refreshTrigger} 
+          streakRefreshTrigger={streakRefreshTrigger} 
+        />
+        <StreakDisplay refreshTrigger={streakRefreshTrigger} />
         <button className={styles.wordBankButton} onClick={handleWordBankClick} title="生词本">
           📝 <span className={styles.count}>{wordCount}</span>
         </button>

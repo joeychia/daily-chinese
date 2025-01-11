@@ -42,29 +42,45 @@
  * - Character processing utilities
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Quiz } from '../types/reading';
 import styles from './QuizPanel.module.css';
 import { processChineseText } from '../utils/textProcessor';
 import { analyticsService } from '../services/analyticsService';
 import { ChineseText } from './ChineseText';
 import { userDataService } from '../services/userDataService';
+import { rewardsService } from '../services/rewardsService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface QuizPanelProps {
   isOpen: boolean;
   onClose: () => void;
   quizzes: Quiz[];
   onComplete: (score: number) => void;
+  articleId: string;
+  onPointsUpdate: () => void;
 }
 
-export function QuizPanel({ isOpen, onClose, quizzes, onComplete }: QuizPanelProps) {
+export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onPointsUpdate }: QuizPanelProps) {
+  const { user } = useAuth();
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(quizzes.length).fill(-1));
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isChecking, setIsChecking] = useState(false);
   const [clickedCharacters, setClickedCharacters] = useState<string[]>([]);
+  const [hasReadArticle, setHasReadArticle] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const articleText = quizzes.map(q => q.question).join('');
+
+  useEffect(() => {
+    const checkArticleRead = async () => {
+      if (!user) return;
+      const hasRead = await userDataService.hasReadArticle(user.id, articleId);
+      setHasReadArticle(hasRead);
+    };
+    checkArticleRead();
+  }, [user, articleId]);
 
   const currentQuiz = quizzes[currentQuizIndex];
   const processedQuestion = processChineseText(currentQuiz.question);
@@ -82,6 +98,14 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete }: QuizPanelPro
       const isCorrect = selectedAnswers[currentQuizIndex] === currentQuiz.correctOption;
       if (isCorrect) {
         setScore(prev => prev + 1);
+        if (!hasReadArticle && user) {
+          try {
+            await rewardsService.addPoints(user.id, 10, 'quiz');
+            onPointsUpdate();
+          } catch (error) {
+            console.error('Error adding points:', error);
+          }
+        }
       }
       return;
     }

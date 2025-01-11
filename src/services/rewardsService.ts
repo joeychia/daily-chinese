@@ -1,11 +1,11 @@
 import { ref, get, set, increment } from 'firebase/database';
 import { db } from '../config/firebase';
 
-interface PointsData {
+export interface PointsData {
   total: number;
-  wordBankTests: number;
-  quizCompletions: number;
-  dailyStreak: number;
+  wordBank: number;
+  quiz: number;
+  streak: number;
 }
 
 export const rewardsService = {
@@ -25,9 +25,9 @@ export const rewardsService = {
     const snapshot = await get(pointsRef);
     return snapshot.val() || {
       total: 0,
-      wordBankTests: 0,
-      quizCompletions: 0,
-      dailyStreak: 0
+      wordBank: 0,
+      quiz: 0,
+      streak: 0
     };
   },
 
@@ -41,7 +41,7 @@ export const rewardsService = {
     if (!snapshot.exists() || snapshot.val() !== today) {
       await Promise.all([
         set(wordTestRef, today),
-        this.addPoints(userId, 5, 'wordBankTests')
+        this.addPoints(userId, 5, 'wordBank')
       ]);
     }
   },
@@ -55,7 +55,7 @@ export const rewardsService = {
     if (!snapshot.exists()) {
       await Promise.all([
         set(quizRef, true),
-        this.addPoints(userId, 10, 'quizCompletions')
+        this.addPoints(userId, 10, 'quiz')
       ]);
     }
   },
@@ -69,7 +69,7 @@ export const rewardsService = {
     if (!snapshot.exists() || snapshot.val() !== today) {
       await Promise.all([
         set(streakRef, today),
-        this.addPoints(userId, 15, 'dailyStreak')
+        this.addPoints(userId, 15, 'streak')
       ]);
     }
   }
