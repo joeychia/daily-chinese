@@ -37,7 +37,7 @@ export const PointsDisplay: React.FC<PointsDisplayProps> = ({ refreshTrigger, st
 
   return (
     <span className={`${styles.container} ${isAnimating ? styles.animate : ''}`}>
-      💰 {points} XP
+    {points} XP
     </span>
   );
 }; 
