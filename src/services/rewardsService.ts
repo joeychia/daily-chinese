@@ -6,11 +6,19 @@ export interface PointsData {
   wordBank: number;
   quiz: number;
   streak: number;
+  creation: number;
 }
+
+const defaultPointsData = {
+  total: 0,
+  wordBank: 0,
+  quiz: 0,
+  streak: 0,
+  creation: 0
+};
 
 export const rewardsService = {
   async addPoints(userId: string, amount: number, category: keyof PointsData): Promise<void> {
-    const pointsRef = ref(db, `users/${userId}/points`);
     const totalPointsRef = ref(db, `users/${userId}/points/total`);
     const categoryPointsRef = ref(db, `users/${userId}/points/${category}`);
 
@@ -23,12 +31,7 @@ export const rewardsService = {
   async getPoints(userId: string): Promise<PointsData> {
     const pointsRef = ref(db, `users/${userId}/points`);
     const snapshot = await get(pointsRef);
-    return snapshot.val() || {
-      total: 0,
-      wordBank: 0,
-      quiz: 0,
-      streak: 0
-    };
+    return snapshot.val() || defaultPointsData;
   },
 
   async recordWordBankTest(userId: string, word: string): Promise<void> {

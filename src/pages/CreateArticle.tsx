@@ -50,6 +50,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getWordBank } from '../services/userDataService';
 import { ChineseWord } from '../types/reading';
 import WordSelectionModal from '../components/WordSelectionModal';
+import { rewardsService } from '../services/rewardsService';
 
 type Step = 'mode' | 'input' | 'preview' | 'save';
 type CreateMethod = 'prompt' | 'rewrite' | 'metadata' | 'wordbank';
@@ -161,6 +162,7 @@ export default function CreateArticle() {
         visibility: isPrivate ? user.id : 'public'
       };
       await articleService.createArticle(articleToSave);
+      await rewardsService.addPoints(user.id, 20, 'creation');
       navigate(`/article/${articleToSave.id}`);
     } catch (error) {
       console.error('Error saving article:', error);
@@ -223,6 +225,9 @@ export default function CreateArticle() {
 
   const renderModeSelection = () => (
     <div className={styles.modeSelection}>
+      <div className={styles.pointsIncentive}>
+        创建文章可获得 20 XP 奖励！
+      </div>
       <h2>选择创建方式</h2>
       <div className={styles.modeButtons}>
         <button onClick={() => handleMethodSelect('prompt')}>
