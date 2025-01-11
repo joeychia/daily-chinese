@@ -161,7 +161,7 @@ export default function CreateArticle() {
         visibility: isPrivate ? user.id : 'public'
       };
       await articleService.createArticle(articleToSave);
-      navigate('/articles');
+      navigate(`/article/${articleToSave.id}`);
     } catch (error) {
       console.error('Error saving article:', error);
       setError('Failed to save article');
@@ -183,6 +183,7 @@ export default function CreateArticle() {
     setCurrentStep('input');
     setError(null);
     setSelectedWords([]);
+    setIsPrivate(method === 'wordbank');
   };
 
   const toggleWordSelection = (word: ChineseWord) => {
@@ -268,7 +269,7 @@ export default function CreateArticle() {
         <>
           {renderSelectedWords()}
           <div className={styles.inputGroup}>
-            <label>输入提示词（可选）：</label>
+            <label>输入提示词：</label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
