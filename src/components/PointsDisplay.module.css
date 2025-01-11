@@ -1,0 +1,25 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--theme-text);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.animate {
+  animation: highlight 1s ease;
+}
+
+@keyframes highlight {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+    color: #FFD700;  /* Gold color */
+  }
+  100% {
+    transform: scale(1);
+  }
+} 

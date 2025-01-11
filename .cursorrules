@@ -17,6 +17,11 @@ reading:
   - Character mastery
   - Comprehension quizzes
 
+rewards:
+  - Points:
+    - Word bank test completion bonus, 5 point per word correctly answered once
+    - Quiz completion bonus, 10 point per quiz question correctly answered for the first time
+  
 articles:
   - Public article library
   - Article creation

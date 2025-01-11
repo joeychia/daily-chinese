@@ -3,6 +3,8 @@ import { ChineseWord } from '../data/sampleText';
 import { TestWordModal } from './TestWordModal';
 import { PrintableCards } from './PrintableCards';
 import { getCharacterMastery, updateCharacterMastery } from '../services/userDataService';
+import { rewardsService } from '../services/rewardsService';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './WordBankComponent.module.css';
 
 export interface WordBankComponentProps {
@@ -18,6 +20,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   showSavedIndicator = false,
   onWordDelete
 }) => {
+  const { user } = useAuth();
   const [selectedWord, setSelectedWord] = useState<ChineseWord | null>(null);
   const [showTestModal, setShowTestModal] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
@@ -25,17 +28,17 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
 
   // Load mastery data
   useEffect(() => {
-    const loadMasteryData = async () => {
+    const loadData = async () => {
       try {
-        const data = await getCharacterMastery();
-        setMasteryData(data || {});
+        const mastery = await getCharacterMastery();
+        setMasteryData(mastery || {});
       } catch (error) {
-        console.error('Error loading mastery data:', error);
+        console.error('Error loading data:', error);
       }
     };
 
-    loadMasteryData();
-  }, []);
+    loadData();
+  }, [user]);
 
   const handleWordClick = (word: ChineseWord) => {
     setSelectedWord(word);
@@ -43,22 +46,30 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   };
 
   const handleTestCorrect = async () => {
-    if (!selectedWord) return;
+    if (!selectedWord || !user) return;
 
     const currentMastery = masteryData[selectedWord.characters] ?? -1;
     const newMastery = currentMastery + 1;
 
-    // Update mastery data locally and in storage
-    const newMasteryData = {
-      ...masteryData,
-      [selectedWord.characters]: newMastery
-    };
-    setMasteryData(newMasteryData);
-    await updateCharacterMastery(selectedWord.characters, newMastery);
+    try {
+      // Update mastery and record test completion for points
+      await Promise.all([
+        updateCharacterMastery(selectedWord.characters, newMastery),
+        rewardsService.recordWordBankTest(user.id, selectedWord.characters)
+      ]);
 
-    // Remove word from word bank if mastery level reaches 3
-    if (newMastery >= 3) {
-      onWordDelete?.(selectedWord);
+      // Update local state
+      setMasteryData(prev => ({
+        ...prev,
+        [selectedWord.characters]: newMastery
+      }));
+
+      // Remove word if mastery level reaches 3
+      if (newMastery >= 3) {
+        onWordDelete?.(selectedWord);
+      }
+    } catch (error) {
+      console.error('Error updating test results:', error);
     }
 
     // Close modal after successful test
