@@ -114,7 +114,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
       </div>
       <div className={styles.wordList}>
         {words.map((word) => {
-          const mastery = masteryData[word.characters] ?? -1;
+          const mastery = masteryData[word.characters] ?? 0;
           return (
             <div 
               key={word.characters} 
@@ -142,7 +142,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
         isOpen={showTestModal}
         onClose={handleCloseModal}
         onCorrect={handleTestCorrect}
-        mastery={selectedWord ? (masteryData[selectedWord.characters] ?? -1) : -1}
+        mastery={selectedWord ? (masteryData[selectedWord.characters] ?? 0) : 0}
       />
       {showPrintPreview && <PrintableCards words={words} />}
     </div>

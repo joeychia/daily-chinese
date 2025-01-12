@@ -67,7 +67,7 @@ class UserDataServiceImpl implements UserDataService {
     }
   }
 
-  async updateCharacterMastery(characters: string[], mastery: number) {
+  async updateCharacterMastery(characters: string[], mastery: number, keepExisting: boolean = false) {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
@@ -79,7 +79,7 @@ class UserDataServiceImpl implements UserDataService {
       
       const updates: CharacterMasteryData = {};
       characters.forEach(char => {
-        updates[char] = mastery;
+        updates[char] = keepExisting ? currentMastery[char] || mastery : mastery;
       });
 
       await update(masteryRef, updates);

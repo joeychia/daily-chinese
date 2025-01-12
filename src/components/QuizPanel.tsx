@@ -131,7 +131,7 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onP
     const allChars = Array.from(new Set(articleText.split('')));
     const masteredChars = allChars.filter(char => !clickedCharacters.includes(char));
     if (masteredChars.length > 0) {
-      await userDataService.updateCharacterMastery(masteredChars, 3);
+      await userDataService.updateCharacterMastery(masteredChars, 3, true);
     }
   };
 
@@ -157,7 +157,7 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onP
         />
       </div>
       <div className={styles.options}>
-        {processedOptions.map((option, index) => {
+        {currentQuiz.options.map((option, index) => {
           let optionClass = styles.option;
           if (selectedAnswers[currentQuizIndex] === index) {
             optionClass += ' ' + styles.selected;
@@ -183,7 +183,10 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onP
               }}
               disabled={isChecking}
             >
-              <ChineseText text={option} onWordPeek={() => {}} />
+              <ChineseText 
+                text={processChineseText(option)}
+                onWordPeek={(word) => handleCharacterClick(word.characters)}
+              />
             </button>
           );
         })}

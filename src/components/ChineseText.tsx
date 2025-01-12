@@ -22,16 +22,10 @@ export function ChineseText({ text, onWordPeek, wordBank = [] }: ChineseTextProp
   const handleWordClick = (word: ChineseWord, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event from bubbling
 
-    if (selectedWord !== null) {
-      // If any word is already selected, just dismiss the popup
-      setSelectedWord(null);
-      return;
-    }
-
     if (isChineseCharacter(word.characters)) {
       setSelectedWord(word);
       onWordPeek(word);
-    }
+    } 
   };
 
   // Add document-wide click listener to handle "click away"
@@ -58,7 +52,7 @@ export function ChineseText({ text, onWordPeek, wordBank = [] }: ChineseTextProp
         >
           {isInWordBank(word) && <span className={styles.wordBankDot} />}
           <span className={styles.word}>{word.characters}</span>
-          {selectedWord === word && isChineseCharacter(word.characters) && (
+          {selectedWord?.characters === word.characters && isChineseCharacter(word.characters) && (
             <div className={`${styles.pinyinPopup} ${styles.visible}`}>
               <div className={styles.pinyin}>{word.pinyin.join(' ')}</div>
             </div>
@@ -68,3 +62,4 @@ export function ChineseText({ text, onWordPeek, wordBank = [] }: ChineseTextProp
     </div>
   );
 }
+
