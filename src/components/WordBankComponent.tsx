@@ -5,6 +5,8 @@ import { PrintableCards } from './PrintableCards';
 import { getCharacterMastery, updateCharacterMastery } from '../services/userDataService';
 import { rewardsService } from '../services/rewardsService';
 import { useAuth } from '../contexts/AuthContext';
+import { ref, get } from 'firebase/database';
+import { db } from '../config/firebase';
 import styles from './WordBankComponent.module.css';
 
 export interface WordBankComponentProps {
@@ -27,13 +29,30 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   const [showTestModal, setShowTestModal] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [masteryData, setMasteryData] = useState<Record<string, number>>({});
+  const [testedToday, setTestedToday] = useState<Record<string, boolean>>({});
 
-  // Load mastery data
+  // Load mastery data and test dates
   useEffect(() => {
     const loadData = async () => {
       try {
-        const mastery = await getCharacterMastery();
+        const [mastery, testDates] = await Promise.all([
+          getCharacterMastery(),
+          user ? get(ref(db, `users/${user.id}/wordTests`)) : null
+        ]);
+        
         setMasteryData(mastery || {});
+        
+        if (testDates && testDates.exists()) {
+          const today = new Date().toISOString().split('T')[0];
+          const tested: Record<string, boolean> = {};
+          const dates = testDates.val();
+          
+          Object.entries(dates).forEach(([word, date]) => {
+            tested[word] = date === today;
+          });
+          
+          setTestedToday(tested);
+        }
       } catch (error) {
         console.error('Error loading data:', error);
       }
@@ -60,14 +79,19 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
         rewardsService.recordWordBankTest(user.id, selectedWord.characters)
       ]);
 
-      // Call onPointsUpdate after points are awarded
-      onPointsUpdate?.();
-
       // Update local state
       setMasteryData(prev => ({
         ...prev,
         [selectedWord.characters]: newMastery
       }));
+      
+      setTestedToday(prev => ({
+        ...prev,
+        [selectedWord.characters]: true
+      }));
+
+      // Call onPointsUpdate after points are awarded
+      onPointsUpdate?.();
 
       // Remove word if mastery level reaches 3
       if (newMastery >= 3) {
@@ -115,10 +139,12 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
       <div className={styles.wordList}>
         {words.map((word) => {
           const mastery = masteryData[word.characters] ?? 0;
+          const tested = testedToday[word.characters];
           return (
             <div 
               key={word.characters} 
               className={styles.wordItem}
+              style={{ backgroundColor: tested ? '#f5f7fa' : undefined }}
             >
               <div className={styles.wordContent} onClick={() => handleWordClick(word)}>
                 <span 

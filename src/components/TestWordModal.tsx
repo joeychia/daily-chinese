@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ChineseWord } from '../data/sampleText';
 import styles from './TestWordModal.module.css';
 import { pinyin } from 'pinyin-pro';
+import { useAuth } from '../contexts/AuthContext';
+import { ref, get, set } from 'firebase/database';
+import { db } from '../config/firebase';
 
 interface TestWordModalProps {
   word: ChineseWord | null;
@@ -11,10 +14,6 @@ interface TestWordModalProps {
   mastery: number;
 }
 
-interface DailyTestRecord {
-  [character: string]: string; // date string
-}
-
 export const TestWordModal: React.FC<TestWordModalProps> = ({
   word,
   isOpen,
@@ -22,6 +21,7 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
   onCorrect,
   mastery
 }) => {
+  const { user } = useAuth();
   const [input, setInput] = useState('');
   const [error, setError] = useState(false);
   const [isTestedToday, setIsTestedToday] = useState(false);
@@ -37,28 +37,39 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
   }, [word?.characters]);
 
   useEffect(() => {
-    if (word) {
+    if (word && user) {
       checkIfTestedToday(word.characters);
     }
-  }, [word]);
+  }, [word, user]);
 
-  const checkIfTestedToday = (character: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const testRecords: DailyTestRecord = JSON.parse(localStorage.getItem('dailyTestRecords') || '{}');
-    const lastTestDate = testRecords[character];
-    setIsTestedToday(lastTestDate === today);
+  const checkIfTestedToday = async (character: string) => {
+    if (!user) return;
+    
+    try {
+      const testRef = ref(db, `users/${user.id}/wordTests/${character}`);
+      const snapshot = await get(testRef);
+      const today = new Date().toISOString().split('T')[0];
+      setIsTestedToday(snapshot.exists() && snapshot.val() === today);
+    } catch (error) {
+      console.error('Error checking test date:', error);
+    }
   };
 
-  const recordTest = (character: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const testRecords: DailyTestRecord = JSON.parse(localStorage.getItem('dailyTestRecords') || '{}');
-    testRecords[character] = today;
-    localStorage.setItem('dailyTestRecords', JSON.stringify(testRecords));
+  const recordTest = async (character: string) => {
+    if (!user) return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const testRef = ref(db, `users/${user.id}/wordTests/${character}`);
+      await set(testRef, today);
+    } catch (error) {
+      console.error('Error recording test date:', error);
+    }
   };
 
   if (!isOpen || !word) return null;
 
-  const handleCheck = () => {
+  const handleCheck = async () => {
     const userInput = input.trim().toLowerCase();
     
     // Get all possible pinyin readings for the character
@@ -70,7 +81,7 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
       setError(false);
       setShowSuccess(true);
       if (!isTestedToday) {
-        recordTest(word.characters);
+        await recordTest(word.characters);
         onCorrect();
         setCurrentMastery(prev => prev + 1);
       }
@@ -80,10 +91,10 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleCheck();
+      await handleCheck();
     }
   };
 
