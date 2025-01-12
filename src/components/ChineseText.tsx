@@ -8,8 +8,13 @@ interface ChineseTextProps {
   wordBank?: ChineseWord[];
 }
 
+interface SelectedWordInfo {
+  word: ChineseWord;
+  index: number;
+}
+
 export function ChineseText({ text, onWordPeek, wordBank = [] }: ChineseTextProps) {
-  const [selectedWord, setSelectedWord] = useState<ChineseWord | null>(null);
+  const [selectedWord, setSelectedWord] = useState<SelectedWordInfo | null>(null);
 
   const isInWordBank = (word: ChineseWord) => {
     return wordBank.some(w => w.characters === word.characters);
@@ -19,12 +24,16 @@ export function ChineseText({ text, onWordPeek, wordBank = [] }: ChineseTextProp
     return /[\u4E00-\u9FFF]/.test(str);
   };
 
-  const handleWordClick = (word: ChineseWord, e: React.MouseEvent) => {
+  const handleWordClick = (word: ChineseWord, index: number, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event from bubbling
 
     if (isChineseCharacter(word.characters)) {
-      setSelectedWord(word);
-      onWordPeek(word);
+      if (selectedWord?.word === word && selectedWord?.index === index) {
+        setSelectedWord(null);
+      } else {
+        setSelectedWord({ word, index });
+        onWordPeek(word);
+      }
     } 
   };
 
@@ -48,11 +57,11 @@ export function ChineseText({ text, onWordPeek, wordBank = [] }: ChineseTextProp
         <span
           key={index}
           className={`${styles.wordContainer} ${isChineseCharacter(word.characters) ? styles.interactive : ''}`}
-          onClick={(e) => handleWordClick(word, e)}
+          onClick={(e) => handleWordClick(word, index, e)}
         >
           {isInWordBank(word) && <span className={styles.wordBankDot} />}
           <span className={styles.word}>{word.characters}</span>
-          {selectedWord?.characters === word.characters && isChineseCharacter(word.characters) && (
+          {selectedWord?.word.characters === word.characters && selectedWord?.index === index && isChineseCharacter(word.characters) && (
             <div className={`${styles.pinyinPopup} ${styles.visible}`}>
               <div className={styles.pinyin}>{word.pinyin.join(' ')}</div>
             </div>
