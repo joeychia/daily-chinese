@@ -175,7 +175,6 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
                 </div>
               )}
               <div className={styles.buttons}>
-                <button type="button" onClick={onClose}>取消</button>
                 <button type="button" onClick={handleCheck}>确认</button>
               </div>
             </div>
