@@ -25,18 +25,14 @@ const sanitizeJsonString = (str: string): string => {
   // Remove any potential control characters
   str = str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
   
-  // Ensure proper quote usage
-  str = str.replace(/[""]/g, '"');
-  
   // Remove any potential leading/trailing non-JSON content
   str = str.replace(/^[^{]*({[\s\S]*})[^}]*$/, '$1');
   
-  // Fix any double quotes within text
-  str = str.replace(/(?<!\\)\\"/g, '"')
-    .replace(/\\\\"/g, '\\"');
-  
   // Remove any trailing commas before closing brackets/braces
   str = str.replace(/,(\s*[}\]])/g, '$1');
+  
+  // Remove any non-JSON trailing content
+  str = str.replace(/\s*\n*$/, '');
   
   return str;
 };
@@ -86,8 +82,18 @@ export const geminiService = {
       }
       
       const sanitizedJson = sanitizeJsonString(jsonMatch[0]);
-      const article = JSON.parse(sanitizedJson) as GeneratedArticle;
-      return article;
+      try {
+        const article = JSON.parse(sanitizedJson) as GeneratedArticle;
+        return article;
+      } catch (error) {
+        const err = error as any;
+        console.error('Error parsing JSON:', err);
+        console.error('Raw response:', text);
+        console.error('Sanitized JSON:', sanitizedJson);
+        console.error('Error position:', err.position);
+        console.error('Error context:', sanitizedJson.slice(Math.max(0, err.position - 20), err.position + 20));
+        throw new Error('Failed to parse JSON response from Gemini');
+      }
     } catch (error) {
       console.error("Error generating article:", error);
       throw error;
@@ -142,8 +148,18 @@ export const geminiService = {
       }
       
       const sanitizedJson = sanitizeJsonString(jsonMatch[0]);
-      const article = JSON.parse(sanitizedJson) as GeneratedArticle;
-      return article;
+      try {
+        const article = JSON.parse(sanitizedJson) as GeneratedArticle;
+        return article;
+      } catch (error) {
+        const err = error as any;
+        console.error('Error parsing JSON:', err);
+        console.error('Raw response:', responseText);
+        console.error('Sanitized JSON:', sanitizedJson);
+        console.error('Error position:', err.position);
+        console.error('Error context:', sanitizedJson.slice(Math.max(0, err.position - 20), err.position + 20));
+        throw new Error('Failed to parse JSON response from Gemini');
+      }
     } catch (error) {
       console.error("Error generating article from text:", error);
       throw error;
@@ -180,7 +196,8 @@ export const geminiService = {
       ]
     }`;
 
-    const result = await model.generateContent([systemPrompt, sourceText]);
+    const escapedSourceText = sourceText.replace(/"/g, '\\"');
+    const result = await model.generateContent([systemPrompt, escapedSourceText]);
     const response = result.response;
     const text = response.text();
     
@@ -194,8 +211,12 @@ export const geminiService = {
     try {
       return JSON.parse(sanitizedJson) as GeneratedArticle;
     } catch (error) {
+      const err = error as any;
+      console.error('Error parsing JSON:', err);
       console.error('Raw response:', text);
       console.error('Sanitized JSON:', sanitizedJson);
+      console.error('Error position:', err.position);
+      console.error('Error context:', sanitizedJson.slice(Math.max(0, err.position - 20), err.position + 20));
       throw new Error('Failed to parse JSON response from Gemini');
     }
   }

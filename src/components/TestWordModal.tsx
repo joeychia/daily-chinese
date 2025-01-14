@@ -75,7 +75,9 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
     // Get all possible pinyin readings for the character
     const readings = pinyin(word.characters, { toneType: 'none', multiple: true, type: 'array' });
     const possibleReadings = Array.isArray(readings) ? readings : [readings];
-    const lowerCaseReadings = possibleReadings.map(reading => reading.toLowerCase());
+    const lowerCaseReadings = possibleReadings.map(reading => 
+        reading.toLowerCase().replace('ǚ', 'v').replace('ü', 'v')
+    );
 
     if (lowerCaseReadings.includes(userInput)) {
       setError(false);
