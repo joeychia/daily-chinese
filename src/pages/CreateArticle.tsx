@@ -71,6 +71,7 @@ export default function CreateArticle() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [editableQuizzes, setEditableQuizzes] = useState(generatedPreview?.quizzes || []);
 
   useEffect(() => {
     const loadWordBank = async () => {
@@ -94,6 +95,26 @@ export default function CreateArticle() {
 
     loadWordBank();
   }, [user, createMethod]);
+
+  useEffect(() => {
+    if (generatedPreview) {
+      setEditableQuizzes(generatedPreview.quizzes);
+    }
+  }, [generatedPreview]);
+
+  const handleQuizChange = (quizIndex: number, field: string, value: string | number) => {
+    setEditableQuizzes(prevQuizzes => {
+      const updatedQuizzes = [...prevQuizzes];
+      if (field === 'question') {
+        updatedQuizzes[quizIndex].question = value as string;
+      } else if (typeof field === 'number') {
+        updatedQuizzes[quizIndex].options[field] = value as string;
+      } else if (field === 'correctAnswer') {
+        updatedQuizzes[quizIndex].correctAnswer = value as number;
+      }
+      return updatedQuizzes;
+    });
+  };
 
   const handleCreateArticle = async () => {
     if (!user) return;
@@ -329,6 +350,43 @@ export default function CreateArticle() {
     </div>
   );
 
+  const renderEditableQuizzes = () => (
+    <div className={styles.quizList}>
+      {editableQuizzes.map((quiz, quizIndex) => (
+        <div key={quizIndex} className={styles.quizItem}>
+          <div className={styles.quizQuestion}>
+            <span className={styles.questionNumber}>问题 {quizIndex + 1}:</span>
+            <input
+              type="text"
+              value={quiz.question}
+              onChange={(e) => handleQuizChange(quizIndex, 'question', e.target.value)}
+              className={styles.quizInput}
+            />
+          </div>
+          <ul className={styles.quizOptions}>
+            {quiz.options.map((option, optIndex) => (
+              <li key={optIndex} className={styles.option}>
+                <span className={styles.optionLabel}>{String.fromCharCode(65 + optIndex)}.</span>
+                <input
+                  type="text"
+                  value={option}
+                  onChange={(e) => handleQuizChange(quizIndex, optIndex, e.target.value)}
+                  className={styles.quizInput}
+                />
+                <input
+                  type="radio"
+                  name={`correctAnswer-${quizIndex}`}
+                  checked={optIndex === quiz.correctAnswer}
+                  onChange={() => handleQuizChange(quizIndex, 'correctAnswer', optIndex)}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+
   const renderPreviewStep = () => (
     <>
       <div className={styles.preview}>
@@ -338,30 +396,7 @@ export default function CreateArticle() {
         </div>
         <div className={styles.quizPreview}>
           <h4>测验题目</h4>
-          <div className={styles.quizList}>
-            {generatedPreview?.quizzes.map((quiz, index) => (
-              <div key={index} className={styles.quizItem}>
-                <div className={styles.quizQuestion}>
-                  <span className={styles.questionNumber}>问题 {index + 1}:</span>
-                  <p>{quiz.question}</p>
-                </div>
-                <ul className={styles.quizOptions}>
-                  {quiz.options.map((option, optIndex) => (
-                    <li 
-                      key={optIndex} 
-                      className={`${styles.option} ${optIndex === quiz.correctAnswer ? styles.correctOption : ''}`}
-                    >
-                      <span className={styles.optionLabel}>{String.fromCharCode(65 + optIndex)}.</span>
-                      {option}
-                      {optIndex === quiz.correctAnswer && (
-                        <span className={styles.correctMark}>✓</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          {renderEditableQuizzes()}
         </div>
       </div>
       <div className={styles.visibilityControl}>
