@@ -29,6 +29,7 @@ import { Progress } from './pages/Progress'
 import { characterGrades } from './data/characterGrades'
 import { calculateStats } from './pages/Progress'
 import { ArticleFeedbackPanel } from './components/ArticleFeedbackPanel'
+import { Leaderboard } from './pages/Leaderboard'
 
 // Define the structure of the quiz from the database
 interface DatabaseQuiz {
@@ -690,6 +691,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Progress />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <Leaderboard />
               </ProtectedRoute>
             }
           />

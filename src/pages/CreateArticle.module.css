@@ -400,23 +400,39 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
 }
 
 .quizItem {
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
   border-radius: 0.5rem;
-  padding: 1rem;
+  padding: 1.5rem;
+  width: 100%;
 }
 
 .quizQuestion {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.quizQuestion input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--theme-card-border);
+  border-radius: 0.375rem;
+  background: var(--theme-background);
+  color: var(--theme-text);
+  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
 .questionNumber {
   font-weight: bold;
   color: var(--theme-primary);
   margin-right: 0.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .quizOptions {
@@ -425,21 +441,42 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
+  width: 100%;
 }
 
 .option {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  gap: 1rem;
+  width: 100%;
   padding: 0.5rem;
-  border-radius: 0.25rem;
+  border-radius: 0.375rem;
   background: var(--theme-background);
+}
+
+.option input[type="text"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--theme-card-border);
+  border-radius: 0.375rem;
+  background: var(--theme-background);
+  color: var(--theme-text);
+  font-size: 1rem;
 }
 
 .optionLabel {
   font-weight: bold;
-  margin-right: 0.5rem;
   color: var(--theme-primary);
+  min-width: 2rem;
+}
+
+.option input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  cursor: pointer;
 }
 
 .correctOption {
@@ -473,4 +510,36 @@
   100% {
     transform: scale(1);
   }
+}
+
+.quizEditor {
+  @apply space-y-6;
+}
+
+.quizCard {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4;
+}
+
+.questionInput {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white;
+}
+
+.optionGroup {
+  @apply flex items-center space-x-3;
+}
+
+.radioWrapper {
+  @apply flex-none w-8;
+}
+
+.optionInput {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white;
+}
+
+.questionLabel {
+  @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+}
+
+.optionsContainer {
+  @apply space-y-3;
 } 

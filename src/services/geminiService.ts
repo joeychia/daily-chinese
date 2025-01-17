@@ -68,7 +68,7 @@ export const geminiService = {
       
       文章主题：${prompt}
       
-      文章必须适合小学生阅读水平，汉字应该使用常用汉字，风格要好玩，幽默，内容属于正向价值观。
+      文章必须适合低年级小学生阅读水平，汉字应该使用常用汉字，风格要好玩，幽默，内容属于正向价值观。
       注意：请确保文章长度接近${options.maxLength || 300}个汉字。`;
 
       const result = await model.generateContent(systemPrompt);
@@ -135,7 +135,7 @@ export const geminiService = {
       
       注意：
       1. 请确保文章长度接近${options.maxLength || 300}个汉字
-      2. 使用小学生容易理解的语言和汉字
+      2. 使用低年级小学生容易理解的语言和汉字
       3. 保持内容有趣且富有教育意义`;
 
       const result = await model.generateContent(systemPrompt);
