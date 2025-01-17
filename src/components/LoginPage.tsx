@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { themes } from '../config/themes';
 import styles from './LoginPage.module.css';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
 
-  const theme = themes[0]; // Use candy theme for login page
+  const theme = themes[0];
 
   const handleGoogleSignIn = async () => {
     try {
@@ -37,9 +38,26 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
+    if (isSignUp && !name) {
+      setError('请输入用户名');
+      return;
+    }
+
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Update user profile with name
+        if (userCredential.user) {
+          await updateProfile(userCredential.user, {
+            displayName: name
+          });
+          // Update the user context with the new display name
+          setUser({
+            ...userCredential.user,
+            displayName: name,
+            id: userCredential.user.uid
+          });
+        }
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -84,6 +102,16 @@ export const LoginPage: React.FC = () => {
         {error && <div className={styles.error}>{error}</div>}
         
         <form className={styles.form} onSubmit={handleEmailAuth}>
+          {isSignUp && (
+            <input
+              type="text"
+              placeholder="用户名"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={styles.input}
+              required
+            />
+          )}
           <input
             type="email"
             placeholder="电子邮件"
@@ -115,7 +143,11 @@ export const LoginPage: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setIsSignUp(!isSignUp)}
+          onClick={() => {
+            setIsSignUp(!isSignUp);
+            setError(null);
+            setName('');
+          }}
           className={styles.switchButton}
         >
           {isSignUp ? '已有账号？点击登录' : '没有账号？点击注册'}
