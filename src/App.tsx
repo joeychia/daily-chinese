@@ -79,21 +79,21 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
-  console.log('ProtectedRoute:', { user, loading });
+const ProtectedRoute = ({ children, allowGuest }: ProtectedRouteProps & { allowGuest?: boolean }) => {
+  const { user, loading, isGuest } = useAuth();
 
   if (loading) {
-    console.log('ProtectedRoute: Loading...');
     return <div>Loading...</div>;
   }
 
-  if (!user) {
-    console.log('ProtectedRoute: No user, redirecting to login');
+  if (!user && !allowGuest) {
     return <Navigate to="/login" />;
   }
 
-  console.log('ProtectedRoute: User authenticated, rendering children');
+  if (isGuest && !allowGuest) {
+    return <Navigate to="/signup" />;
+  }
+
   return <>{children}</>;
 };
 
@@ -201,29 +201,45 @@ function MainContent() {
     init();
   }, []);
 
-  // Load article when articleId changes
+  // Load article when articleId changes or on root path
   useEffect(() => {
     const loadArticle = async () => {
-      if (!articleId) return;
-      
       try {
-        const article = await articleService.getArticleById(articleId);
-        if (!article) {
-          setError('Article not found');
-          return;
+        if (articleId) {
+          const article = await articleService.getArticleById(articleId);
+          if (!article) {
+            setError('Article not found');
+            return;
+          }
+          const convertedArticle = await convertArticle(article);
+          setReading(convertedArticle);
+          setProcessedText(processChineseText(convertedArticle.content));
+          
+          // Track article view with enhanced metrics
+          analyticsService.trackArticleView(articleId, article.title, {
+            difficulty: convertedArticle.difficultyLevel,
+            wordCount: processChineseText(article.content).length,
+            author: article.author,
+            tags: article.tags,
+            isGenerated: article.isGenerated
+          });
+        } else {
+          // On root path, load first unread or random article
+          let articles;
+          if (user) {
+            const unreadArticle = await articleService.getFirstUnreadArticle(user.id);
+            if (unreadArticle) {
+              navigate(`/article/${unreadArticle.id}`);
+              return;
+            }
+          }
+          // For guest users or if no unread articles, get all articles and pick a random one
+          articles = await articleService.getAllArticles();
+          if (articles.length > 0) {
+            const randomIndex = Math.floor(Math.random() * articles.length);
+            navigate(`/article/${articles[randomIndex].id}`);
+          }
         }
-        const convertedArticle = await convertArticle(article);
-        setReading(convertedArticle);
-        setProcessedText(processChineseText(convertedArticle.content));
-        
-        // Track article view with enhanced metrics
-        analyticsService.trackArticleView(articleId, article.title, {
-          difficulty: convertedArticle.difficultyLevel,
-          wordCount: processChineseText(article.content).length,
-          author: article.author,
-          tags: article.tags,
-          isGenerated: article.isGenerated
-        });
       } catch (error) {
         console.error('Error loading article:', error);
         setError('Failed to load article');
@@ -231,7 +247,7 @@ function MainContent() {
     };
 
     loadArticle();
-  }, [articleId]);
+  }, [articleId, user, navigate]);
 
   useEffect(() => {
     console.log('Loading reading content:', { 
@@ -411,26 +427,6 @@ function MainContent() {
     }
   };
 
-  // Load random article for homepage
-  useEffect(() => {
-    const loadRandomArticle = async () => {
-      if (!articleId) {
-        try {
-          const articles = await articleService.getAllArticles();
-          if (articles.length > 0) {
-            const randomIndex = Math.floor(Math.random() * articles.length);
-            navigate(`/article/${articles[randomIndex].id}`);
-          }
-        } catch (error) {
-          console.error('Error loading random article:', error);
-          setError('Failed to load random article');
-        }
-      }
-    };
-
-    loadRandomArticle();
-  }, [articleId, navigate]);
-
   const handleFeedbackSubmit = async (feedback: { enjoyment: number; difficulty: number }) => {
     analyticsService.trackArticleFeedback(articleId!, feedback);
   };
@@ -569,45 +565,6 @@ function MainContent() {
   );
 }
 
-function RandomArticle() {
-  const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
-
-  useEffect(() => {
-    const loadFirstUnreadArticle = async () => {
-      if (!user) return;
-      
-      try {
-        // Try to get first unread article
-        const unreadArticle = await articleService.getFirstUnreadArticle(user.id);
-        
-        if (unreadArticle) {
-          navigate(`/article/${unreadArticle.id}`, { replace: true });
-        } else {
-          // If no unread articles, get all articles and pick a random one
-          const articles = await articleService.getAllArticles();
-          if (articles.length > 0) {
-            const randomIndex = Math.floor(Math.random() * articles.length);
-            navigate(`/article/${articles[randomIndex].id}`, { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error('Error loading article:', error);
-        setError('Failed to load article');
-      }
-    };
-
-    loadFirstUnreadArticle();
-  }, [navigate, user]);
-
-  if (error) {
-    return <div style={{ color: 'red' }}>Error: {error}</div>;
-  }
-
-  return <div>Loading article...</div>;
-}
-
 function App() {
   useEffect(() => {
     console.log('App: Initializing database...');
@@ -633,15 +590,15 @@ function App() {
           <Route
             path="/"
             element={
-              <ProtectedRoute>
-                <RandomArticle />
+              <ProtectedRoute allowGuest>
+                <MainContent />
               </ProtectedRoute>
             }
           />
           <Route
             path="/articles"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowGuest>
                 <Articles />
               </ProtectedRoute>
             }
@@ -657,7 +614,7 @@ function App() {
           <Route
             path="/article/:articleId"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowGuest>
                 <MainContent />
               </ProtectedRoute>
             }
@@ -665,7 +622,7 @@ function App() {
           <Route
             path="/wordbank"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowGuest>
                 <WordBank />
               </ProtectedRoute>
             }

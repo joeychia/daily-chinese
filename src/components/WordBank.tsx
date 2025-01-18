@@ -6,6 +6,7 @@ import { getWordBank, subscribeToWordBank, saveWordBank, getTheme } from '../ser
 import { WordBankComponent } from './WordBankComponent';
 import { themes } from '../config/themes';
 import styles from './WordBank.module.css';
+import { getLocalStorageItem, setLocalStorageItem } from '../utils/localStorageUtils';
 
 export const WordBank: React.FC = () => {
   const { user } = useAuth();
@@ -36,7 +37,8 @@ export const WordBank: React.FC = () => {
 
   useEffect(() => {
     if (!user) {
-      setWordBank([]);
+      const storedWordBank = getLocalStorageItem('guestWordBank') || [];
+      setWordBank(storedWordBank);
       return;
     }
 
@@ -88,6 +90,13 @@ export const WordBank: React.FC = () => {
       clearInterval(syncInterval);
     };
   }, [user, wordBank]);
+
+  // Sync word bank to localStorage for guest users
+  useEffect(() => {
+    if (!user) {
+      setLocalStorageItem('guestWordBank', wordBank);
+    }
+  }, [wordBank, user]);
 
   const handleDeleteWord = (word: ChineseWord) => {
     if (!user) return;
