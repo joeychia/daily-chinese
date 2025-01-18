@@ -1,5 +1,5 @@
-/** @jest-environment jsdom */
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StreakPanel } from '../StreakPanel';
 
 describe('StreakPanel', () => {
@@ -11,16 +11,16 @@ describe('StreakPanel', () => {
     completedDates: ['2024-01-02', '2024-01-01', '2024-01-03', '2024-01-04', '2024-01-05']
   };
 
-  const mockOnClose = jest.fn();
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2024-01-05'));
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-01-05'));
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should not render when isOpen is false', () => {
