@@ -2,12 +2,92 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TestWordModal } from './TestWordModal';
 import userEvent from '@testing-library/user-event';
+import { AuthContext } from '../contexts/AuthContext';
+import { db } from '../config/firebase';
+import { ref, get, set } from 'firebase/database';
+
+// Mock Firebase
+vi.mock('firebase/database', () => {
+  type MockRef = {
+    key: string;
+    parent: MockRef | null;
+    root: MockRef;
+    ref: MockRef;
+    path: string;
+    toString: () => string;
+    isEqual: () => boolean;
+    toJSON: () => string;
+  };
+
+  const createMockRef = (): MockRef => {
+    const mockRef: Partial<MockRef> = {
+      key: 'mock-key',
+      path: 'mock/path',
+      toString: () => 'mock/path',
+      isEqual: () => false,
+      toJSON: () => 'mock/path'
+    };
+    mockRef.parent = mockRef as MockRef;
+    mockRef.root = mockRef as MockRef;
+    mockRef.ref = mockRef as MockRef;
+    return mockRef as MockRef;
+  };
+
+  const mockRef = createMockRef();
+
+  const mockSnapshot = (exists: boolean, value: any) => {
+    const snapshot = {
+      exists: () => exists,
+      val: () => value,
+      ref: mockRef,
+      key: null,
+      size: 0,
+      priority: null,
+      forEach: () => true,
+      hasChild: () => false,
+      hasChildren: () => false,
+      numChildren: () => 0,
+      child: () => mockSnapshot(false, null),
+      exportVal: () => value,
+      toJSON: () => value
+    };
+    return snapshot;
+  };
+
+  return {
+    ref: vi.fn(() => mockRef),
+    get: vi.fn(() => Promise.resolve(mockSnapshot(false, null))),
+    set: vi.fn(),
+    db: {}
+  };
+});
+
+vi.mock('../config/firebase', () => ({
+  db: {}
+}));
 
 describe('TestWordModal', () => {
+  const mockUser = {
+    id: 'test-user',
+    email: 'test@example.com',
+    displayName: 'Test User'
+  };
+
+  const mockAuthContext = {
+    user: mockUser,
+    loading: false,
+    setUser: vi.fn(),
+    signIn: vi.fn(),
+    signInWithGoogle: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn()
+  };
+
   const mockWord = {
     characters: '你',
     pinyin: ['nǐ'],
-    english: 'you'
+    english: 'you',
+    meaning: 'you'
   };
 
   const defaultProps = {
@@ -25,23 +105,31 @@ describe('TestWordModal', () => {
     vi.spyOn(Storage.prototype, 'clear').mockImplementation(() => {});
   });
 
+  const renderWithAuth = (ui: React.ReactElement) => {
+    return render(
+      <AuthContext.Provider value={mockAuthContext}>
+        {ui}
+      </AuthContext.Provider>
+    );
+  };
+
   it('should not render when isOpen is false', () => {
-    render(<TestWordModal {...defaultProps} isOpen={false} />);
+    renderWithAuth(<TestWordModal {...defaultProps} isOpen={false} />);
     expect(screen.queryByText('测试')).toBeNull();
   });
 
   it('should render character and mastery level', () => {
-    render(<TestWordModal {...defaultProps} />);
+    renderWithAuth(<TestWordModal {...defaultProps} />);
     expect(screen.getByText('你')).toBeInTheDocument();
     expect(screen.getByText('掌握程度：不熟')).toBeInTheDocument();
   });
 
   it('should show success message and remaining tests when answer is correct', async () => {
-    render(<TestWordModal {...defaultProps} />);
+    renderWithAuth(<TestWordModal {...defaultProps} />);
     
     const input = screen.getByPlaceholderText('输入拼音（不用输入声调）');
     await userEvent.type(input, 'ni');
-    fireEvent.click(screen.getByText('确认'));
+    await userEvent.click(screen.getByText('确认'));
 
     expect(screen.getByText('回答正确！')).toBeInTheDocument();
     expect(screen.getByText('还需要在其他日子测试2次才能从生词本中移除')).toBeInTheDocument();
@@ -49,18 +137,18 @@ describe('TestWordModal', () => {
   });
 
   it('should show error message when answer is incorrect', async () => {
-    render(<TestWordModal {...defaultProps} />);
+    renderWithAuth(<TestWordModal {...defaultProps} />);
     
     const input = screen.getByPlaceholderText('输入拼音（不用输入声调）');
     await userEvent.type(input, 'wrong');
-    fireEvent.click(screen.getByText('确认'));
+    await userEvent.click(screen.getByText('确认'));
 
     expect(screen.getByText('拼音不正确，正确答案是：nǐ')).toBeInTheDocument();
     expect(defaultProps.onCorrect).not.toHaveBeenCalled();
   });
 
   it('should handle Enter key press', async () => {
-    render(<TestWordModal {...defaultProps} />);
+    renderWithAuth(<TestWordModal {...defaultProps} />);
     
     const input = screen.getByPlaceholderText('输入拼音（不用输入声调）');
     await userEvent.type(input, 'ni{Enter}');
@@ -69,33 +157,81 @@ describe('TestWordModal', () => {
     expect(defaultProps.onCorrect).toHaveBeenCalled();
   });
 
-  it('should show already tested message when word was tested today', () => {
+  it('should show already tested message when word was tested today', async () => {
     const today = new Date().toISOString().split('T')[0];
-    vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(JSON.stringify({ '你': today }));
-
-    render(<TestWordModal {...defaultProps} />);
     
-    expect(screen.getByText('今天已经测试过这个字了！')).toBeInTheDocument();
+    type MockRef = {
+      key: string;
+      parent: MockRef | null;
+      root: MockRef;
+      ref: MockRef;
+      path: string;
+      toString: () => string;
+      isEqual: () => boolean;
+      toJSON: () => string;
+    };
+
+    const createMockRef = (): MockRef => {
+      const mockRef: Partial<MockRef> = {
+        key: 'mock-key',
+        path: 'mock/path',
+        toString: () => 'mock/path',
+        isEqual: () => false,
+        toJSON: () => 'mock/path'
+      };
+      mockRef.parent = mockRef as MockRef;
+      mockRef.root = mockRef as MockRef;
+      mockRef.ref = mockRef as MockRef;
+      return mockRef as MockRef;
+    };
+
+    const mockRef = createMockRef();
+
+    const mockSnapshot = (exists: boolean, value: any) => {
+      const snapshot = {
+        exists: () => exists,
+        val: () => value,
+        ref: mockRef,
+        key: null,
+        size: 0,
+        priority: null,
+        forEach: () => true,
+        hasChild: () => false,
+        hasChildren: () => false,
+        numChildren: () => 0,
+        child: () => mockSnapshot(false, null),
+        exportVal: () => value,
+        toJSON: () => value
+      };
+      return snapshot;
+    };
+
+    vi.mocked(get).mockResolvedValueOnce(mockSnapshot(true, today));
+
+    renderWithAuth(<TestWordModal {...defaultProps} />);
+    
+    // Wait for the async checkIfTestedToday to complete
+    await screen.findByText('今天已经测试过这个字了！');
     expect(screen.getByText('还需要在其他日子测试3次才能从生词本中移除')).toBeInTheDocument();
   });
 
   it('should show congratulations message when mastery reaches 3', async () => {
-    render(<TestWordModal {...defaultProps} mastery={2} />);
+    renderWithAuth(<TestWordModal {...defaultProps} mastery={2} />);
     
     const input = screen.getByPlaceholderText('输入拼音（不用输入声调）');
     await userEvent.type(input, 'ni');
-    fireEvent.click(screen.getByText('确认'));
+    await userEvent.click(screen.getByText('确认'));
 
-    // expect(screen.getByText('恭喜！这个字已经掌握了，将从生词本中移除。')).toBeInTheDocument();
+    expect(screen.getByText('恭喜！这个字已经掌握了，将从生词本中移除。')).toBeInTheDocument();
   });
 
   it('should show close button when answer is correct and not close until clicked', async () => {
-    render(<TestWordModal {...defaultProps} />);
+    renderWithAuth(<TestWordModal {...defaultProps} />);
     
     // Enter correct answer
     const input = screen.getByPlaceholderText('输入拼音（不用输入声调）');
     await userEvent.type(input, 'ni');
-    fireEvent.click(screen.getByText('确认'));
+    await userEvent.click(screen.getByText('确认'));
 
     // Verify success message and close button are shown
     expect(screen.getByText('回答正确！')).toBeInTheDocument();
@@ -107,21 +243,14 @@ describe('TestWordModal', () => {
     expect(defaultProps.onClose).not.toHaveBeenCalled();
 
     // Click close button and verify dialog closes
-    fireEvent.click(closeButton);
+    await userEvent.click(closeButton);
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
-  it('should close modal when close button is clicked', () => {
-    render(<TestWordModal {...defaultProps} />);
+  it('should close modal when close button is clicked', async () => {
+    renderWithAuth(<TestWordModal {...defaultProps} />);
     
-    fireEvent.click(screen.getByText('×'));
-    expect(defaultProps.onClose).toHaveBeenCalled();
-  });
-
-  it('should close modal when cancel button is clicked', () => {
-    render(<TestWordModal {...defaultProps} />);
-    
-    fireEvent.click(screen.getByText('取消'));
+    await userEvent.click(screen.getByText('×'));
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 }); 

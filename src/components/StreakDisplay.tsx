@@ -5,14 +5,14 @@ import { StreakPanel } from './StreakPanel';
 import styles from './StreakDisplay.module.css';
 
 export const StreakDisplay: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 0 }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [streak, setStreak] = useState<UserStreak | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [prevStreak, setPrevStreak] = useState<number>(0);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || loading) return;
 
     const loadStreak = async () => {
       const userStreak = await streakService.getUserStreak(user.id);
@@ -35,9 +35,9 @@ export const StreakDisplay: React.FC<{ refreshTrigger?: number }> = ({ refreshTr
     };
 
     loadStreak();
-  }, [user, refreshTrigger]);
+  }, [user, loading, refreshTrigger]);
 
-  if (!user) return null;
+  if (!user || loading) return null;
 
   const currentStreak = streak?.currentStreak || 0;
   const longestStreak = streak?.longestStreak || 0;
