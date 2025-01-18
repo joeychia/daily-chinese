@@ -16,7 +16,6 @@ import { articleService } from './services/articleService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
 import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, subscribeToTheme, userDataService } from './services/userDataService'
-import { ConfirmDialog } from './components/ConfirmDialog'
 import { Timer } from './components/Timer'
 import { TopBar } from './components/TopBar'
 import { WordBankComponent } from './components/WordBankComponent'
@@ -112,8 +111,6 @@ function MainContent() {
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const { articleId } = useParams();
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [wordToDelete, setWordToDelete] = useState<ChineseWord | null>(null);
   const [isReading, setIsReading] = useState<boolean>(true);
   const [lastReadTime, setLastReadTime] = useState<number | undefined>();
   const [streakRefreshCounter, setStreakRefreshCounter] = useState(0);
@@ -350,11 +347,8 @@ function MainContent() {
     filteredWordBank.some(w => w.characters === word.characters)
   ).length;
 
-  const handleDeleteWord = () => {
-    if (wordToDelete) {
-      setWordBank(prev => prev.filter(w => w.characters !== wordToDelete.characters));
-      setWordToDelete(null);
-    }
+  const handleDeleteWord = (word: ChineseWord) => {
+    setWordBank(prev => prev.filter(w => w.characters !== word.characters));
   };
 
   // Load last reading time when article changes
@@ -545,7 +539,7 @@ function MainContent() {
               <WordBankComponent
                 words={filteredWordBank}
                 title="本文生词"
-                onWordDelete={setWordToDelete}
+                onWordDelete={handleDeleteWord}
                 showSavedIndicator={showSavedIndicator}
                 onPointsUpdate={() => setPointsRefreshTrigger(prev => prev + 1)}
               />
@@ -565,15 +559,6 @@ function MainContent() {
       <Menu
         isOpen={isNavOpen}
         onClose={() => setIsNavOpen(false)}
-      />
-      <ConfirmDialog
-        isOpen={showConfirmDialog}
-        message={`确定要删除"${wordToDelete?.characters}"吗？`}
-        onConfirm={handleDeleteWord}
-        onCancel={() => {
-          setShowConfirmDialog(false);
-          setWordToDelete(null);
-        }}
       />
       <ArticleFeedbackPanel
         isOpen={isFeedbackPanelOpen}
