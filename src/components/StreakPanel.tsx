@@ -75,7 +75,7 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
             maxDate={today}
             locale="zh-CN"
             calendarType="iso8601"
-            formatShortWeekday={(locale, date) => ['一', '二', '三', '四', '五', '六', '日'][date.getDay() === 0 ? 6 : date.getDay() - 1]}
+            formatShortWeekday={(_locale: string | undefined, date: Date) => ['一', '二', '三', '四', '五', '六', '日'][date.getDay() === 0 ? 6 : date.getDay() - 1]}
             tileClassName={tileClassName}
             tileContent={tileContent}
             showNeighboringMonth={false}

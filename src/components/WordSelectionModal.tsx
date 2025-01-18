@@ -1,4 +1,3 @@
-import React from 'react';
 import styles from './WordSelectionModal.module.css';
 import { ChineseWord } from '../types/reading';
 

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import styles from './Progress.module.css';
 import { characterGrades } from '../data/characterGrades';
 import { userDataService, DailyStats } from '../services/userDataService';
-import { useAuth } from '../contexts/AuthContext';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -13,7 +14,6 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import styles from './Progress.module.css';
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,11 +25,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
-interface CharacterMastery {
-  character: string;
-  mastery: number;
-}
 
 interface GradeStats {
   total: number;

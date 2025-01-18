@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { articleService, DatabaseArticle, UserArticleData } from '../articleService';
-import { ref, get, set, update } from 'firebase/database';
+import { get, set, update } from 'firebase/database';
 import { analyzeArticleDifficulty } from '../../utils/articleDifficulty';
-import { streakService } from '../streakService';
 
 // Mock Firebase
 vi.mock('firebase/database', () => ({

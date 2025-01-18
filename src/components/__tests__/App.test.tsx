@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from '../../App';
-import { AuthProvider } from '../../contexts/AuthContext';
 import { initializeDatabase } from '../../scripts/initializeDb';
 
 // Track rendered routes to prevent duplicates

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
-import { MemoryRouter, useNavigate } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import CreateArticle from './CreateArticle';
 import { geminiService } from '../services/geminiService';
@@ -52,7 +52,15 @@ describe('CreateArticle', () => {
   const renderComponent = () => {
     return render(
       <MemoryRouter>
-        <AuthContext.Provider value={{ user: mockUser, loading: false }}>
+        <AuthContext.Provider value={{ 
+          user: mockUser, 
+          loading: false,
+          setUser: () => {},
+          signIn: async () => {},
+          signInWithGoogle: async () => {},
+          signUp: async () => {},
+          signOut: async () => {}
+        }}>
           <CreateArticle />
         </AuthContext.Provider>
       </MemoryRouter>

@@ -41,7 +41,7 @@
  * - Authentication integration
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './CreateArticle.module.css';
 import { articleService, DatabaseArticle } from '../services/articleService';
@@ -67,7 +67,6 @@ export default function CreateArticle() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [selectedWords, setSelectedWords] = useState<ChineseWord[]>([]);
   const [wordBank, setWordBank] = useState<ChineseWord[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -77,7 +76,6 @@ export default function CreateArticle() {
     const loadWordBank = async () => {
       if (!user) return;
       
-      setIsLoading(true);
       try {
         const words = await getWordBank(user.id);
         setWordBank(words);
@@ -88,8 +86,6 @@ export default function CreateArticle() {
       } catch (err) {
         console.error('Error loading word bank:', err);
         setError('加载生词本失败');
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -102,18 +98,20 @@ export default function CreateArticle() {
     }
   }, [generatedPreview]);
 
-  const handleQuizChange = (quizIndex: number, field: string, value: string | number) => {
-    setEditableQuizzes(prevQuizzes => {
-      const updatedQuizzes = [...prevQuizzes];
-      if (field === 'question') {
-        updatedQuizzes[quizIndex].question = value as string;
-      } else if (typeof field === 'number') {
+  const handleQuizChange = (quizIndex: number, field: string | number, value: string | number) => {
+    if (typeof field === 'string' && field === 'correctAnswer' && typeof value === 'number') {
+      setEditableQuizzes(prevQuizzes => {
+        const updatedQuizzes = [...prevQuizzes];
+        updatedQuizzes[quizIndex].correctAnswer = value;
+        return updatedQuizzes;
+      });
+    } else if (typeof field === 'number') {
+      setEditableQuizzes(prevQuizzes => {
+        const updatedQuizzes = [...prevQuizzes];
         updatedQuizzes[quizIndex].options[field] = value as string;
-      } else if (field === 'correctAnswer') {
-        updatedQuizzes[quizIndex].correctAnswer = value as number;
-      }
-      return updatedQuizzes;
-    });
+        return updatedQuizzes;
+      });
+    }
   };
 
   const handleCreateArticle = async () => {
@@ -220,11 +218,6 @@ export default function CreateArticle() {
       }
       return [...prev, word];
     });
-  };
-
-  const handleRandomSelection = () => {
-    const shuffled = [...wordBank].sort(() => 0.5 - Math.random());
-    setSelectedWords(shuffled.slice(0, 5));
   };
 
   const renderStepIndicator = () => (
@@ -370,7 +363,7 @@ export default function CreateArticle() {
                 <input
                   type="text"
                   value={option}
-                  onChange={(e) => handleQuizChange(quizIndex, optIndex, e.target.value)}
+                  onChange={(e) => handleQuizChange(quizIndex, optIndex, e.target.value.toString())}
                   className={styles.quizInput}
                 />
                 <input

@@ -53,7 +53,6 @@ import { rewardsService } from '../services/rewardsService';
 import { useAuth } from '../contexts/AuthContext';
 
 interface QuizPanelProps {
-  isOpen: boolean;
   onClose: () => void;
   quizzes: Quiz[];
   onComplete: (score: number) => void;
@@ -61,7 +60,7 @@ interface QuizPanelProps {
   onPointsUpdate: () => void;
 }
 
-export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onPointsUpdate }: QuizPanelProps) {
+export function QuizPanel({ onClose, quizzes, onComplete, articleId, onPointsUpdate }: QuizPanelProps) {
   const { user } = useAuth();
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>(Array(quizzes.length).fill(-1));
@@ -70,7 +69,6 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onP
   const [isChecking, setIsChecking] = useState(false);
   const [clickedCharacters, setClickedCharacters] = useState<string[]>([]);
   const [hasReadArticle, setHasReadArticle] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const articleText = quizzes.map(q => q.question).join('');
 
   useEffect(() => {
@@ -83,8 +81,6 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onP
   }, [user, articleId]);
 
   const currentQuiz = quizzes[currentQuizIndex];
-  const processedQuestion = processChineseText(currentQuiz.question);
-  const processedOptions = currentQuiz.options.map(option => processChineseText(option));
 
   const handleCharacterClick = (char: string) => {
     setClickedCharacters(prev => [...prev, char]);

@@ -502,10 +502,9 @@ function MainContent() {
                 <QuizPanel 
                   quizzes={reading.quizzes} 
                   onComplete={handleQuizComplete}
-                  isOpen={showQuiz}
-                  onClose={() => setShowQuiz(false)}
                   articleId={articleId || ''}
                   onPointsUpdate={() => setPointsRefreshTrigger(prev => prev + 1)}
+                  onClose={() => setShowQuiz(false)}
                 />
                 {!isReading && (
                   <div className="post-quiz-actions">

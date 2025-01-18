@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Articles.module.css';
 import { articleService, DatabaseArticle } from '../services/articleService';

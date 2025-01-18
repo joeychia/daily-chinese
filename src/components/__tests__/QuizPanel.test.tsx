@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { QuizPanel } from '../QuizPanel';
 import { Quiz } from '../../types/reading';
-import { AuthProvider, useAuth } from '../../contexts/AuthContext';
+import { AuthProvider } from '../../contexts/AuthContext';
 import { userDataService } from '../../services/userDataService';
 import { rewardsService } from '../../services/rewardsService';
 import { analyticsService } from '../../services/analyticsService';

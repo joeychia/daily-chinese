@@ -73,7 +73,15 @@ describe('Articles Component', () => {
   const renderWithRouter = (ui: React.ReactElement) => {
     return render(
       <BrowserRouter>
-        <AuthContext.Provider value={{ user: mockUser, loading: false }}>
+        <AuthContext.Provider value={{ 
+          user: mockUser, 
+          loading: false,
+          setUser: () => {},
+          signIn: async () => {},
+          signInWithGoogle: async () => {},
+          signUp: async () => {},
+          signOut: async () => {}
+        }}>
           {ui}
         </AuthContext.Provider>
       </BrowserRouter>

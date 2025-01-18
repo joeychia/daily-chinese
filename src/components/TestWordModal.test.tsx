@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { TestWordModal } from './TestWordModal';
 import userEvent from '@testing-library/user-event';
 import { AuthContext } from '../contexts/AuthContext';
-import { db } from '../config/firebase';
-import { ref, get, set } from 'firebase/database';
+import { get } from 'firebase/database';
 
 // Mock Firebase
 vi.mock('firebase/database', () => {

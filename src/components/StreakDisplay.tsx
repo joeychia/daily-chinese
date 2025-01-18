@@ -40,7 +40,6 @@ export const StreakDisplay: React.FC<{ refreshTrigger?: number }> = ({ refreshTr
   if (!user || loading) return null;
 
   const currentStreak = streak?.currentStreak || 0;
-  const longestStreak = streak?.longestStreak || 0;
 
   return (
     <>
