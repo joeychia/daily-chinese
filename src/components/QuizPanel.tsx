@@ -98,7 +98,7 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onP
       const isCorrect = selectedAnswers[currentQuizIndex] === currentQuiz.correctOption;
       if (isCorrect) {
         setScore(prev => prev + 1);
-        if (!hasReadArticle && user) {
+        if (user && hasReadArticle === false) {
           try {
             await rewardsService.addPoints(user.id, 10, 'quiz');
             onPointsUpdate();
@@ -116,7 +116,7 @@ export function QuizPanel({ isOpen, onClose, quizzes, onComplete, articleId, onP
       setCurrentQuizIndex(prev => prev + 1);
     } else {
       setShowResult(true);
-      analyticsService.trackQuizCompletion(score + 1, quizzes.length);
+      analyticsService.trackQuizCompletion(score, quizzes.length);
       onComplete(score);
       onClose();
     }
