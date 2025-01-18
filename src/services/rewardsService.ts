@@ -44,7 +44,7 @@ export const rewardsService = {
     if (!snapshot.exists() || snapshot.val() !== today) {
       await Promise.all([
         set(wordTestRef, today),
-        this.addPoints(userId, 5, 'wordBank')
+        this.addPoints(userId, 1, 'wordBank')
       ]);
     }
   },

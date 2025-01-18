@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ref, get, set, update } from 'firebase/database';
 import { streakService } from './streakService';
 import { db } from '../config/firebase';
@@ -23,10 +23,21 @@ describe('streakService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock Date.now() to return a fixed date
-    const mockDate = new Date('2024-01-15T12:00:00Z');
-    vi.spyOn(Date, 'now').mockImplementation(() => mockDate.getTime());
+    
+    // Mock toLocaleDateString to return mockToday by default
     vi.spyOn(Date.prototype, 'toLocaleDateString').mockReturnValue(mockToday);
+    
+    // Mock setDate to handle yesterday's date
+    vi.spyOn(Date.prototype, 'setDate').mockImplementation(function(this: Date, date: number) {
+      if (date === new Date().getDate() - 1) {
+        vi.spyOn(Date.prototype, 'toLocaleDateString').mockReturnValueOnce(mockYesterday);
+      }
+      return date;
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe('getUserStreak', () => {
