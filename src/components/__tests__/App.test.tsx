@@ -12,6 +12,7 @@ vi.mock('../../scripts/initializeDb', () => ({
 }));
 
 const mockUseAuth = vi.fn();
+const mockUseLocation = vi.fn().mockReturnValue({ pathname: '/' });
 
 // Mock Firebase auth
 vi.mock('../../contexts/AuthContext', () => ({
@@ -19,6 +20,30 @@ vi.mock('../../contexts/AuthContext', () => ({
     return <div>{children}</div>;
   },
   useAuth: () => mockUseAuth()
+}));
+
+// Mock article service
+vi.mock('../../services/articleService', () => ({
+  articleService: {
+    getArticleById: vi.fn(),
+    getAllArticles: vi.fn().mockResolvedValue([
+      {
+        id: 'test-article',
+        title: '示例文章',
+        author: '示例作者',
+        content: '这是一个示例文章',
+        tags: ['示例'],
+        quizzes: [],
+        isGenerated: false,
+        generatedDate: '2024-01-01'
+      }
+    ]),
+    getFirstUnreadArticle: vi.fn(),
+    getArticleWithDifficulty: vi.fn().mockResolvedValue({
+      difficultyLevel: 1,
+      characterLevels: {}
+    })
+  }
 }));
 
 // Mock react-router-dom
@@ -41,17 +66,12 @@ vi.mock('react-router-dom', () => {
       return <div data-testid={`navigate-${to}`}>{to}</div>;
     },
     useNavigate: () => vi.fn(),
-    useLocation: () => ({ pathname: '/' }),
+    useLocation: () => mockUseLocation(),
     Link: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
     useParams: () => ({ articleId: 'test-article' }),
     useSearchParams: () => [new URLSearchParams(), vi.fn()]
   };
 });
-
-// Mock other components
-vi.mock('../../components/MainContent', () => ({
-  default: () => <div data-testid="main-content">Main Content</div>
-}));
 
 describe('App', () => {
   beforeEach(() => {
@@ -61,6 +81,7 @@ describe('App', () => {
       user: null,
       loading: false
     });
+    mockUseLocation.mockReturnValue({ pathname: '/' });
   });
 
   it('should initialize database on mount', () => {
@@ -68,9 +89,20 @@ describe('App', () => {
     expect(initializeDatabase).toHaveBeenCalled();
   });
 
-  it('should redirect to login when user is not authenticated', () => {
+  it('should render main content for guest users', async () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      loading: false
+    });
+
     render(<App />);
-    expect(screen.getByTestId('route-/login')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByText('示')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('例')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('文')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('章')[0]).toBeInTheDocument();
+    });
   });
 
   it('should show loading state when auth is loading', () => {
@@ -92,8 +124,12 @@ describe('App', () => {
     });
 
     render(<App />);
+    expect(screen.getByTestId('route-/')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByText('Loading article...')).toBeInTheDocument();
+      expect(screen.getAllByText('示')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('例')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('文')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('章')[0]).toBeInTheDocument();
     });
   });
 
@@ -102,16 +138,34 @@ describe('App', () => {
     (initializeDatabase as any).mockRejectedValue(error);
     
     render(<App />);
-    expect(screen.getByTestId('route-/login')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/')).toBeInTheDocument();
   });
 
-  it('should render protected routes when user is authenticated', () => {
+  it('should render protected routes when user is authenticated', async () => {
     mockUseAuth.mockReturnValue({
       user: { uid: 'test-user', displayName: 'Test User' },
       loading: false
     });
 
     render(<App />);
-    expect(screen.getByText('Loading article...')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByText('示')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('例')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('文')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('章')[0]).toBeInTheDocument();
+    });
+  });
+
+  it('should redirect to login for protected routes when user is not authenticated', () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      loading: false
+    });
+
+    mockUseLocation.mockReturnValue({ pathname: '/progress' });
+
+    render(<App />);
+    expect(screen.getByTestId('route-/login')).toBeInTheDocument();
   });
 }); 
