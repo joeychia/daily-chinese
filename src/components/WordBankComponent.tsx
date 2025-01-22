@@ -91,6 +91,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
       }));
 
       // Call onPointsUpdate after points are awarded
+      await rewardsService.addPoints(user.id, 1, 'wordBank');
       onPointsUpdate?.();
 
       // Remove word if mastery level reaches 3

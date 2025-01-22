@@ -80,7 +80,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowGuest }: ProtectedRouteProps & { allowGuest?: boolean }) => {
-  const { user, loading, isGuest } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -89,11 +89,6 @@ const ProtectedRoute = ({ children, allowGuest }: ProtectedRouteProps & { allowG
   if (!user && !allowGuest) {
     return <Navigate to="/login" />;
   }
-
-  if (isGuest && !allowGuest) {
-    return <Navigate to="/signup" />;
-  }
-
   return <>{children}</>;
 };
 
