@@ -122,7 +122,6 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
 
   const getMasteryColor = (mastery: number) => {
     switch (mastery) {
-      case -1: return '#909399'; // gray
       case 0: return '#F56C6C'; // red
       case 1: return '#E6A23C'; // orange
       case 2: return '#F4E04D'; // yellow

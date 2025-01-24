@@ -801,7 +801,6 @@ textarea:focus {
 }
 
 .actionButton:hover {
-  background-color: var(--theme-highlight);
   transform: translateY(-1px);
 }
 

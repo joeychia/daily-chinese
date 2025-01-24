@@ -497,7 +497,10 @@ function MainContent() {
                   onPointsUpdate={() => setPointsRefreshTrigger(prev => prev + 1)}
                   onClose={() => setShowQuiz(false)}
                 />
-                {!isReading && (
+                
+              </>
+            )}
+            {(!isReading || lastReadTime !== undefined) && (
                   <div className="post-quiz-actions">
                     <button 
                       className="readMoreButton"
@@ -519,12 +522,10 @@ function MainContent() {
                         }
                       }}
                     >
-                      再读一篇
+                      下一篇
                     </button>
                   </div>
                 )}
-              </>
-            )}
             {filteredWordBank.length > 0 && (
               <WordBankComponent
                 words={filteredWordBank}
