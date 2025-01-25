@@ -18,6 +18,7 @@ export interface ArticleIndex {
 }
 
 export interface DatabaseArticle {
+  [x: string]: LevelDistribution;
   id: string;
   title: string;
   author: string;

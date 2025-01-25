@@ -23,29 +23,40 @@ function renderStars(level: number) {
   );
 }
 
-export function DifficultyDisplay({ difficultyLevel, characterLevels }: DifficultyDisplayProps) {
+export function DifficultyDisplay({ difficultyLevel, characterLevels = {
+  LEVEL_1: 0,
+  LEVEL_2: 0,
+  LEVEL_3: 0,
+  LEVEL_4: 0,
+  LEVEL_5: 0,
+  LEVEL_6: 0
+} }: DifficultyDisplayProps) {
+  const hasDistribution = Object.keys(characterLevels).length > 0;
+
   return (
     <div className={styles.container}>
       <div className={`${styles.difficultyBadge} ${styles[`difficulty${difficultyLevel}`]}`}>
         难度：{renderStars(difficultyLevel)}
       </div>
-      <div className={styles.levelDistribution}>
-        <h3>难度级别分布</h3>
-        <div className={styles.bars}>
-          {Object.entries(characterLevels).map(([level, percentage]) => (
-            <div key={level} className={styles.barContainer}>
-              <div className={styles.label}>{level.replace('LEVEL_', '级别')}</div>
-              <div className={styles.barWrapper}>
-                <div 
-                  className={`${styles.bar} ${styles[level.toLowerCase()]}`}
-                  style={{ width: `${percentage}%` }}
-                />
-                <span className={styles.percentage}>{percentage.toFixed(1)}%</span>
+      {hasDistribution && (
+        <div className={styles.levelDistribution}>
+          <h3>难度级别分布</h3>
+          <div className={styles.bars}>
+            {Object.entries(characterLevels).map(([level, percentage]) => (
+              <div key={level} className={styles.barContainer}>
+                <div className={styles.label}>{level.replace('LEVEL_', '级别')}</div>
+                <div className={styles.barWrapper}>
+                  <div 
+                    className={`${styles.bar} ${styles[level.toLowerCase()]}`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                  <span className={styles.percentage}>{percentage.toFixed(1)}%</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
-} 
+}

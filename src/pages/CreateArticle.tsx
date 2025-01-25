@@ -51,6 +51,8 @@ import { getWordBank } from '../services/userDataService';
 import { ChineseWord } from '../types/reading';
 import WordSelectionModal from '../components/WordSelectionModal';
 import { rewardsService } from '../services/rewardsService';
+import { analyzeArticleDifficulty, LevelDistribution } from '../utils/articleDifficulty';
+import { DifficultyDisplay } from '../components/DifficultyDisplay';
 
 type Step = 'mode' | 'input' | 'preview' | 'save';
 type CreateMethod = 'prompt' | 'rewrite' | 'metadata' | 'wordbank';
@@ -158,7 +160,9 @@ export default function CreateArticle() {
           isGenerated: true,
           generatedDate: new Date().toISOString(),
           createdBy: user.displayName || user.email || 'Unknown User',
-          visibility: isPrivate ? user.id : 'public'
+          visibility: isPrivate ? user.id : 'public',
+          levelDistribution: {}, // Initialize empty object for levelDistribution
+          ...analyzeArticleDifficulty(generatedArticle.content)
         };
 
         setGeneratedPreview(newArticle);
@@ -384,6 +388,12 @@ export default function CreateArticle() {
     <>
       <div className={styles.preview}>
         <h3>{generatedPreview?.title}</h3>
+        {generatedPreview && (
+          <DifficultyDisplay
+            difficultyLevel={generatedPreview.difficultyLevel}
+            characterLevels={generatedPreview.levelDistribution as LevelDistribution}
+          />
+        )}
         <div className={styles.previewContent}>
           {generatedPreview?.content}
         </div>
@@ -479,4 +489,4 @@ export default function CreateArticle() {
       />
     </div>
   );
-} 
+}
