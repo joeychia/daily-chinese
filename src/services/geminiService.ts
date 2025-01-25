@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+const KIMI_API_ENDPOINT = 'https://api.moonshot.cn/v1/chat/completions';
+const KIMI_API_KEY = import.meta.env.VITE_KIMI_API_KEY || '';
 
 export interface GeneratedArticle {
   title: string;
@@ -37,11 +38,34 @@ const sanitizeJsonString = (str: string): string => {
   return str;
 };
 
+const generateWithKimi = async (prompt: string): Promise<string> => {
+  const response = await fetch(KIMI_API_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${KIMI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'moonshot-v1-8k',
+      messages: [
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.7,
+      response_format: {type: "json_object"}
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
+};
+
 export const geminiService = {
   async generateArticle(prompt: string, options: GenerationOptions = {}): Promise<GeneratedArticle> {
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      
       const lengthInstruction = options.maxLength 
         ? `文章长度大约${options.maxLength}个汉字`
         : "文章长度大约300个汉字";
@@ -71,9 +95,7 @@ export const geminiService = {
       文章必须适合低年级小学生阅读水平，汉字应该使用常用汉字，风格要好玩，幽默，内容属于正向价值观。
       注意：请确保文章长度接近${options.maxLength || 300}个汉字。`;
 
-      const result = await model.generateContent(systemPrompt);
-      const response = result.response;
-      const text = response.text();
+      const text = await generateWithKimi(systemPrompt);
       
       // Extract JSON from the response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -92,7 +114,7 @@ export const geminiService = {
         console.error('Sanitized JSON:', sanitizedJson);
         console.error('Error position:', err.position);
         console.error('Error context:', sanitizedJson.slice(Math.max(0, err.position - 20), err.position + 20));
-        throw new Error('Failed to parse JSON response from Gemini');
+        throw new Error('Failed to parse JSON response from Kimi');
       }
     } catch (error) {
       console.error("Error generating article:", error);
@@ -102,8 +124,6 @@ export const geminiService = {
 
   async generateFromText(sourceText: string, options: GenerationOptions = {}): Promise<GeneratedArticle> {
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      
       const lengthInstruction = options.maxLength 
         ? `文章长度大约${options.maxLength}个汉字`
         : "文章长度大约300个汉字";
@@ -138,11 +158,10 @@ export const geminiService = {
       2. 使用低年级小学生容易理解的语言和汉字
       3. 保持内容有趣且富有教育意义`;
 
-      const result = await model.generateContent(systemPrompt);
-      const responseText = result.response.text();
+      const text = await generateWithKimi(systemPrompt);
       
       // Extract JSON from the response
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("Failed to parse generated content");
       }
@@ -154,11 +173,11 @@ export const geminiService = {
       } catch (error) {
         const err = error as any;
         console.error('Error parsing JSON:', err);
-        console.error('Raw response:', responseText);
+        console.error('Raw response:', text);
         console.error('Sanitized JSON:', sanitizedJson);
         console.error('Error position:', err.position);
         console.error('Error context:', sanitizedJson.slice(Math.max(0, err.position - 20), err.position + 20));
-        throw new Error('Failed to parse JSON response from Gemini');
+        throw new Error('Failed to parse JSON response from Kimi');
       }
     } catch (error) {
       console.error("Error generating article from text:", error);
@@ -167,8 +186,6 @@ export const geminiService = {
   },
 
   async generateMetadata(sourceText: string): Promise<GeneratedArticle> {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
     const systemPrompt = `You are a Chinese language learning assistant. For the given Chinese text:
     1. Generate an appropriate title if not obvious from the text
     2. Keep the original content exactly as is
@@ -197,9 +214,7 @@ export const geminiService = {
     }`;
 
     const escapedSourceText = sourceText.replace(/"/g, '\\"');
-    const result = await model.generateContent([systemPrompt, escapedSourceText]);
-    const response = result.response;
-    const text = response.text();
+    const text = await generateWithKimi(`${systemPrompt}\n\n${escapedSourceText}`);
     
     // Extract JSON from the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -217,7 +232,7 @@ export const geminiService = {
       console.error('Sanitized JSON:', sanitizedJson);
       console.error('Error position:', err.position);
       console.error('Error context:', sanitizedJson.slice(Math.max(0, err.position - 20), err.position + 20));
-      throw new Error('Failed to parse JSON response from Gemini');
+      throw new Error('Failed to parse JSON response from Kimi');
     }
   }
-}; 
+};
