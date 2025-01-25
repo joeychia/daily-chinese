@@ -68,6 +68,7 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
           <Link to="/create-article" onClick={onClose}>创建文章</Link>
           <Link to="/wordbank" onClick={onClose}>生词本</Link>
           <Link to="/progress" onClick={onClose}>学习进度</Link>
+          <Link to="/leaderboard" onClick={onClose}>排行榜</Link>
           <a 
             href="https://docs.google.com/forms/d/e/1FAIpQLSdjIDOY5gif53bOwFd53I_F6IpC40CQl3AE4ROuxiAcfW4Y-g/viewform?usp=sharing"
             target="_blank"
@@ -81,4 +82,4 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
       <div className={styles.overlay} onClick={onClose}></div>
     </div>
   );
-}; 
+};

@@ -1,0 +1,89 @@
+.container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.leaderboard {
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.scoreItem {
+  display: grid;
+  grid-template-columns: 60px 1fr 100px;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--theme-card-border);
+}
+
+.scoreItem:last-child {
+  border-bottom: none;
+}
+
+.currentUser {
+  background-color: var(--theme-highlight);
+}
+
+.rank {
+  font-weight: bold;
+  color: var(--theme-primary);
+  text-align: center;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.points {
+  text-align: right;
+  color: var(--theme-secondary);
+  font-weight: bold;
+}
+
+.namePrompt {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.nameInput {
+  width: 100%;
+  padding: 0.5rem;
+  margin: 1rem 0;
+  border: 1px solid var(--theme-card-border);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.submitButton {
+  background: var(--theme-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  opacity: 0.9;
+}
+
+.error {
+  color: #ff4d4f;
+  text-align: center;
+  margin: 2rem;
+}
+
+.loading {
+  text-align: center;
+  margin: 2rem;
+  color: var(--theme-secondary);
+}

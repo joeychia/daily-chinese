@@ -1,4 +1,4 @@
-import { ref, get, set, increment } from 'firebase/database';
+import { ref, get, set, increment, update } from 'firebase/database';
 import { db } from '../config/firebase';
 
 export interface PointsData {
@@ -21,11 +21,27 @@ export const rewardsService = {
   async addPoints(userId: string, amount: number, category: keyof PointsData): Promise<void> {
     const totalPointsRef = ref(db, `users/${userId}/points/total`);
     const categoryPointsRef = ref(db, `users/${userId}/points/${category}`);
-
+    const leaderboardRef = ref(db, `leaderboard/${userId}`);
+    
+    // First update the user's points
     await Promise.all([
       set(totalPointsRef, increment(amount)),
       set(categoryPointsRef, increment(amount))
     ]);
+
+    // Get the updated total points
+    const pointsSnapshot = await get(totalPointsRef);
+    const totalPoints = pointsSnapshot.val() || 0;
+
+    // Get existing leaderboard entry to preserve the name
+    const leaderboardSnapshot = await get(leaderboardRef);
+    const existingData = leaderboardSnapshot.val() || {};
+    
+    // Sync the total points to leaderboard while preserving the name
+    await set(leaderboardRef, {
+      ...existingData,
+      points: totalPoints
+    })
   },
 
   async getPoints(userId: string): Promise<PointsData> {
@@ -76,4 +92,4 @@ export const rewardsService = {
       ]);
     }
   }
-}; 
+};
