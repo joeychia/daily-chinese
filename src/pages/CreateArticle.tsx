@@ -150,6 +150,7 @@ export default function CreateArticle() {
       }
 
       if (generatedArticle) {
+        const difficulty = analyzeArticleDifficulty(generatedArticle.content);
         const newArticle: DatabaseArticle = {
           id: Date.now().toString(),
           title: generatedArticle.title,
@@ -161,8 +162,8 @@ export default function CreateArticle() {
           generatedDate: new Date().toISOString(),
           createdBy: user.displayName || user.email || 'Unknown User',
           visibility: isPrivate ? user.id : 'public',
-          levelDistribution: {}, // Initialize empty object for levelDistribution
-          ...analyzeArticleDifficulty(generatedArticle.content)
+          characterLevels: difficulty.levelDistribution,
+          difficultyLevel: difficulty.difficultyLevel
         };
 
         setGeneratedPreview(newArticle);
@@ -180,13 +181,10 @@ export default function CreateArticle() {
     if (!generatedPreview || !user) return;
     
     try {
-      const articleToSave = {
-        ...generatedPreview,
-        visibility: isPrivate ? user.id : 'public'
-      };
-      await articleService.createArticle(articleToSave);
+
+      await articleService.createArticle(generatedPreview);
       await rewardsService.addPoints(user.id, 20, 'creation');
-      navigate(`/article/${articleToSave.id}`);
+      navigate(`/article/${generatedPreview.id}`);
     } catch (error) {
       console.error('Error saving article:', error);
       setError('Failed to save article');
@@ -323,25 +321,24 @@ export default function CreateArticle() {
       )}
       {createMethod !== 'metadata' && (
         <div className={styles.inputGroup}>
-          <label htmlFor="articleLength">文章长度（字数）：</label>
-          <input
-            id="articleLength"
-            type="number"
-            value={articleLength}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              if (value < 100) {
-                setArticleLength(100);
-              } else if (value > 1000) {
-                setArticleLength(1000);
-              } else {
+          <label htmlFor="articleLength">文章长度（字数）：{articleLength}</label>
+          <div className={styles.sliderContainer}>
+            <input
+              id="articleLength"
+              type="range"
+              value={articleLength}
+              onChange={(e) => {
+                const value = Number(e.target.value);
                 setArticleLength(value);
-              }
-            }}
-            min={100}
-            max={1000}
-            aria-label="文章长度（字数）："
-          />
+              }}
+              min={100}
+              max={1000}
+              step={50}
+              className={styles.slider}
+              aria-label="文章长度（字数）："
+            />
+           
+          </div>
         </div>
       )}
     </div>
@@ -391,7 +388,7 @@ export default function CreateArticle() {
         {generatedPreview && (
           <DifficultyDisplay
             difficultyLevel={generatedPreview.difficultyLevel}
-            characterLevels={generatedPreview.levelDistribution as LevelDistribution}
+            characterLevels={generatedPreview.characterLevels}
           />
         )}
         <div className={styles.previewContent}>
