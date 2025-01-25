@@ -48,17 +48,9 @@ export const ArticleFeedbackPanel: React.FC<ArticleFeedbackPanelProps> = ({
 
   const handleReadMore = async () => {
     try {
-      const articles = await articleService.getAllArticles();
-      // Filter articles that are either public or owned by the user
-      const accessibleArticles = articles.filter(article => 
-        article.visibility === 'public' || article.visibility === user?.id
-      );
-      
-      // Find current article index
-      const currentIndex = accessibleArticles.findIndex(a => a.id === articleId);
-      
-      // Get next article (or wrap around to first)
-      const nextArticle = accessibleArticles[currentIndex + 1] || accessibleArticles[0];
+       if (!user) return;
+
+      const nextArticle = await articleService.getFirstUnreadArticle(user.id);
       
       if (nextArticle) {
         navigate(`/article/${nextArticle.id}`);

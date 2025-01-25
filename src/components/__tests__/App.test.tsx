@@ -26,7 +26,7 @@ vi.mock('../../contexts/AuthContext', () => ({
 vi.mock('../../services/articleService', () => ({
   articleService: {
     getArticleById: vi.fn(),
-    getAllArticles: vi.fn().mockResolvedValue([
+    getArticleIndex: vi.fn().mockResolvedValue([
       {
         id: 'test-article',
         title: '示例文章',

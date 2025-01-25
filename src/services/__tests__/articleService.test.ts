@@ -60,7 +60,7 @@ describe('articleService', () => {
     vi.clearAllMocks();
   });
 
-  describe('getAllArticles', () => {
+  describe('getArticleIndex', () => {
     it('should return empty array when no articles exist', async () => {
       (get as any).mockResolvedValueOnce({ exists: () => false });
       const articles = await articleService.getArticleIndex();
