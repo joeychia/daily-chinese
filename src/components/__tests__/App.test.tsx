@@ -39,10 +39,6 @@ vi.mock('../../services/articleService', () => ({
       }
     ]),
     getFirstUnreadArticle: vi.fn(),
-    getArticleWithDifficulty: vi.fn().mockResolvedValue({
-      difficultyLevel: 1,
-      characterLevels: {}
-    })
   }
 }));
 

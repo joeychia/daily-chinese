@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import { QuizPanel } from '../QuizPanel';
-import { Quiz } from '../../types/reading';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { userDataService } from '../../services/userDataService';
 import { rewardsService } from '../../services/rewardsService';
 import { analyticsService } from '../../services/analyticsService';
+import { DatabaseQuiz } from '../../services/articleService';
 
 // Mock the auth context
 vi.mock('../../contexts/AuthContext', () => ({
@@ -36,16 +36,16 @@ vi.mock('../../services/analyticsService', () => ({
   }
 }));
 
-const mockQuizzes: Quiz[] = [
+const mockQuizzes: DatabaseQuiz[] = [
   {
     question: '你好',
     options: ['hello', 'goodbye', 'thanks'],
-    correctOption: 0
+    correctAnswer: 0
   },
   {
     question: '再见',
     options: ['hello', 'goodbye', 'thanks'],
-    correctOption: 1
+    correctAnswer: 1
   }
 ];
 

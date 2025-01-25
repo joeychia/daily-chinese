@@ -3,10 +3,18 @@ import { db } from '../config/firebase';
 import { analyzeArticleDifficulty } from '../utils/articleDifficulty';
 import { streakService } from './streakService';
 
-interface DatabaseQuiz {
+export interface DatabaseQuiz {
   question: string;
   options: string[];
   correctAnswer: number;
+}
+
+export interface ArticleIndex {
+  id: string;
+  title: string;
+  generatedDate: string;
+  visibility: string;
+  difficultyLevel: number;
 }
 
 export interface DatabaseArticle {
@@ -20,6 +28,15 @@ export interface DatabaseArticle {
   quizzes: DatabaseQuiz[];
   createdBy?: string;  // Name of the user who created the article
   visibility: string;
+  difficultyLevel: number;
+  characterLevels: {
+    LEVEL_1: number;  // Top 300
+    LEVEL_2: number;  // Top 600
+    LEVEL_3: number;  // Top 1000
+    LEVEL_4: number;  // Top 1500
+    LEVEL_5: number;  // Top 2000
+    LEVEL_6: number;  // Beyond 2000
+  };
 }
 
 export interface UserArticleData {
@@ -31,41 +48,57 @@ export interface UserArticleData {
 }
 
 export const articleService = {
-  getAllArticles: async (): Promise<DatabaseArticle[]> => {
-    const articlesRef = ref(db, 'articles');
-    const snapshot = await get(articlesRef);
-    if (snapshot.exists()) {
-      const articles = snapshot.val();
-      return Object.values(articles);
-    }
-    return [];
-  },
-
   getFirstUnreadArticle: async (userId: string): Promise<DatabaseArticle | null> => {
-    // Get all articles
-    const articles = await articleService.getAllArticles();
+    // Get articles index
+    const indexRef = ref(db, 'articlesIndex');
+    const indexSnapshot = await get(indexRef);
+    const articleIds = indexSnapshot.exists() ? indexSnapshot.val() : [];
     
     // Get user's reading history
     const userArticlesRef = ref(db, `users/${userId}/articles`);
-    const snapshot = await get(userArticlesRef);
-    const readArticles = snapshot.exists() ? Object.keys(snapshot.val()) : [];
+    const historySnapshot = await get(userArticlesRef);
+    const readArticles = historySnapshot.exists() ? Object.keys(historySnapshot.val()) : [];
     
-    // Find first article that hasn't been read
-    const unreadArticle = articles.find(article => 
-      // Article should be either public or owned by the user
-      (article.visibility === 'public' || article.visibility === userId) &&
-      // And not in read articles
-      !readArticles.includes(article.id)
-    );
+    // Find first unread article from the index
+    for (const articleMeta of articleIds) {
+      // Skip if already read
+      if (readArticles.includes(articleMeta.id)) continue;
+      
+      // Check visibility from index metadata
+      if (articleMeta.visibility === 'public' || articleMeta.visibility === userId) {
+        // Get the full article content
+        const article = await articleService.getArticleById(articleMeta.id);
+        if (!article) continue;
+        
+        return article;
+      }
+    }
     
-    return unreadArticle || null;
+    return null;
   },
 
   createArticle: async (article: DatabaseArticle): Promise<void> => {
+    // Save the article
     const articleRef = ref(db, `articles/${article.id}`);
     await set(articleRef, article);
-    // Calculate and sync difficulty level
-    await articleService.calculateAndSyncDifficulty(article.id, article.content);
+
+    // Add to index with metadata
+    const indexRef = ref(db, 'articlesIndex');
+    const indexSnapshot = await get(indexRef);
+    const currentIndex = indexSnapshot.exists() ? indexSnapshot.val() : [];
+    const analysis = analyzeArticleDifficulty(article.content);
+    // Extract metadata for the index
+    const newArticleMetadata: ArticleIndex = {
+      id: article.id,
+      title: article.title,
+      visibility: article.visibility,
+      generatedDate: article.generatedDate,
+      difficultyLevel: analysis.difficultyLevel
+    };
+    
+    // Add article metadata to the index
+    await set(indexRef, [...currentIndex, newArticleMetadata]);
+
   },
 
   getArticleById: async (id: string): Promise<DatabaseArticle | null> => {
@@ -119,48 +152,13 @@ export const articleService = {
     }
   },
 
-  // Calculate and sync article difficulty level
-  calculateAndSyncDifficulty: async (articleId: string, content: string) => {
-    try {
-      const analysis = analyzeArticleDifficulty(content);
-      
-      // Update the article with both difficulty level and character levels
-      const articleRef = ref(db, `articles/${articleId}`);
-      await update(articleRef, { 
-        difficultyLevel: analysis.difficultyLevel,
-        characterLevels: analysis.levelDistribution
-      });
-      
-      return analysis;
-    } catch (error) {
-      console.error('Error calculating/syncing difficulty level:', error);
-      throw error;
-    }
+
+  getArticleIndex: async (): Promise<ArticleIndex[]> => {
+    // Get articles index
+    const indexRef = ref(db, 'articlesIndex');
+    const indexSnapshot = await get(indexRef);
+    const articleIndex = indexSnapshot.exists() ? indexSnapshot.val() : [];
+    return articleIndex;
   },
 
-  // Get article with difficulty level, calculate if not present
-  getArticleWithDifficulty: async (articleId: string) => {
-    try {
-      const articleRef = ref(db, `articles/${articleId}`);
-      const snapshot = await get(articleRef);
-      
-      if (!snapshot.exists()) {
-        throw new Error('Article not found');
-      }
-
-      const article = snapshot.val();
-      
-      // If difficulty level or character levels don't exist, calculate and sync them
-      if (article.difficultyLevel === undefined || article.characterLevels === undefined) {
-        const analysis = await articleService.calculateAndSyncDifficulty(articleId, article.content);
-        article.difficultyLevel = analysis.difficultyLevel;
-        article.characterLevels = analysis.levelDistribution;
-      }
-
-      return article;
-    } catch (error) {
-      console.error('Error getting article with difficulty:', error);
-      throw error;
-    }
-  }
-}; 
+};

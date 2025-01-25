@@ -43,7 +43,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Quiz } from '../types/reading';
+import { DatabaseQuiz } from '../services/articleService';
 import styles from './QuizPanel.module.css';
 import { processChineseText } from '../utils/textProcessor';
 import { analyticsService } from '../services/analyticsService';
@@ -54,7 +54,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface QuizPanelProps {
   onClose: () => void;
-  quizzes: Quiz[];
+  quizzes: DatabaseQuiz[];
   onComplete: (score: number) => void;
   articleId: string;
   onPointsUpdate: () => void;
@@ -91,7 +91,7 @@ export function QuizPanel({ onClose, quizzes, onComplete, articleId, onPointsUpd
 
     if (!isChecking) {
       setIsChecking(true);
-      const isCorrect = selectedAnswers[currentQuizIndex] === currentQuiz.correctOption;
+      const isCorrect = selectedAnswers[currentQuizIndex] === currentQuiz.correctAnswer;
       if (isCorrect) {
         setScore(prev => prev + 1);
         if (user && hasReadArticle === false) {
@@ -159,7 +159,7 @@ export function QuizPanel({ onClose, quizzes, onComplete, articleId, onPointsUpd
             optionClass += ' ' + styles.selected;
           }
           if (isChecking) {
-            if (index === currentQuiz.correctOption) {
+            if (index === currentQuiz.correctAnswer) {
               optionClass += ' ' + styles.correct;
             } else if (selectedAnswers[currentQuizIndex] === index) {
               optionClass += ' ' + styles.incorrect;

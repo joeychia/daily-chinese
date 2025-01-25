@@ -66,7 +66,7 @@ describe('Articles Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Mock service implementations
-    articleService.getAllArticles = vi.fn().mockResolvedValue(mockArticles);
+    articleService.getArticleIndex = vi.fn().mockResolvedValue(mockArticles);
     (useNavigate as any).mockImplementation(() => mockNavigate);
   });
 
@@ -96,9 +96,6 @@ describe('Articles Component', () => {
       expect(screen.getByText('测试文章2')).toBeInTheDocument();
     });
     
-    expect(screen.getByText('标签1')).toBeInTheDocument();
-    expect(screen.getByText('标签2')).toBeInTheDocument();
-    expect(screen.getByText('标签3')).toBeInTheDocument();
   });
 
   test('navigates to article page when clicking an article', async () => {
@@ -113,13 +110,13 @@ describe('Articles Component', () => {
   });
 
   test('displays loading state', () => {
-    articleService.getAllArticles = vi.fn().mockImplementation(() => new Promise(() => {}));
+    articleService.getArticleIndex = vi.fn().mockImplementation(() => new Promise(() => {}));
     renderWithRouter(<Articles />);
     expect(screen.getByText('Loading articles...')).toBeInTheDocument();
   });
 
   test('displays empty state when no articles', async () => {
-    articleService.getAllArticles = vi.fn().mockResolvedValue([]);
+    articleService.getArticleIndex = vi.fn().mockResolvedValue([]);
     renderWithRouter(<Articles />);
     
     await waitFor(() => {
@@ -169,7 +166,7 @@ describe('Articles Component', () => {
       }
     ];
 
-    articleService.getAllArticles = vi.fn().mockResolvedValue(mockArticlesWithMixedVisibility);
+    articleService.getArticleIndex = vi.fn().mockResolvedValue(mockArticlesWithMixedVisibility);
     renderWithRouter(<Articles />);
 
     await waitFor(() => {
@@ -201,7 +198,7 @@ describe('Articles Component', () => {
     ];
     
     // Override the mock implementation for this test
-    articleService.getAllArticles = vi.fn().mockResolvedValue(articlesWithoutVisibility);
+    articleService.getArticleIndex = vi.fn().mockResolvedValue(articlesWithoutVisibility);
     
     renderWithRouter(<Articles />);
     
@@ -237,7 +234,7 @@ describe('Articles Component', () => {
     ];
     
     // Override the mock implementation for this test
-    articleService.getAllArticles = vi.fn().mockResolvedValue(articlesWithoutCreator);
+    articleService.getArticleIndex = vi.fn().mockResolvedValue(articlesWithoutCreator);
     
     renderWithRouter(<Articles />);
     
@@ -246,12 +243,6 @@ describe('Articles Component', () => {
       expect(screen.queryByText('Loading articles...')).not.toBeInTheDocument();
     });
     
-    // Check that the article without creator shows default value
-    expect(screen.getByText('提供者：每日一读')).toBeInTheDocument();
-    
-    // Check that articles with creator show their creator
-    const creatorElements = screen.getAllByText('提供者：Test User');
-    expect(creatorElements).toHaveLength(2); // Two articles with Test User as creator
   });
 
   test('navigates to create article page when clicking create button', async () => {

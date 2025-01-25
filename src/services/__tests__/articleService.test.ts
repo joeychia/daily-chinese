@@ -36,7 +36,16 @@ describe('articleService', () => {
     isGenerated: false,
     generatedDate: '2024-01-01',
     quizzes: [],
-    visibility: 'public'
+    visibility: 'public',
+      difficultyLevel: 1,
+      characterLevels: {
+        LEVEL_1: 100,
+        LEVEL_2: 200,
+        LEVEL_3: 300,
+        LEVEL_4: 400,
+        LEVEL_5: 500,
+        LEVEL_6: 600,
+      }
   };
 
   const mockUserArticleData: UserArticleData = {
@@ -54,25 +63,20 @@ describe('articleService', () => {
   describe('getAllArticles', () => {
     it('should return empty array when no articles exist', async () => {
       (get as any).mockResolvedValueOnce({ exists: () => false });
-      const articles = await articleService.getAllArticles();
+      const articles = await articleService.getArticleIndex();
       expect(articles).toEqual([]);
     });
 
-    it('should return array of articles when they exist', async () => {
-      const mockArticles = {
-        'article-1': mockArticle,
-        'article-2': { ...mockArticle, id: 'article-2' }
-      };
+    it('should return articleIndex when they exist', async () => {
       (get as any).mockResolvedValueOnce({
         exists: () => true,
-        val: () => mockArticles
+        val: () => [mockArticle]
       });
-
-      const articles = await articleService.getAllArticles();
-      expect(articles).toHaveLength(2);
-      expect(articles[0]).toEqual(mockArticle);
+      const articles = await articleService.getArticleIndex();
+      expect(articles).toEqual([mockArticle]);
     });
   });
+    
 
   describe('getArticleById', () => {
     it('should return null when article does not exist', async () => {
@@ -146,24 +150,6 @@ describe('articleService', () => {
         ...newData,
         lastReadDate: today,
         bestTime: 80 // should update to new best time
-      });
-    });
-  });
-
-  describe('calculateAndSyncDifficulty', () => {
-    it('should calculate and update article difficulty', async () => {
-      const mockAnalysis = {
-        difficultyLevel: 2,
-        levelDistribution: { '1': 0.5, '2': 0.3, '3': 0.2 }
-      };
-
-      (analyzeArticleDifficulty as any).mockReturnValue(mockAnalysis);
-
-      await articleService.calculateAndSyncDifficulty('article-1', '这是测试文章');
-
-      expect(update).toHaveBeenCalledWith({}, {
-        difficultyLevel: mockAnalysis.difficultyLevel,
-        characterLevels: mockAnalysis.levelDistribution
       });
     });
   });

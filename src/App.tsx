@@ -9,10 +9,9 @@ import Articles from './components/Articles'
 import { ChineseWord } from './data/sampleText'
 import { themes } from './config/themes'
 import { processChineseText } from './utils/textProcessor'
-import { Reading, Quiz } from './types/reading'
 import sampleReading from './data/readings/sample.json'
 import { initializeDatabase } from './scripts/initializeDb'
-import { articleService } from './services/articleService'
+import { articleService, DatabaseArticle } from './services/articleService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import './App.css'
 import { getWordBank, saveWordBank, subscribeToWordBank, getTheme, saveTheme, subscribeToTheme, userDataService } from './services/userDataService'
@@ -20,7 +19,6 @@ import { Timer } from './components/Timer'
 import { TopBar } from './components/TopBar'
 import { WordBankComponent } from './components/WordBankComponent'
 import { WordBank } from './components/WordBank'
-import { analyzeArticleDifficulty } from './utils/articleDifficulty'
 import { DifficultyDisplay } from './components/DifficultyDisplay'
 import { analyticsService } from './services/analyticsService'
 import CreateArticle from './pages/CreateArticle'
@@ -37,43 +35,6 @@ interface DatabaseQuiz {
   correctAnswer: number;
 }
 
-interface DatabaseArticle {
-  id: string;
-  title: string;
-  author: string;
-  content: string;
-  tags: string[];
-  isGenerated: boolean;
-  generatedDate: string;
-  quizzes: DatabaseQuiz[];
-}
-
-// Convert database quiz to application quiz
-const convertQuiz = (dbQuiz: DatabaseQuiz): Quiz => ({
-  question: dbQuiz.question,
-  options: dbQuiz.options,
-  correctOption: dbQuiz.correctAnswer
-});
-
-// Convert database article to application reading
-const convertArticle = async (article: DatabaseArticle): Promise<Reading> => {
-  // Get article with difficulty level from cache or calculate if needed
-  const articleWithDifficulty = await articleService.getArticleWithDifficulty(article.id);
-  
-  return {
-    id: article.id,
-    title: article.title,
-    author: article.author,
-    content: article.content,
-    tags: article.tags,
-    quizzes: article.quizzes?.map(convertQuiz) || [],
-    isGenerated: article.isGenerated,
-    generatedDate: article.generatedDate,
-    sourceDate: article.generatedDate,
-    difficultyLevel: articleWithDifficulty.difficultyLevel,
-    characterLevels: articleWithDifficulty.characterLevels || analyzeArticleDifficulty(article.content).levelDistribution
-  };
-};
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -101,7 +62,7 @@ function MainContent() {
   const [currentTheme, setCurrentTheme] = useState<string | null>(null);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [reading, setReading] = useState<Reading>(sampleReading);
+  const [reading, setReading] = useState<DatabaseArticle>(sampleReading);
   const [showQuiz, setShowQuiz] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
@@ -206,13 +167,12 @@ function MainContent() {
             setError('Article not found');
             return;
           }
-          const convertedArticle = await convertArticle(article);
-          setReading(convertedArticle);
-          setProcessedText(processChineseText(convertedArticle.content));
+          setReading(article);
+          setProcessedText(processChineseText(article.content));
           
           // Track article view with enhanced metrics
           analyticsService.trackArticleView(articleId, article.title, {
-            difficulty: convertedArticle.difficultyLevel,
+            difficulty: article.difficultyLevel,
             wordCount: processChineseText(article.content).length,
             author: article.author,
             tags: article.tags,
@@ -220,7 +180,6 @@ function MainContent() {
           });
         } else {
           // On root path, load first unread or random article
-          let articles;
           if (user) {
             const unreadArticle = await articleService.getFirstUnreadArticle(user.id);
             if (unreadArticle) {
@@ -228,11 +187,10 @@ function MainContent() {
               return;
             }
           }
-          // For guest users or if no unread articles, get all articles and pick a random one
-          articles = await articleService.getAllArticles();
-          if (articles.length > 0) {
-            const randomIndex = Math.floor(Math.random() * articles.length);
-            navigate(`/article/${articles[randomIndex].id}`);
+          // For guest users or if no unread articles, get the first one
+          const article = await articleService.getFirstUnreadArticle('guest');
+          if (article) {
+            navigate(`/article/${article.id}`);
           }
         }
       } catch (error) {
@@ -491,7 +449,7 @@ function MainContent() {
             {showQuiz && (
               <>
                 <QuizPanel 
-                  quizzes={reading.quizzes} 
+                  quizzes={reading.quizzes}
                   onComplete={handleQuizComplete}
                   articleId={articleId || ''}
                   onPointsUpdate={() => setPointsRefreshTrigger(prev => prev + 1)}

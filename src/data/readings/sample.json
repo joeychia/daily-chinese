@@ -7,6 +7,7 @@
   "quizzes": [],
   "isGenerated": false,
   "generatedDate": "2024-01-01",
+  "visibility": "public",
   "difficultyLevel": 1,
   "characterLevels": {
     "LEVEL_1": 100,
