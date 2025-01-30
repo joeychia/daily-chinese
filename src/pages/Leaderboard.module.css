@@ -4,6 +4,29 @@
   margin: 0 auto;
 }
 
+.backButton {
+  background: none;
+  border: none;
+  color: var(--theme-primary);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backButton:hover {
+  opacity: 0.8;
+}
+
+.title {
+  color: var(--theme-primary);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .leaderboard {
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
@@ -85,5 +108,11 @@
 .loading {
   text-align: center;
   margin: 2rem;
+  color: var(--theme-secondary);
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem;
   color: var(--theme-secondary);
 }

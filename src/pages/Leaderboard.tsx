@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ref, get, set } from 'firebase/database';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import styles from './Leaderboard.module.css';
+import { rewardsService } from '../services/rewardsService';
 
 interface LeaderboardEntry {
   id: string;
@@ -12,6 +14,7 @@ interface LeaderboardEntry {
 
 export const Leaderboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNamePrompt, setShowNamePrompt] = useState(false);
@@ -57,11 +60,8 @@ export const Leaderboard: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const userRef = ref(db, `leaderboard/${user.id}`);
-      await set(userRef, {
-        name: userName.trim(),
-        points: 0
-      });
+      const userTotalPoints = (await rewardsService.getPoints(user.id)).total;
+      await rewardsService.syncToLeaderboard(user.id, userTotalPoints, userName.trim());
       setShowNamePrompt(false);
       // Refresh leaderboard data
       const leaderboardRef = ref(db, 'leaderboard');
@@ -90,6 +90,12 @@ export const Leaderboard: React.FC = () => {
   if (showNamePrompt) {
     return (
       <div className={styles.container}>
+        <button 
+          onClick={() => navigate(-1)} 
+          className={styles.backButton}
+        >
+          ← 返回
+        </button>
         <h1 className={styles.title}>加入排行榜</h1>
         <div className={styles.namePrompt}>
           <p>请输入您的名字以加入排行榜</p>
@@ -114,10 +120,19 @@ export const Leaderboard: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <button 
+        onClick={() => navigate(-1)} 
+        className={styles.backButton}
+      >
+        ← 返回
+      </button>
       <h1 className={styles.title}>排行榜</h1>
       <div className={styles.leaderboard}>
         {leaderboardData.map((entry, index) => (
-          <div key={entry.id} className={styles.entry}>
+          <div 
+            key={entry.id} 
+            className={`${styles.scoreItem} ${entry.id === user?.id ? styles.currentUser : ''}`}
+          >
             <div className={styles.rank}>{index + 1}</div>
             <div className={styles.name}>{entry.name}</div>
             <div className={styles.points}>{entry.points} XP</div>
