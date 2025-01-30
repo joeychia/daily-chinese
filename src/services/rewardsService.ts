@@ -7,6 +7,9 @@ export interface PointsData {
   quiz: number;
   streak: number;
   creation: number;
+  weeklyPoints?: number;
+  monthlyPoints?: number;
+  lastUpdated?: string;
 }
 
 const defaultPointsData = {
@@ -19,13 +22,25 @@ const defaultPointsData = {
 
 export const rewardsService = {
   async syncToLeaderboard(userId: string, points: number, name?: string): Promise<void> {
+    const now = new Date();
+    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
     const leaderboardRef = ref(db, `leaderboard/${userId}`);
     const leaderboardSnapshot = await get(leaderboardRef);
     const existingData = leaderboardSnapshot.val() || {};
     
+    // Reset weekly/monthly points if needed
+    const lastUpdated = existingData.lastUpdated ? new Date(existingData.lastUpdated) : null;
+    const weeklyPoints = lastUpdated && lastUpdated >= startOfWeek ? (existingData.weeklyPoints || 0) : 0;
+    const monthlyPoints = lastUpdated && lastUpdated >= startOfMonth ? (existingData.monthlyPoints || 0) : 0;
+    
     await set(leaderboardRef, {
       ...existingData,
       points,
+      weeklyPoints: weeklyPoints + points - (existingData.points || 0),
+      monthlyPoints: monthlyPoints + points - (existingData.points || 0),
+      lastUpdated: now.toISOString(),
       ...(name && { name })
     });
   },
@@ -52,6 +67,23 @@ export const rewardsService = {
     const pointsRef = ref(db, `users/${userId}/points`);
     const snapshot = await get(pointsRef);
     return snapshot.val() || defaultPointsData;
+  },
+
+  async getLeaderboardByPeriod(period: 'all' | 'week' | 'month'): Promise<Array<{ id: string; name: string; points: number }>> {
+    const leaderboardRef = ref(db, 'leaderboard');
+    const snapshot = await get(leaderboardRef);
+    if (!snapshot.exists()) return [];
+
+    const data = snapshot.val();
+    const entries = Object.entries(data).map(([id, userData]: [string, any]) => ({
+      id,
+      name: userData.name || 'Anonymous',
+      points: period === 'week' ? (userData.weeklyPoints || 0) :
+             period === 'month' ? (userData.monthlyPoints || 0) :
+             userData.points || 0
+    }));
+
+    return entries.sort((a, b) => b.points - a.points);
   },
 
   async recordWordBankTest(userId: string, word: string): Promise<void> {

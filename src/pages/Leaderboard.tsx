@@ -12,6 +12,8 @@ interface LeaderboardEntry {
   points: number;
 }
 
+type Period = 'all' | 'week' | 'month';
+
 export const Leaderboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -20,30 +22,18 @@ export const Leaderboard: React.FC = () => {
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [userName, setUserName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>('all');
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const leaderboardRef = ref(db, 'leaderboard');
-        const snapshot = await get(leaderboardRef);
-        
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const entries = Object.entries(data).map(([id, userData]: [string, any]) => ({
-            id,
-            name: userData.name || 'Anonymous',
-            points: userData.points || 0
-          }));
-          
-          // Sort by points in descending order
-          entries.sort((a, b) => b.points - a.points);
-          setLeaderboardData(entries);
+        const entries = await rewardsService.getLeaderboardByPeriod(selectedPeriod);
+        setLeaderboardData(entries);
 
-          // Check if current user exists in leaderboard
-          if (user && !entries.some(entry => entry.id === user.id)) {
-            setUserName(user.displayName || '');
-            setShowNamePrompt(true);
-          }
+        // Check if current user exists in leaderboard
+        if (user && !entries.some(entry => entry.id === user.id)) {
+          setUserName(user.displayName || '');
+          setShowNamePrompt(true);
         }
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
@@ -53,7 +43,7 @@ export const Leaderboard: React.FC = () => {
     };
 
     fetchLeaderboard();
-  }, [user]);
+  }, [user, selectedPeriod]);
 
   const handleSubmitName = async () => {
     if (!user || !userName.trim()) return;
@@ -64,18 +54,8 @@ export const Leaderboard: React.FC = () => {
       await rewardsService.syncToLeaderboard(user.id, userTotalPoints, userName.trim());
       setShowNamePrompt(false);
       // Refresh leaderboard data
-      const leaderboardRef = ref(db, 'leaderboard');
-      const snapshot = await get(leaderboardRef);
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const entries = Object.entries(data).map(([id, userData]: [string, any]) => ({
-          id,
-          name: userData.name || 'Anonymous',
-          points: userData.points || 0
-        }));
-        entries.sort((a, b) => b.points - a.points);
-        setLeaderboardData(entries);
-      }
+      const entries = await rewardsService.getLeaderboardByPeriod(selectedPeriod);
+      setLeaderboardData(entries);
     } catch (error) {
       console.error('Error adding user to leaderboard:', error);
     } finally {
@@ -127,6 +107,26 @@ export const Leaderboard: React.FC = () => {
         ← 返回
       </button>
       <h1 className={styles.title}>排行榜</h1>
+      <div className={styles.periodSelector}>
+        <button 
+          onClick={() => setSelectedPeriod('all')}
+          className={`${styles.periodButton} ${selectedPeriod === 'all' ? styles.active : ''}`}
+        >
+          总排名
+        </button>
+        <button 
+          onClick={() => setSelectedPeriod('week')}
+          className={`${styles.periodButton} ${selectedPeriod === 'week' ? styles.active : ''}`}
+        >
+          本周
+        </button>
+        <button 
+          onClick={() => setSelectedPeriod('month')}
+          className={`${styles.periodButton} ${selectedPeriod === 'month' ? styles.active : ''}`}
+        >
+          本月
+        </button>
+      </div>
       <div className={styles.leaderboard}>
         {leaderboardData.map((entry, index) => (
           <div 
