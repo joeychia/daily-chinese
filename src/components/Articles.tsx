@@ -47,12 +47,16 @@ export default function Articles() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>文章列表</h1>
+        <h1>
+          文章列表
+          <span className={styles.englishLabel}>Article List</span>
+        </h1>
         <button 
           className={styles.createButton}
           onClick={() => navigate('/create-article')}
         >
           创建文章
+          <span className={styles.englishLabel}>Create Article</span>
         </button>
       </div>
 
@@ -69,4 +73,4 @@ export default function Articles() {
       </div>
     </div>
   );
-} 
+}

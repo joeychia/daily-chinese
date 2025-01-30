@@ -74,9 +74,20 @@ describe('Progress', () => {
       render(<Progress />);
     });
     
-    expect(await screen.findByText('总体进度')).toBeInTheDocument();
-    expect(await screen.findByText(/总字数:/)).toBeInTheDocument();
-    expect(await screen.findByText(/已掌握:/)).toBeInTheDocument();
+    // Wait for the component to load and find the title
+    const title = await screen.findByText('总体进度');
+    expect(title).toBeInTheDocument();
+    
+    // Use getByText with a function to do partial matches
+    const totalCharsElement = screen.getByText((content, element) => {
+      return content.includes('总字数') && element?.textContent?.includes('Total Characters');
+    });
+    expect(totalCharsElement).toBeInTheDocument();
+
+    const masteredElement = screen.getByText((content, element) => {
+      return content.includes('已掌握') && element?.textContent?.includes('Mastered');
+    });
+    expect(masteredElement).toBeInTheDocument();
   });
 
   it('should toggle unknown characters visibility when clicking toggle button', async () => {
@@ -89,12 +100,12 @@ describe('Progress', () => {
     if (!firstGradeSection) throw new Error('Grade section not found');
     
     // Find the toggle button within this section
-    const toggleButton = within(firstGradeSection).getByText('显示未读');
+    const toggleButton = within(firstGradeSection).getByText('显示未读 Show Unread');
     await act(async () => {
       fireEvent.click(toggleButton);
     });
     
-    expect(within(firstGradeSection).getByText('隐藏未读')).toBeInTheDocument();
+    expect(within(firstGradeSection).getByText('隐藏未读 Hide Unread')).toBeInTheDocument();
   });
 
   it('should display character cards with correct mastery colors', async () => {
@@ -116,5 +127,6 @@ describe('Progress', () => {
     });
     
     expect(await screen.findByText('学习趋势（近30天）')).toBeInTheDocument();
+    expect(await screen.findByText('Learning Trends (Last 30 Days)')).toBeInTheDocument();
   });
-}); 
+});

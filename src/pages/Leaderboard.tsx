@@ -64,7 +64,12 @@ export const Leaderboard: React.FC = () => {
   };
 
   if (loading) {
-    return <div className={styles.loading}>加载中...</div>;
+    return (
+      <div className={styles.loading}>
+        <div>加载中...</div>
+        <div className={styles.englishLabel}>Loading...</div>
+      </div>
+    );
   }
 
   if (showNamePrompt) {
@@ -74,16 +79,23 @@ export const Leaderboard: React.FC = () => {
           onClick={() => navigate(-1)} 
           className={styles.backButton}
         >
-          ← 返回
+          <span>← 返回</span>
+          <span className={styles.englishLabel}>Back</span>
         </button>
-        <h1 className={styles.title}>加入排行榜</h1>
+        <h1 className={styles.title}>
+          <div>加入排行榜</div>
+          <div className={styles.englishLabel}>Join Leaderboard</div>
+        </h1>
         <div className={styles.namePrompt}>
-          <p>请输入您的名字以加入排行榜</p>
+          <p>
+            <div>请输入您的名字以加入排行榜</div>
+            <div className={styles.englishLabel}>Please enter your name to join the leaderboard</div>
+          </p>
           <input
             type="text"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
-            placeholder="输入名字"
+            placeholder="输入名字 / Enter name"
             className={styles.nameInput}
           />
           <button
@@ -91,7 +103,17 @@ export const Leaderboard: React.FC = () => {
             disabled={!userName.trim() || isSubmitting}
             className={styles.submitButton}
           >
-            {isSubmitting ? '提交中...' : '确认'}
+            {isSubmitting ? (
+              <>
+                <div>提交中...</div>
+                <div className={styles.englishLabel}>Submitting...</div>
+              </>
+            ) : (
+              <>
+                <div>确认</div>
+                <div className={styles.englishLabel}>Confirm</div>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -104,27 +126,34 @@ export const Leaderboard: React.FC = () => {
         onClick={() => navigate(-1)} 
         className={styles.backButton}
       >
-        ← 返回
+        <span>← 返回</span>
+        <span className={styles.englishLabel}>Back</span>
       </button>
-      <h1 className={styles.title}>排行榜</h1>
+      <h1 className={styles.title}>
+        <div>排行榜</div>
+        <div className={styles.englishLabel}>Leaderboard</div>
+      </h1>
       <div className={styles.periodSelector}>
         <button 
           onClick={() => setSelectedPeriod('all')}
           className={`${styles.periodButton} ${selectedPeriod === 'all' ? styles.active : ''}`}
         >
-          总排名
+          <div>总排名</div>
+          <div className={styles.englishLabel}>All Time</div>
         </button>
         <button 
           onClick={() => setSelectedPeriod('week')}
           className={`${styles.periodButton} ${selectedPeriod === 'week' ? styles.active : ''}`}
         >
-          本周
+          <div>本周</div>
+          <div className={styles.englishLabel}>This Week</div>
         </button>
         <button 
           onClick={() => setSelectedPeriod('month')}
           className={`${styles.periodButton} ${selectedPeriod === 'month' ? styles.active : ''}`}
         >
-          本月
+          <div>本月</div>
+          <div className={styles.englishLabel}>This Month</div>
         </button>
       </div>
       <div className={styles.leaderboard}>
@@ -139,7 +168,10 @@ export const Leaderboard: React.FC = () => {
           </div>
         ))}
         {leaderboardData.length === 0 && (
-          <div className={styles.empty}>暂无数据</div>
+          <div className={styles.empty}>
+            <div>暂无数据</div>
+            <div className={styles.englishLabel}>No data available</div>
+          </div>
         )}
       </div>
     </div>

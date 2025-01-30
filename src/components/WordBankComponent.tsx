@@ -126,7 +126,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
       case 1: return '#E6A23C'; // orange
       case 2: return '#F4E04D'; // yellow
       case 3: return '#67C23A'; // green
-      default: return '#909399';
+      default: return '#67C23A'; // green
     }
   };
 

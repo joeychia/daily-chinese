@@ -142,9 +142,19 @@ nav a, nav button {
   text-align: left;
   cursor: pointer;
   font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.englishLabel {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: normal;
 }
 
 nav a:hover, nav button:hover {
   background: var(--hover-highlight);
   color: var(--primary-color);
-} 
+}

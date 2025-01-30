@@ -234,25 +234,46 @@ export const Progress = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>学习进度</h1>
+      <h1 className={styles.title}>
+        学习进度
+        <span className={styles.englishTitle}>Learning Progress</span>
+      </h1>
       
       {/* Daily Progress Trend */}
       <div className={styles.trendSection}>
-        <h2>学习趋势（近30天）</h2>
+        <h2>
+          学习趋势（近30天）
+          <span className={styles.englishSubtitle}>Learning Trends (Last 30 Days)</span>
+        </h2>
         <div className={styles.chartContainer}>
           <Line data={chartData} options={chartOptions} />
         </div>
       </div>
 
       <div className={styles.overallStats}>
-        <h2>总体进度</h2>
+        <h2>
+          总体进度
+          <span className={styles.englishSubtitle}>Overall Progress</span>
+        </h2>
         <div className={styles.statsGrid}>
-          <div>总字数: {overallStats.total}</div>
-          <div>已掌握: {overallStats.mastered} ({Math.round(overallStats.mastered / overallStats.total * 100)}%)</div>
-          <div>熟悉: {overallStats.familiar} ({Math.round(overallStats.familiar / overallStats.total * 100)}%)</div>
-          <div>学习中: {overallStats.learned} ({Math.round(overallStats.learned / overallStats.total * 100)}%)</div>
-          <div>不熟: {overallStats.notFamiliar} ({Math.round(overallStats.notFamiliar / overallStats.total * 100)}%)</div>
-          <div>未读: {overallStats.unknown} ({Math.round(overallStats.unknown / overallStats.total * 100)}%)</div>
+          <div>
+            总字数 <span className={styles.englishLabel}>Total Characters</span>: {overallStats.total}
+          </div>
+          <div>
+            已掌握 <span className={styles.englishLabel}>Mastered</span>: {overallStats.mastered} ({Math.round(overallStats.mastered / overallStats.total * 100)}%)
+          </div>
+          <div>
+            熟悉 <span className={styles.englishLabel}>Familiar</span>: {overallStats.familiar} ({Math.round(overallStats.familiar / overallStats.total * 100)}%)
+          </div>
+          <div>
+            学习中 <span className={styles.englishLabel}>Learning</span>: {overallStats.learned} ({Math.round(overallStats.learned / overallStats.total * 100)}%)
+          </div>
+          <div>
+            不熟 <span className={styles.englishLabel}>Not Familiar</span>: {overallStats.notFamiliar} ({Math.round(overallStats.notFamiliar / overallStats.total * 100)}%)
+          </div>
+          <div>
+            未读 <span className={styles.englishLabel}>Unread</span>: {overallStats.unknown} ({Math.round(overallStats.unknown / overallStats.total * 100)}%)
+          </div>
         </div>
       </div>
       {(Object.entries(characterGrades) as [keyof typeof gradeNames, string[]][]).map(([grade, chars]) => {
@@ -261,14 +282,15 @@ export const Progress = () => {
           <div key={grade} className={styles.gradeSection}>
             <h2 className={styles.gradeTitle}>
               {gradeNames[grade]}级汉字
+              <span className={styles.englishGrade}>{grade}</span>
               <span className={styles.gradeStats}>
-                (掌握: {Math.round(stats.mastered / stats.total * 100)}% | 
-                未读: {stats.unknown})
+                (掌握 <span className={styles.englishLabel}>Mastered</span>: {Math.round(stats.mastered / stats.total * 100)}% | 
+                未读 <span className={styles.englishLabel}>Unread</span>: {stats.unknown})
                 <button 
                   className={styles.toggleButton}
                   onClick={() => toggleShowUnknown(grade)}
                 >
-                  {showUnknownByGrade[grade] ? '隐藏未读' : '显示未读'}
+                  {showUnknownByGrade[grade] ? '隐藏未读 Hide Unread' : '显示未读 Show Unread'}
                 </button>
               </span>
             </h2>
@@ -296,4 +318,4 @@ export const Progress = () => {
       })}
     </div>
   );
-}; 
+};

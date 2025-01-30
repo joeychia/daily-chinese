@@ -226,15 +226,19 @@ export default function CreateArticle() {
     <div className={styles.stepIndicator}>
       <div className={`${styles.step} ${currentStep === 'mode' ? styles.active : ''}`} data-number="1">
         选择创建方式
+        <span className={styles.englishLabel}>Select Method</span>
       </div>
       <div className={`${styles.step} ${currentStep === 'input' ? styles.active : ''}`} data-number="2">
         输入内容
+        <span className={styles.englishLabel}>Input Content</span>
       </div>
       <div className={`${styles.step} ${currentStep === 'preview' ? styles.active : ''}`} data-number="3">
         预览文章
+        <span className={styles.englishLabel}>Preview Article</span>
       </div>
       <div className={`${styles.step} ${currentStep === 'save' ? styles.active : ''}`} data-number="4">
         保存
+        <span className={styles.englishLabel}>Save</span>
       </div>
     </div>
   );
@@ -242,21 +246,26 @@ export default function CreateArticle() {
   const renderModeSelection = () => (
     <div className={styles.modeSelection}>
       <div className={styles.pointsIncentive}>
-        创建文章可获得 20 XP 奖励！
+        <div className={styles.chineseLabel}>创建文章可获得 20 XP 奖励！</div>
+        <div className={styles.englishLabel}>Earn 20 XP for creating an article!</div>
       </div>
-      <h2>选择创建方式</h2>
+
       <div className={styles.modeButtons}>
         <button onClick={() => handleMethodSelect('prompt')}>
-          从提示词创建
+          <div className={styles.chineseLabel}>从提示词创建</div>
+          <div className={styles.englishLabel}>Create from Prompt</div>
         </button>
         <button onClick={() => handleMethodSelect('rewrite')}>
-          改写文章生成测试
+          <div className={styles.chineseLabel}>改写文章生成测试</div>
+          <div className={styles.englishLabel}>Rewrite and Generate Quiz</div>
         </button>
         <button onClick={() => handleMethodSelect('metadata')}>
-          使用原文生成测试
+          <div className={styles.chineseLabel}>使用原文生成测试</div>
+          <div className={styles.englishLabel}>Generate Quiz</div>
         </button>
         <button onClick={() => handleMethodSelect('wordbank')}>
-          从生词本创建
+          <div className={styles.chineseLabel}>从生词本创建</div>
+          <div className={styles.englishLabel}>Create from Word Bank</div>
         </button>
       </div>
     </div>
@@ -268,9 +277,13 @@ export default function CreateArticle() {
     return (
       <div className={styles.selectedWordsSection}>
         <div className={styles.selectedWordsHeader}>
-          <h4>随机生词</h4>
+          <h4>
+            随机生词
+            <span className={styles.englishLabel}>Random Words</span>
+          </h4>
           <button onClick={() => setIsModalOpen(true)} className={styles.selectMoreButton}>
             选择生词 ({selectedWords.length}/10)
+            <span className={styles.englishLabel}>Select Words ({selectedWords.length}/10)</span>
           </button>
         </div>
         <div className={styles.selectedWordsList}>
@@ -395,7 +408,10 @@ export default function CreateArticle() {
           {generatedPreview?.content}
         </div>
         <div className={styles.quizPreview}>
-          <h4>测验题目</h4>
+          <h4>
+            测验题目
+            <span className={styles.englishLabel}>Quiz Questions</span>
+          </h4>
           {renderEditableQuizzes()}
         </div>
       </div>
@@ -407,6 +423,7 @@ export default function CreateArticle() {
             onChange={(e) => setIsPrivate(e.target.checked)}
           />
           仅对我可见
+          <span className={styles.englishLabel}>Private</span>
         </label>
       </div>
     </>
@@ -429,21 +446,24 @@ export default function CreateArticle() {
       case 'mode':
         return (
           <button className={styles.cancelButton} onClick={handleCancel}>
-            取消
+            <div className={styles.chineseLabel}>取消</div>
+            <div className={styles.englishLabel}>Cancel</div>
           </button>
         );
       case 'input':
         return (
           <>
             <button className={styles.cancelButton} onClick={() => setCurrentStep('mode')}>
-              上一步
+              <div className={styles.chineseLabel}>上一步</div>
+              <div className={styles.englishLabel}>Previous</div>
             </button>
             <button
               className={styles.submitButton}
               onClick={handleCreateArticle}
               disabled={isGenerating || (!prompt && !sourceText)}
             >
-              {isGenerating ? '生成中...' : '生成'}
+              <div className={styles.chineseLabel}>{isGenerating ? '生成中...' : '生成'}</div>
+              <div className={styles.englishLabel}>{isGenerating ? 'Generating...' : 'Generate'}</div>
             </button>
           </>
         );
@@ -451,10 +471,12 @@ export default function CreateArticle() {
         return (
           <>
             <button className={styles.cancelButton} onClick={handleCancelSave}>
-              重新生成
+              <div className={styles.chineseLabel}>重新生成</div>
+              <div className={styles.englishLabel}>Regenerate</div>
             </button>
             <button className={styles.submitButton} onClick={handleConfirmSave}>
-              保存文章
+              <div className={styles.chineseLabel}>保存文章</div>
+              <div className={styles.englishLabel}>Save Article</div>
             </button>
           </>
         );

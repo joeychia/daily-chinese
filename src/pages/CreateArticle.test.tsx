@@ -25,12 +25,17 @@ const mockUser = {
 
 const mockGeneratedArticle = {
   title: '测试文章',
+  titleEnglish: 'Test Article',
   content: '这是一篇测试文章的内容。',
+  contentEnglish: 'This is the content of a test article.',
   tags: ['标签1', '标签2'],
+  tagsEnglish: ['Tag1', 'Tag2'],
   quizzes: [
     {
       question: '测试问题',
+      questionEnglish: 'Test Question',
       options: ['选项1', '选项2', '选项3'],
+      optionsEnglish: ['Option1', 'Option2', 'Option3'],
       correctAnswer: 0
     }
   ]
@@ -69,7 +74,7 @@ describe('CreateArticle', () => {
 
   it('starts at mode selection step', () => {
     renderComponent();
-    expect(screen.getByRole('heading', { name: '选择创建方式' })).toBeInTheDocument();
+    expect(screen.getByText('选择创建方式')).toBeInTheDocument();
     expect(screen.getByText('从提示词创建')).toBeInTheDocument();
     expect(screen.getByText('改写文章生成测试')).toBeInTheDocument();
     expect(screen.getByText('使用原文生成测试')).toBeInTheDocument();
@@ -174,7 +179,7 @@ describe('CreateArticle', () => {
     
     // Return to mode selection
     fireEvent.click(screen.getByText('上一步'));
-    expect(screen.getByRole('heading', { name: '选择创建方式' })).toBeInTheDocument();
+    expect(screen.getByText('选择创建方式')).toBeInTheDocument();
   });
 
   it('adjusts article length with input', () => {
@@ -185,4 +190,4 @@ describe('CreateArticle', () => {
     
   });
 
-}); 
+});

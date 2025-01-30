@@ -97,11 +97,10 @@
   cursor: pointer;
   font-size: 1rem;
   transition: all 0.2s ease;
-}
-
-.periodButton:hover {
-  background: var(--primary-color);
-  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .periodButton.active {
@@ -109,14 +108,59 @@
   color: white;
 }
 
+.nameInput {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
 .submitButton {
   background: var(--primary-color);
   color: white;
   border: none;
-  padding: 0.5rem 2rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 4px;
-  font-size: 1rem;
   cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.englishLabel {
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: normal;
+  opacity: 0.75;
 }
 
 .submitButton:hover {

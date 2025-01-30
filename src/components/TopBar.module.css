@@ -18,6 +18,17 @@
   font-weight: 600;
   color: var(--text-primary);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+
+.title .englishLabel {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: normal;
+  opacity: 0.8;
 }
 
 .rightSection {
@@ -71,4 +82,4 @@
   border-radius: 10px;
   min-width: 1.2rem;
   text-align: center;
-} 
+}

@@ -63,19 +63,31 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
           <UserMenu />
         </div>
         <nav>
-          <Link to="/" onClick={onClose}>首页</Link>
-          <Link to="/articles" onClick={onClose}>文章列表</Link>
-          <Link to="/create-article" onClick={onClose}>创建文章</Link>
-          <Link to="/wordbank" onClick={onClose}>生词本</Link>
-          <Link to="/progress" onClick={onClose}>学习进度</Link>
-          <Link to="/leaderboard" onClick={onClose}>排行榜</Link>
+          <Link to="/" onClick={onClose}>
+            <span>首页 <span className={styles.englishLabel}>Home</span></span>
+          </Link>
+          <Link to="/articles" onClick={onClose}>
+            <span>文章列表 <span className={styles.englishLabel}>Articles</span></span>
+          </Link>
+          <Link to="/create-article" onClick={onClose}>
+            <span>创建文章 <span className={styles.englishLabel}>Create Article</span></span>
+          </Link>
+          <Link to="/wordbank" onClick={onClose}>
+            <span>生词本 <span className={styles.englishLabel}>Word Bank</span></span>
+          </Link>
+          <Link to="/progress" onClick={onClose}>
+            <span>学习进度 <span className={styles.englishLabel}>Progress</span></span>
+          </Link>
+          <Link to="/leaderboard" onClick={onClose}>
+            <span>排行榜 <span className={styles.englishLabel}>Leaderboard</span></span>
+          </Link>
           <a 
             href="https://docs.google.com/forms/d/e/1FAIpQLSdjIDOY5gif53bOwFd53I_F6IpC40CQl3AE4ROuxiAcfW4Y-g/viewform?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleFeedbackClick}
           >
-            反馈
+            <span>反馈 <span className={styles.englishLabel}>Feedback</span></span>
           </a>
         </nav>
       </div>
