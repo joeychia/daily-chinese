@@ -1,0 +1,22 @@
+{
+    "rules": {
+      "articles": {
+        ".read": true,
+        ".write": "auth !== null"
+      },
+      "articlesIndex": {
+        ".read": true,
+        ".write": "auth !== null"
+      },
+      "leaderboard": {
+        ".read": "auth !== null",
+        ".write": "auth !== null"
+      },
+      "users": {
+        "$uid": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid"
+        }
+      }
+    }
+  }
