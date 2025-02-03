@@ -54,19 +54,24 @@ export function ChineseText({ text, onWordPeek, wordBank = [] }: ChineseTextProp
   return (
     <div className={styles.textContainer}>
       {text.map((word, index) => (
-        <span
-          key={index}
-          className={`${styles.wordContainer} ${isChineseCharacter(word.characters) ? styles.interactive : ''}`}
-          onClick={(e) => handleWordClick(word, index, e)}
-        >
-          {isInWordBank(word) && <span className={styles.wordBankDot} />}
-          <span className={styles.word}>{word.characters}</span>
-          {selectedWord?.word.characters === word.characters && selectedWord?.index === index && isChineseCharacter(word.characters) && (
-            <div className={`${styles.pinyinPopup} ${styles.visible}`}>
-              <div className={styles.pinyin}>{word.pinyin.join(' ')}</div>
-            </div>
+        <React.Fragment key={index}>
+          {word.characters === '\n' ? (
+            <br />
+          ) : (
+            <span
+              className={`${styles.wordContainer} ${isChineseCharacter(word.characters) ? styles.interactive : ''}`}
+              onClick={(e) => handleWordClick(word, index, e)}
+            >
+              {isInWordBank(word) && <span className={styles.wordBankDot} />}
+              <span className={styles.word}>{word.characters}</span>
+              {selectedWord?.word.characters === word.characters && selectedWord?.index === index && isChineseCharacter(word.characters) && (
+                <div className={`${styles.pinyinPopup} ${styles.visible}`}>
+                  <div className={styles.pinyin}>{word.pinyin.join(' ')}</div>
+                </div>
+              )}
+            </span>
           )}
-        </span>
+        </React.Fragment>
       ))}
     </div>
   );
