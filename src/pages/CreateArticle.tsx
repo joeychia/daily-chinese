@@ -51,7 +51,7 @@ import { getWordBank } from '../services/userDataService';
 import { ChineseWord } from '../types/reading';
 import WordSelectionModal from '../components/WordSelectionModal';
 import { rewardsService } from '../services/rewardsService';
-import { analyzeArticleDifficulty, LevelDistribution } from '../utils/articleDifficulty';
+import { analyzeArticleDifficulty } from '../utils/articleDifficulty';
 import { DifficultyDisplay } from '../components/DifficultyDisplay';
 
 type Step = 'mode' | 'input' | 'preview' | 'save';

@@ -1,4 +1,4 @@
-import { ref, get, set, update } from 'firebase/database';
+import { ref, get, set } from 'firebase/database';
 import { db } from '../config/firebase';
 import { analyzeArticleDifficulty } from '../utils/articleDifficulty';
 import { streakService } from './streakService';

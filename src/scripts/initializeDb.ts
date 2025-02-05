@@ -36,14 +36,16 @@ export const initializeDatabase = async () => {
       generatedDate: '2024-01-01',
       quizzes: [
         {
+          id: '1',
           question: '花园里有什么颜色的花？',
           options: ['红色和蓝色', '红色和黄色', '蓝色和紫色', '黄色和白色'],
-          correctOption: 1
+          correctAnswer: '红色和黄色'
         },
         {
+          id: '2',
           question: '谁在花丛中飞舞？',
           options: ['蝴蝶', '蜜蜂', '小鸟', '蜻蜓'],
-          correctOption: 1
+          correctAnswer: '蜜蜂'
         }
       ]
     },
@@ -57,14 +59,16 @@ export const initializeDatabase = async () => {
       generatedDate: '2024-01-02',
       quizzes: [
         {
+          id: '3',
           question: '小狗的毛是什么颜色的？',
           options: ['黑色', '白色', '棕色', '灰色'],
-          correctOption: 1
+          correctAnswer: '白色'
         },
         {
+          id: '4',
           question: '小狗会做什么动作？',
           options: ['跳舞', '唱歌', '握手', '说话'],
-          correctOption: 2
+          correctAnswer: '握手'
         }
       ]
     }
@@ -75,4 +79,4 @@ export const initializeDatabase = async () => {
   }
 
   console.log('Database initialized successfully');
-}; 
+};

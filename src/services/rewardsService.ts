@@ -1,4 +1,4 @@
-import { ref, get, set, increment, update } from 'firebase/database';
+import { ref, get, set, increment } from 'firebase/database';
 import { db } from '../config/firebase';
 
 export interface PointsData {

@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { ref, get, set } from 'firebase/database';
-import { db } from '../config/firebase';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import styles from './Leaderboard.module.css';

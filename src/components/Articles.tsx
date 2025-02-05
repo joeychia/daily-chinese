@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Articles.module.css';
-import { ArticleIndex, articleService, DatabaseArticle } from '../services/articleService';
+import { ArticleIndex, articleService } from '../services/articleService';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Articles() {

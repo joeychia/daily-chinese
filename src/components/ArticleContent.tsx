@@ -19,7 +19,7 @@ export function ArticleContent({ reading, processedText, processedTitle, onWordP
         <ChineseText text={processedTitle} onWordPeek={onWordPeek} wordBank={wordBank} />
         <p className={styles.author}>作者：{reading.author}</p>
         <div className={styles.tags}>
-          {reading.tags.map((tag, index) => (
+          {reading.tags.map((tag: string, index: number) => (
             <span key={index} className={styles.tag}>{tag}</span>
           ))}
         </div>
@@ -35,4 +35,4 @@ export function ArticleContent({ reading, processedText, processedTitle, onWordP
       </div>
     </div>
   );
-} 
+}

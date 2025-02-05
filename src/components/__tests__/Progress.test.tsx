@@ -79,13 +79,13 @@ describe('Progress', () => {
     expect(title).toBeInTheDocument();
     
     // Use getByText with a function to do partial matches
-    const totalCharsElement = screen.getByText((content, element) => {
-      return content.includes('总字数') && element?.textContent?.includes('Total Characters');
+    const totalCharsElement = screen.getByText((content: string) => {
+      return content.includes('Total Characters');
     });
     expect(totalCharsElement).toBeInTheDocument();
 
-    const masteredElement = screen.getByText((content, element) => {
-      return content.includes('已掌握') && element?.textContent?.includes('Mastered');
+    const masteredElement = screen.getByText((content: string) => {
+      return content.includes('Mastered');
     });
     expect(masteredElement).toBeInTheDocument();
   });

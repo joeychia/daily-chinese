@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { articleService, DatabaseArticle, UserArticleData } from '../articleService';
-import { get, set, update } from 'firebase/database';
-import { analyzeArticleDifficulty } from '../../utils/articleDifficulty';
+import { get, set } from 'firebase/database';
 
 // Mock Firebase
 vi.mock('firebase/database', () => ({
@@ -153,4 +152,4 @@ describe('articleService', () => {
       });
     });
   });
-}); 
+});

@@ -28,13 +28,6 @@ import { calculateStats } from './pages/Progress'
 import { ArticleFeedbackPanel } from './components/ArticleFeedbackPanel'
 import { Leaderboard } from './pages/Leaderboard'
 
-// Define the structure of the quiz from the database
-interface DatabaseQuiz {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
-
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

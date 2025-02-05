@@ -2,16 +2,74 @@
 <html lang="zh">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="%BASE_URL%rooster.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>每日一读</title>
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E282N33L4J"></script>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Daily Chinese</title>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-E282N33L4J');
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    
+        // Show install prompt for new users
+        let deferredPrompt;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const showInstallPrompt = () => {
+          const installButton = document.createElement('button');
+          installButton.textContent = isIOS ? 'Install: Tap Share then Add to Home Screen' : 'Add to Home Screen';
+          installButton.className = 'install-button';
+          installButton.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-size: 16px; white-space: nowrap;';
+          
+          if (!window.matchMedia('(display-mode: standalone)').matches) {
+            document.body.appendChild(installButton);
+          }
+
+          if (isIOS) {
+            installButton.addEventListener('click', () => {
+              alert('To install: tap the Share button in your browser\'s toolbar, then tap \'Add to Home Screen\'');
+            });
+          } else {
+            installButton.addEventListener('click', async () => {
+              if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                  console.log('User accepted the install prompt');
+                }
+                deferredPrompt = null;
+                installButton.remove();
+              }
+            });
+          }
+        };
+
+        if (isIOS) {
+          // Show install prompt immediately for iOS
+          showInstallPrompt();
+        } else {
+          // Wait for beforeinstallprompt event on other platforms
+          window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallPrompt();
+          });
+        }
+      }
     </script>
   </head>
   <body>
