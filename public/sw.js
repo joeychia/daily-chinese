@@ -21,10 +21,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Always try network first, then fall back to cache
+        // Return cache first for static assets
+        if (urlsToCache.includes(new URL(event.request.url).pathname)) {
+          return response || fetch(event.request);
+        }
+
+        // For other requests, try network first, then fall back to cache
         return fetch(event.request)
           .then(networkResponse => {
-            // Cache the new response
+            // Cache successful responses
             if (networkResponse.ok) {
               const responseToCache = networkResponse.clone();
               caches.open(CACHE_NAME)
@@ -32,7 +37,7 @@ self.addEventListener('fetch', (event) => {
             }
             return networkResponse;
           })
-          .catch(() => response);
+          .catch(() => response || Promise.reject('no-match'));
       })
   );
 });

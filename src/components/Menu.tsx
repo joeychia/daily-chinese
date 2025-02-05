@@ -26,7 +26,7 @@
  *    - Visual feedback on interactions
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserMenu } from './UserMenu';
 import styles from './Menu.module.css';
@@ -39,6 +39,47 @@ interface MenuProps {
 }
 
 export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(false);
+      return;
+    }
+
+    if (isIOS || isSafari) {
+      setShowInstallButton(true);
+    } else {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+        setShowInstallButton(true);
+      });
+    }
+  }, [isIOS, isSafari]);
+
+  const handleInstall = async () => {
+    if (isIOS || isSafari) {
+      const message = 'To install this app:\n1. Tap the Share button in your browser (square with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm';
+      alert(message);
+    } else if (deferredPrompt) {
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setShowInstallButton(false);
+        }
+        setDeferredPrompt(null);
+      } catch (err) {
+        console.error('Install prompt error:', err);
+      }
+    }
+    onClose();
+  };
+
   const handleFeedbackClick = (): void => {
     onClose();
   };
@@ -81,6 +122,16 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
           <Link to="/leaderboard" onClick={onClose}>
             <span>排行榜 <span className={styles.englishLabel}>Leaderboard</span></span>
           </Link>
+          {showInstallButton && (
+            <button onClick={handleInstall} className={styles.installButton}>
+              <span>
+                {isIOS ? '安装应用 ' : '安装应用 '}
+                <span className={styles.englishLabel}>
+                  {isIOS ? 'Install' : 'Install App'}
+                </span>
+              </span>
+            </button>
+          )}
           <a 
             href="https://docs.google.com/forms/d/e/1FAIpQLSdjIDOY5gif53bOwFd53I_F6IpC40CQl3AE4ROuxiAcfW4Y-g/viewform?usp=sharing"
             target="_blank"
