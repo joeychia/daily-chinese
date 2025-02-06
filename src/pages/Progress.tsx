@@ -4,6 +4,7 @@ import styles from './Progress.module.css';
 import { characterGrades } from '../data/characterGrades';
 import { userDataService, DailyStats } from '../services/userDataService';
 import { Line } from 'react-chartjs-2';
+import { useNavigate } from 'react-router-dom';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -61,6 +62,7 @@ export const calculateStats = (chars: string[], masteryData: Record<string, numb
 
 export const Progress = () => {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [masteryData, setMasteryData] = useState<Record<string, number>>({});
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,6 +236,13 @@ export const Progress = () => {
 
   return (
     <div className={styles.container}>
+      <button
+        className={styles.backButton}
+        onClick={() => navigate(-1)}
+        aria-label="Go back"
+      >
+        ←
+      </button>
       <h1 className={styles.title}>
         学习进度
         <span className={styles.englishTitle}>Learning Progress</span>

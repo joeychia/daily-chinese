@@ -490,6 +490,9 @@ export default function CreateArticle() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
+        <button className={styles.backButton} onClick={() => navigate(-1)}>
+          ← 返回
+        </button>
         <h1>创建文章</h1>
         {renderStepIndicator()}
       </div>

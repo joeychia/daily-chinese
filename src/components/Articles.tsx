@@ -47,6 +47,12 @@ export default function Articles() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
+        <button
+          className={styles.backButton}
+          onClick={() => navigate(-1)}
+        >
+          ←
+        </button>
         <h1>
           文章列表
           <span className={styles.englishLabel}>Article List</span>

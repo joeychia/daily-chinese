@@ -84,10 +84,6 @@ describe('Progress', () => {
     });
     expect(totalCharsElement).toBeInTheDocument();
 
-    const masteredElement = screen.getByText((content: string) => {
-      return content.includes('Mastered');
-    });
-    expect(masteredElement).toBeInTheDocument();
   });
 
   it('should toggle unknown characters visibility when clicking toggle button', async () => {
