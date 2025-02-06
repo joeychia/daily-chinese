@@ -87,10 +87,20 @@ export default function Articles() {
             className={`bg-gray-800 p-3 rounded-md shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-700 hover:bg-gray-700 relative ${readStatus[article.id] ? 'opacity-75' : ''}`}
             onClick={() => handleArticleClick(article.id)}
           >
-            <h2 className="text-base font-medium text-white line-clamp-2">{article.title}</h2>
-            {readStatus[article.id] && (
-              <div className="absolute top-2 right-2 text-green-500" title="Already read">✓</div>
-            )}
+            <h2 className="text-base font-medium text-white line-clamp-2 mb-2">{article.title}</h2>
+            <div className="flex items-center justify-between">
+              <div className="text-yellow-500 text-sm">
+                {[...Array(Number(article.difficultyLevel) || 0)].map((_, i) => (
+                  <span key={i} className="mr-0.5">★</span>
+                ))}
+                {[...Array(5 - (Number(article.difficultyLevel) || 0))].map((_, i) => (
+                  <span key={i} className="mr-0.5 opacity-30">★</span>
+                ))}
+              </div>
+              {readStatus[article.id] && (
+                <div className="text-green-500" title="Already read">✓</div>
+              )}
+            </div>
           </div>
         ))}
       </div>
