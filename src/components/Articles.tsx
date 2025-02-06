@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArticleIndex, articleService } from '../services/articleService';
 import { useAuth } from '../contexts/AuthContext';
+import { userDataService } from '../services/userDataService';
 
 export default function Articles() {
   const [articles, setArticles] = useState<ArticleIndex[]>([]);
+  const [readStatus, setReadStatus] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -23,6 +25,18 @@ export default function Articles() {
         article.visibility === user?.id
       );
       setArticles(visibleArticles);
+
+      // Fetch read status for all visible articles
+      if (user) {
+        const readStatusMap: Record<string, boolean> = {};
+        await Promise.all(
+          visibleArticles.map(async (article) => {
+            readStatusMap[article.id] = await userDataService.hasReadArticle(user.id, article.id);
+          })
+        );
+        setReadStatus(readStatusMap);
+      }
+
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading articles:', error);
@@ -70,10 +84,13 @@ export default function Articles() {
         {articles.map(article => (
           <div
             key={article.id}
-            className="bg-gray-800 p-3 rounded-md shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-700 hover:bg-gray-700"
+            className={`bg-gray-800 p-3 rounded-md shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-700 hover:bg-gray-700 relative ${readStatus[article.id] ? 'opacity-75' : ''}`}
             onClick={() => handleArticleClick(article.id)}
           >
             <h2 className="text-base font-medium text-white line-clamp-2">{article.title}</h2>
+            {readStatus[article.id] && (
+              <div className="absolute top-2 right-2 text-green-500" title="Already read">✓</div>
+            )}
           </div>
         ))}
       </div>
