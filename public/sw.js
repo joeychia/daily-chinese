@@ -6,8 +6,6 @@ const urlsToCache = [
   '/rooster.png',
   '/book.svg',
   '/google-logo.svg',
-  '/microsoft-logo.svg',
-  '/vite.svg'
 ];
 
 self.addEventListener('install', (event) => {
