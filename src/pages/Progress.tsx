@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import styles from './Progress.module.css';
+
 import { characterGrades } from '../data/characterGrades';
 import { userDataService, DailyStats } from '../services/userDataService';
 import { Line } from 'react-chartjs-2';
@@ -216,11 +216,11 @@ export const Progress = () => {
   };
 
   if (authLoading || loading) {
-    return <div className={styles.loading}>加载中...</div>;
+    return <div className="flex justify-center items-center min-h-[200px] text-[--text-primary] text-lg">加载中...</div>;
   }
 
   if (error) {
-    return <div className={styles.error}>{error}</div>;
+    return <div className="text-[#F56C6C] text-center p-8 font-medium">{error}</div>;
   }
 
   const gradeNames = {
@@ -235,82 +235,82 @@ export const Progress = () => {
   const overallStats = calculateOverallStats();
 
   return (
-    <div className={styles.container}>
+    <div className="p-4 bg-[--card-bg]">
       <button
-        className={styles.backButton}
+        className="bg-none border-none text-[--primary-color] text-2xl cursor-pointer block absolute p-5 hover:opacity-80"
         onClick={() => navigate(-1)}
         aria-label="Go back"
       >
         ←
       </button>
-      <h1 className={styles.title}>
+      <h1 className="text-[--text-primary] mb-6 text-2xl px-4 font-semibold">
         学习进度
-        <span className={styles.englishTitle}>Learning Progress</span>
+        <span className="block text-base font-normal">Learning Progress</span>
       </h1>
       
       {/* Daily Progress Trend */}
-      <div className={styles.trendSection}>
-        <h2>
+      <div className="mb-8 p-4 bg-[--background] rounded-lg">
+        <h2 className="text-[--text-primary] text-lg font-semibold mb-4">
           学习趋势（近30天）
-          <span className={styles.englishSubtitle}>Learning Trends (Last 30 Days)</span>
+          <span className="block text-base font-normal">Learning Trends (Last 30 Days)</span>
         </h2>
-        <div className={styles.chartContainer}>
+        <div className="h-[300px] p-4 bg-[--card-bg] rounded-lg border border-[--border-color]">
           <Line data={chartData} options={chartOptions} />
         </div>
       </div>
 
-      <div className={styles.overallStats}>
-        <h2>
+      <div className="mb-8 p-4 bg-[--background] rounded-lg">
+        <h2 className="text-[--text-primary] text-lg font-semibold mb-4">
           总体进度
-          <span className={styles.englishSubtitle}>Overall Progress</span>
+          <span className="block text-base font-normal">Overall Progress</span>
         </h2>
-        <div className={styles.statsGrid}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4 mt-4 text-[--text-primary] font-medium">
           <div>
-            总字数 <span className={styles.englishLabel}>Total Characters</span>: {overallStats.total}
+            总字数 <span className="block text-sm text-[--text-secondary]">Total Characters</span> {overallStats.total}
           </div>
           <div>
-            已掌握 <span className={styles.englishLabel}>Mastered</span>: {overallStats.mastered} ({Math.round(overallStats.mastered / overallStats.total * 100)}%)
+            已掌握 <span className="block text-sm text-[--text-secondary]">Mastered</span> {overallStats.mastered} ({Math.round(overallStats.mastered / overallStats.total * 100)}%)
           </div>
           <div>
-            熟悉 <span className={styles.englishLabel}>Familiar</span>: {overallStats.familiar} ({Math.round(overallStats.familiar / overallStats.total * 100)}%)
+            熟悉 <span className="block text-sm text-[--text-secondary]">Familiar</span> {overallStats.familiar} ({Math.round(overallStats.familiar / overallStats.total * 100)}%)
           </div>
           <div>
-            学习中 <span className={styles.englishLabel}>Learning</span>: {overallStats.learned} ({Math.round(overallStats.learned / overallStats.total * 100)}%)
+            学习中 <span className="block text-sm text-[--text-secondary]">Learning</span> {overallStats.learned} ({Math.round(overallStats.learned / overallStats.total * 100)}%)
           </div>
           <div>
-            不熟 <span className={styles.englishLabel}>Not Familiar</span>: {overallStats.notFamiliar} ({Math.round(overallStats.notFamiliar / overallStats.total * 100)}%)
+            不熟 <span className="block text-sm text-[--text-secondary]">Not Familiar</span> {overallStats.notFamiliar} ({Math.round(overallStats.notFamiliar / overallStats.total * 100)}%)
           </div>
           <div>
-            未读 <span className={styles.englishLabel}>Unread</span>: {overallStats.unknown} ({Math.round(overallStats.unknown / overallStats.total * 100)}%)
+            未读 <span className="block text-sm text-[--text-secondary]">Unread</span> {overallStats.unknown} ({Math.round(overallStats.unknown / overallStats.total * 100)}%)
           </div>
         </div>
       </div>
       {(Object.entries(characterGrades) as [keyof typeof gradeNames, string[]][]).map(([grade, chars]) => {
         const stats = calculateStats(chars, masteryData);
         return (
-          <div key={grade} className={styles.gradeSection}>
-            <h2 className={styles.gradeTitle}>
+          <div key={grade} className="mb-8 bg-[--background] rounded-lg p-4">
+            <h2 className="text-[--text-primary] mb-4 text-lg font-semibold pb-2 border-b border-[--border-color] flex justify-between items-center">
               {gradeNames[grade]}级汉字
-              <span className={styles.englishGrade}>{grade}</span>
-              <span className={styles.gradeStats}>
-                (掌握 <span className={styles.englishLabel}>Mastered</span>: {Math.round(stats.mastered / stats.total * 100)}% | 
-                未读 <span className={styles.englishLabel}>Unread</span>: {stats.unknown})
+              <span className="text-base font-normal">{grade}</span>
+              <span className="text-sm text-[--text-primary] ml-4 font-normal">
+                (掌握 <span className="font-normal">Mastered</span>: {Math.round(stats.mastered / stats.total * 100)}% | 
+                未读 <span className="font-normal">Unread</span>: {stats.unknown})
                 <button 
-                  className={styles.toggleButton}
+                  className="ml-4 px-3 py-1 border border-[--border-color] rounded bg-[--card-bg] text-[--text-primary] cursor-pointer text-sm font-normal hover:bg-[--hover-highlight]"
                   onClick={() => toggleShowUnknown(grade)}
                 >
                   {showUnknownByGrade[grade] ? '隐藏未读 Hide Unread' : '显示未读 Show Unread'}
                 </button>
               </span>
             </h2>
-            <div className={styles.charactersGrid}>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(28px,1fr))] gap-1 py-2">
               {chars.map((char, index) => {
                 const mastery = masteryData[char] ?? -1;
                 if (!showUnknownByGrade[grade] && mastery === -1) return null;
                 return (
                   <div
                     key={`${grade}-${char}-${index}`}
-                    className={styles.characterCard}
+                    className="border-2 rounded p-1 text-center bg-[--card-bg] transition-transform duration-200 text-base leading-none cursor-default font-medium hover:scale-120 hover:z-10"
                     style={{ 
                       borderColor: getMasteryColor(mastery),
                       color: getMasteryColor(mastery)
