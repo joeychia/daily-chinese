@@ -74,7 +74,7 @@ describe('CreateArticle', () => {
 
   it('starts at mode selection step', () => {
     renderComponent();
-    expect(screen.getByText('选择创建方式')).toBeInTheDocument();
+    expect(screen.getByText('选择')).toBeInTheDocument();
     expect(screen.getByText('从提示词创建')).toBeInTheDocument();
     expect(screen.getByText('改写文章生成测试')).toBeInTheDocument();
     expect(screen.getByText('使用原文生成测试')).toBeInTheDocument();
@@ -179,7 +179,7 @@ describe('CreateArticle', () => {
     
     // Return to mode selection
     fireEvent.click(screen.getByText('上一步'));
-    expect(screen.getByText('选择创建方式')).toBeInTheDocument();
+    expect(screen.getByText('选择')).toBeInTheDocument();
   });
 
   it('adjusts article length with input', () => {

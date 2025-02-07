@@ -17,7 +17,7 @@
  *    - Visibility control (public/private)
  * 
  * 3. Word Bank Integration:
- *    - Select up to 10 words from personal word bank
+ *    - Select up to 5 words from personal word bank
  *    - Random word selection
  *    - Custom prompt with selected words
  * 
@@ -43,7 +43,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './CreateArticle.module.css';
+
 import { articleService, DatabaseArticle } from '../services/articleService';
 import { geminiService } from '../services/geminiService';
 import { useAuth } from '../contexts/AuthContext';
@@ -83,7 +83,7 @@ export default function CreateArticle() {
         setWordBank(words);
         if (createMethod === 'wordbank') {
           const shuffled = [...words].sort(() => 0.5 - Math.random());
-          setSelectedWords(shuffled.slice(0, 5));
+          setSelectedWords(shuffled.slice(0, 3));
         }
       } catch (err) {
         console.error('Error loading word bank:', err);
@@ -214,8 +214,8 @@ export default function CreateArticle() {
       if (prev.includes(word)) {
         return prev.filter(w => w !== word);
       }
-      if (prev.length >= 10) {
-        setError('最多只能选择10个词');
+      if (prev.length >= 5) {
+        setError('5');
         return prev;
       }
       return [...prev, word];
@@ -223,49 +223,65 @@ export default function CreateArticle() {
   };
 
   const renderStepIndicator = () => (
-    <div className={styles.stepIndicator}>
-      <div className={`${styles.step} ${currentStep === 'mode' ? styles.active : ''}`} data-number="1">
-        选择创建方式
-        <span className={styles.englishLabel}>Select Method</span>
-      </div>
-      <div className={`${styles.step} ${currentStep === 'input' ? styles.active : ''}`} data-number="2">
-        输入内容
-        <span className={styles.englishLabel}>Input Content</span>
-      </div>
-      <div className={`${styles.step} ${currentStep === 'preview' ? styles.active : ''}`} data-number="3">
-        预览文章
-        <span className={styles.englishLabel}>Preview Article</span>
-      </div>
-      <div className={`${styles.step} ${currentStep === 'save' ? styles.active : ''}`} data-number="4">
-        保存
-        <span className={styles.englishLabel}>Save</span>
-      </div>
+    <div className="flex justify-between items-center my-6 px-0 relative">
+      {/* Progress line */}
+      <div className="absolute top-4 left-0 h-0.5 bg-gray-200 w-full -z-10" />
+      <div className="absolute top-4 left-0 h-0.5 bg-blue-500 transition-all duration-300 -z-10" style={{
+        width: currentStep === 'mode' ? '0%' :
+               currentStep === 'input' ? '33%' :
+               currentStep === 'preview' ? '66%' : '100%'
+      }} />
+
+      {/* Steps */}
+      {[
+        { key: 'mode', label: '选择', subLabel: 'Mode', number: 1 },
+        { key: 'input', label: '输入', subLabel: 'Input', number: 2 },
+        { key: 'preview', label: '预览', subLabel: 'Preview', number: 3 },
+        { key: 'save', label: '保存', subLabel: 'Save', number: 4 }
+      ].map((step) => (
+        <div key={step.key} className="flex flex-col items-center relative">
+          <div className={`
+            w-8 h-8 rounded-full flex items-center justify-center text-sm
+            transition-all duration-300 mb-1
+            ${currentStep === step.key
+              ? 'bg-blue-500 text-white'
+              : currentStep === 'save' || 
+                (currentStep === 'preview' && step.key !== 'save') || 
+                (currentStep === 'input' && (step.key === 'mode' || step.key === 'input'))
+                ? 'bg-blue-500 text-white'
+                : 'bg-white text-gray-400 border border-gray-300'}`}>
+            {step.number}
+          </div>
+          <div className={`text-xs font-medium text-center transition-colors duration-300
+            ${currentStep === step.key ? 'text-blue-600' : 'text-gray-500'}`}>
+            {step.label}
+            <span className="block text-[10px] text-gray-400">{step.subLabel}</span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 
   const renderModeSelection = () => (
-    <div className={styles.modeSelection}>
-      <div className={styles.pointsIncentive}>
-        <div className={styles.chineseLabel}>创建文章可获得 20 XP 奖励！</div>
-        <div className={styles.englishLabel}>Earn 20 XP for creating an article!</div>
-      </div>
+    <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border-2 border-yellow-200">
 
-      <div className={styles.modeButtons}>
-        <button onClick={() => handleMethodSelect('prompt')}>
-          <div className={styles.chineseLabel}>从提示词创建</div>
-          <div className={styles.englishLabel}>Create from Prompt</div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button onClick={() => handleMethodSelect('prompt')} className="bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl p-4 transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-300">
+          <div className="block text-base font-medium">从提示词创建</div>
+          <div className="block text-sm text-gray-100 mt-1">Create from Prompt</div>
         </button>
-        <button onClick={() => handleMethodSelect('rewrite')}>
-          <div className={styles.chineseLabel}>改写文章生成测试</div>
-          <div className={styles.englishLabel}>Rewrite and Generate Quiz</div>
+        <button onClick={() => handleMethodSelect('rewrite')} className="bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl p-4 transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-300">
+          <div className="block text-base font-medium">改写文章生成测试</div>
+          <div className="block text-sm text-gray-100 mt-1">Rewrite and Generate Quiz</div>
         </button>
-        <button onClick={() => handleMethodSelect('metadata')}>
-          <div className={styles.chineseLabel}>使用原文生成测试</div>
-          <div className={styles.englishLabel}>Generate Quiz</div>
+        <button onClick={() => handleMethodSelect('metadata')} className="bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl p-4 transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-300">
+          <div className="block text-base font-medium">使用原文生成测试</div>
+          <div className="block text-sm text-gray-100 mt-1">Generate Quiz</div>
         </button>
-        <button onClick={() => handleMethodSelect('wordbank')}>
-          <div className={styles.chineseLabel}>从生词本创建</div>
-          <div className={styles.englishLabel}>Create from Word Bank</div>
+        <button onClick={() => handleMethodSelect('wordbank')} className="bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl p-4 transition-all duration-200 transform hover:scale-105 shadow-lg border-2 border-blue-300">
+          <div className="block text-base font-medium">从生词本创建</div>
+          <div className="block text-sm text-gray-100 mt-1">Create from Word Bank</div>
         </button>
       </div>
     </div>
@@ -275,20 +291,20 @@ export default function CreateArticle() {
     if (selectedWords.length === 0) return null;
 
     return (
-      <div className={styles.selectedWordsSection}>
-        <div className={styles.selectedWordsHeader}>
-          <h4>
+      <div className="mb-6 bg-gradient-to-r from-green-200 to-teal-200 rounded-xl p-4 border-2 border-green-300 shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="block text-gray-600 text-left">
             随机生词
-            <span className={styles.englishLabel}>Random Words</span>
+            <span className="block text-sm text-gray-500 mt-1">Random Words</span>
           </h4>
-          <button onClick={() => setIsModalOpen(true)} className={styles.selectMoreButton}>
-            选择生词 ({selectedWords.length}/10)
-            <span className={styles.englishLabel}>Select Words ({selectedWords.length}/10)</span>
+          <button onClick={() => setIsModalOpen(true)} className="bg-gradient-to-r from-teal-400 to-green-400 hover:from-teal-500 hover:to-green-500 text-white px-4 py-2 rounded-xl transition-colors duration-200 shadow-md border-2 border-teal-300">
+            选择生词 ({selectedWords.length}/5)
+            <span className="block text-sm text-gray-100 mt-1">Select Words ({selectedWords.length}/5)</span>
           </button>
         </div>
-        <div className={styles.selectedWordsList}>
+        <div className="flex flex-wrap gap-2">
           {selectedWords.map((word) => (
-            <div key={word.characters} className={styles.selectedWordItem}>
+            <div key={word.characters} className="bg-white px-4 py-2 rounded-xl shadow-sm text-teal-700 font-medium border border-teal-200">
               {word.characters}
             </div>
           ))}
@@ -298,44 +314,47 @@ export default function CreateArticle() {
   };
 
   const renderInputStep = () => (
-    <div className={styles.inputStep}>
+    <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border-2 border-blue-200">
       {createMethod === 'wordbank' && (
         <>
           {renderSelectedWords()}
-          <div className={styles.inputGroup}>
-            <label>输入提示词：</label>
+          <div className="mb-6">
+            <label className="block text-lg font-medium text-gray-700 mb-2">输入提示词：</label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="可以输入额外的要求，比如文章主题、风格等..."
+              className="w-full p-3 bg-white/95 border-2 border-blue-200 rounded-xl focus:border-blue-400 focus:ring focus:ring-blue-200 text-gray-700 focus:ring-opacity-50 transition-colors duration-200 shadow-sm"
             />
           </div>
         </>
       )}
       {createMethod === 'prompt' && (
-        <div className={styles.inputGroup}>
-          <label>输入提示词：</label>
+        <div className="mb-6">
+          <label className="block text-lg font-medium text-gray-700 mb-2">输入提示词：</label>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="输入提示词..."
+            className="w-full p-3 bg-white/95 border-2 border-blue-200 rounded-xl focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-colors duration-200 shadow-sm text-gray-800"
           />
         </div>
       )}
       {(createMethod === 'rewrite' || createMethod === 'metadata') && (
-        <div className={styles.inputGroup}>
-          <label>输入原文：</label>
+        <div className="mb-6">
+          <label className="block text-lg font-medium text-gray-700 mb-2">输入原文：</label>
           <textarea
             value={sourceText}
             onChange={(e) => setSourceText(e.target.value)}
             placeholder="请输入要处理的文章..."
+            className="w-full p-3 bg-white/95 border-2 border-blue-200 rounded-xl focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-colors duration-200 shadow-sm"
           />
         </div>
       )}
       {createMethod !== 'metadata' && (
-        <div className={styles.inputGroup}>
-          <label htmlFor="articleLength">文章长度（字数）：{articleLength}</label>
-          <div className={styles.sliderContainer}>
+        <div className="mb-6">
+          <label htmlFor="articleLength" className="block text-lg font-medium text-gray-700 mb-2">文章长度（字数）：{articleLength}</label>
+          <div className="mt-2">
             <input
               id="articleLength"
               type="range"
@@ -347,10 +366,9 @@ export default function CreateArticle() {
               min={100}
               max={1000}
               step={50}
-              className={styles.slider}
+              className="w-full h-3 bg-blue-100 rounded-xl appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-8 [&::-webkit-slider-thumb]:h-8 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-blue-400 [&::-webkit-slider-thumb]:to-purple-400 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&::-webkit-slider-thumb]:hover:from-blue-500 [&::-webkit-slider-thumb]:hover:to-purple-500 [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-300"
               aria-label="文章长度（字数）："
             />
-           
           </div>
         </div>
       )}
@@ -358,33 +376,34 @@ export default function CreateArticle() {
   );
 
   const renderEditableQuizzes = () => (
-    <div className={styles.quizList}>
+    <div className="space-y-6">
       {editableQuizzes.map((quiz, quizIndex) => (
-        <div key={quizIndex} className={styles.quizItem}>
-          <div className={styles.quizQuestion}>
-            <span className={styles.questionNumber}>问题 {quizIndex + 1}:</span>
+        <div key={quizIndex} className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+          <div className="mb-4">
+            <span className="font-medium text-purple-600">问题 {quizIndex + 1}:</span>
             <input
               type="text"
               value={quiz.question}
               onChange={(e) => handleQuizChange(quizIndex, 'question', e.target.value)}
-              className={styles.quizInput}
+              className="w-full p-2 border-2 border-purple-200 rounded-xl focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 bg-white text-gray-800"
             />
           </div>
-          <ul className={styles.quizOptions}>
+          <ul className="space-y-2">
             {quiz.options.map((option, optIndex) => (
-              <li key={optIndex} className={styles.option}>
-                <span className={styles.optionLabel}>{String.fromCharCode(65 + optIndex)}.</span>
+              <li key={optIndex} className="flex items-center gap-2">
+                <span className="font-medium text-purple-600">{String.fromCharCode(65 + optIndex)}.</span>
                 <input
                   type="text"
                   value={option}
                   onChange={(e) => handleQuizChange(quizIndex, optIndex, e.target.value.toString())}
-                  className={styles.quizInput}
+                  className="flex-1 p-2 border-2 border-purple-200 rounded-xl focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 bg-white text-gray-800"
                 />
                 <input
                   type="radio"
                   name={`correctAnswer-${quizIndex}`}
                   checked={optIndex === quiz.correctAnswer}
                   onChange={() => handleQuizChange(quizIndex, 'correctAnswer', optIndex)}
+                  className="w-5 h-5 bg-white text-purple-600 border-2 border-purple-300 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 cursor-pointer hover:border-purple-500 checked:bg-white checked:border-purple-600 checked:hover:border-purple-700 checked:[&:not(:focus)]:ring-2 checked:[&:not(:focus)]:ring-purple-500 checked:[&:not(:focus)]:ring-offset-2 checked:bg-purple-600"
                 />
               </li>
             ))}
@@ -396,34 +415,35 @@ export default function CreateArticle() {
 
   const renderPreviewStep = () => (
     <>
-      <div className={styles.preview}>
-        <h3>{generatedPreview?.title}</h3>
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border-2 border-purple-200">
+        <h3 className="text-xl font-bold mb-4">{generatedPreview?.title}</h3>
         {generatedPreview && (
           <DifficultyDisplay
             difficultyLevel={generatedPreview.difficultyLevel}
             characterLevels={generatedPreview.characterLevels}
           />
         )}
-        <div className={styles.previewContent}>
+        <div className="mt-4 p-4 text-gray-600 bg-purple-50 rounded-xl border border-purple-100">
           {generatedPreview?.content}
         </div>
-        <div className={styles.quizPreview}>
-          <h4>
+        <div className="mt-6">
+          <h4 className="text-lg font-semibold">
             测验题目
-            <span className={styles.englishLabel}>Quiz Questions</span>
+            <span className="block text-sm text-gray-500 mt-1">Quiz Questions</span>
           </h4>
           {renderEditableQuizzes()}
         </div>
       </div>
-      <div className={styles.visibilityControl}>
-        <label>
+      <div className="mt-6 flex items-center gap-2 text-gray-700">
+        <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={isPrivate}
             onChange={(e) => setIsPrivate(e.target.checked)}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           仅对我可见
-          <span className={styles.englishLabel}>Private</span>
+          <span className="block text-sm text-gray-500 mt-1">Private</span>
         </label>
       </div>
     </>
@@ -445,38 +465,38 @@ export default function CreateArticle() {
     switch (currentStep) {
       case 'mode':
         return (
-          <button className={styles.cancelButton} onClick={handleCancel}>
-            <div className={styles.chineseLabel}>取消</div>
-            <div className={styles.englishLabel}>Cancel</div>
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-xl transition-colors duration-200 border-2 border-gray-200" onClick={handleCancel}>
+            <div className="block text-base font-medium">取消</div>
+            <div className="block text-sm text-gray-500 mt-1">Cancel</div>
           </button>
         );
       case 'input':
         return (
           <>
-            <button className={styles.cancelButton} onClick={() => setCurrentStep('mode')}>
-              <div className={styles.chineseLabel}>上一步</div>
-              <div className={styles.englishLabel}>Previous</div>
+            <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-xl transition-colors duration-200 border-2 border-gray-200" onClick={() => setCurrentStep('mode')}>
+              <div className="block text-base font-medium">上一步</div>
+              <div className="block text-sm text-gray-500 mt-1">Previous</div>
             </button>
             <button
-              className={styles.submitButton}
+              className="bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white px-6 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md border-2 border-pink-300"
               onClick={handleCreateArticle}
               disabled={isGenerating || (!prompt && !sourceText)}
             >
-              <div className={styles.chineseLabel}>{isGenerating ? '生成中...' : '生成'}</div>
-              <div className={styles.englishLabel}>{isGenerating ? 'Generating...' : 'Generate'}</div>
+              <div className="block text-base font-medium">{isGenerating ? '生成中...' : '生成'}</div>
+              <div className="block text-sm text-gray-100 mt-1">{isGenerating ? 'Generating...' : 'Generate'}</div>
             </button>
           </>
         );
       case 'preview':
         return (
           <>
-            <button className={styles.cancelButton} onClick={handleCancelSave}>
-              <div className={styles.chineseLabel}>重新生成</div>
-              <div className={styles.englishLabel}>Regenerate</div>
+            <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-xl transition-colors duration-200 border-2 border-gray-200" onClick={handleCancelSave}>
+              <div className="block text-base font-medium">重新生成</div>
+              <div className="block text-sm text-gray-500 mt-1">Regenerate</div>
             </button>
-            <button className={styles.submitButton} onClick={handleConfirmSave}>
-              <div className={styles.chineseLabel}>保存文章</div>
-              <div className={styles.englishLabel}>Save Article</div>
+            <button className="bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white px-6 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md border-2 border-pink-300" onClick={handleConfirmSave}>
+              <div className="block text-base font-medium">保存文章</div>
+              <div className="block text-sm text-gray-100 mt-1">Save Article</div>
             </button>
           </>
         );
@@ -484,22 +504,20 @@ export default function CreateArticle() {
   };
 
   if (error) {
-    return <div className={styles.error}>{error}</div>;
+    return <div className="bg-red-100 border-2 border-red-300 text-red-700 p-4 rounded-xl">{error}</div>;
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <button className={styles.backButton} onClick={() => navigate(-1)}>
-          ← 返回
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50 p-8">
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 mb-8 border-2 border-pink-200">
+
         <h1>创建文章</h1>
         {renderStepIndicator()}
       </div>
-      <div className={styles.content}>
+      <div className="mt-8">
         {renderStepContent()}
       </div>
-      <div className={styles.actions}>
+      <div className="mt-8 flex justify-end gap-4">
         {renderActions()}
       </div>
       <WordSelectionModal
