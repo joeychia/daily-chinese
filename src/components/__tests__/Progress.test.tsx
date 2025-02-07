@@ -5,6 +5,7 @@ import { act } from '@testing-library/react';
 import { Progress } from '../../pages/Progress';
 import { userDataService } from '../../services/userDataService';
 import { useAuth } from '../../contexts/AuthContext';
+import { BrowserRouter } from 'react-router-dom';
 
 // Mock the Chart.js component
 vi.mock('react-chartjs-2', () => ({
@@ -23,6 +24,14 @@ vi.mock('../../services/userDataService', () => ({
     getDailyStats: vi.fn()
   }
 }));
+
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(
+    <BrowserRouter>
+      {component}
+    </BrowserRouter>
+  );
+};
 
 describe('Progress', () => {
   const mockMasteryData = {
@@ -64,14 +73,14 @@ describe('Progress', () => {
     (userDataService.getCharacterMastery as any).mockRejectedValue(new Error('Failed to load'));
     
     await act(async () => {
-      render(<Progress />);
+      renderWithRouter(<Progress />);
     });
     expect(await screen.findByText('加载数据失败，请稍后再试')).toBeInTheDocument();
   });
 
   it('should display overall stats when data loads successfully', async () => {
     await act(async () => {
-      render(<Progress />);
+      renderWithRouter(<Progress />);
     });
     
     // Wait for the component to load and find the title
@@ -83,12 +92,11 @@ describe('Progress', () => {
       return content.includes('Total Characters');
     });
     expect(totalCharsElement).toBeInTheDocument();
-
   });
 
   it('should toggle unknown characters visibility when clicking toggle button', async () => {
     await act(async () => {
-      render(<Progress />);
+      renderWithRouter(<Progress />);
     });
     
     // Get the first grade section
@@ -106,7 +114,7 @@ describe('Progress', () => {
 
   it('should display character cards with correct mastery colors', async () => {
     await act(async () => {
-      render(<Progress />);
+      renderWithRouter(<Progress />);
     });
     
     // Wait for data to load
@@ -119,7 +127,7 @@ describe('Progress', () => {
 
   it('should display trend chart section', async () => {
     await act(async () => {
-      render(<Progress />);
+      renderWithRouter(<Progress />);
     });
     
     expect(await screen.findByText('学习趋势（近30天）')).toBeInTheDocument();
