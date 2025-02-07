@@ -223,7 +223,7 @@ export default function CreateArticle() {
   };
 
   const renderStepIndicator = () => (
-    <div className="flex justify-between items-center my-6 px-0 relative">
+    <div className="flex justify-between items-center my-0 px-0 relative">
       {/* Progress line */}
       <div className="absolute top-4 left-0 h-0.5 bg-gray-200 w-full -z-10" />
       <div className="absolute top-4 left-0 h-0.5 bg-blue-500 transition-all duration-300 -z-10" style={{
@@ -509,9 +509,16 @@ export default function CreateArticle() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50 p-8">
-      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 mb-8 border-2 border-pink-200">
+         <div className="mb-8 flex items-center justify-between"><button 
+          onClick={() => navigate(-1)} 
+          className="text-gray-600 hover:text-gray-800 bg-transparent transition-colors flex items-center gap-2"
+        >
+          <span>←</span>
+        </button>
+        <h1 className="text-center text-gray-500 text-2xl font-bold flex-1">
+          创建文章</h1></div>
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 mb-8 border-2 border-pink-200">
 
-        <h1>创建文章</h1>
         {renderStepIndicator()}
       </div>
       <div className="mt-8">

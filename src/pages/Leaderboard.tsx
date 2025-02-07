@@ -27,7 +27,6 @@ export const Leaderboard: React.FC = () => {
         const entries = await rewardsService.getLeaderboardByPeriod(selectedPeriod);
         setLeaderboardData(entries);
 
-        // Check if current user exists in leaderboard
         if (user && !entries.some(entry => entry.id === user.id)) {
           setUserName(user.displayName || '');
           setShowNamePrompt(true);
@@ -50,7 +49,6 @@ export const Leaderboard: React.FC = () => {
       const userTotalPoints = (await rewardsService.getPoints(user.id)).total;
       await rewardsService.syncToLeaderboard(user.id, userTotalPoints, userName.trim());
       setShowNamePrompt(false);
-      // Refresh leaderboard data
       const entries = await rewardsService.getLeaderboardByPeriod(selectedPeriod);
       setLeaderboardData(entries);
     } catch (error) {
@@ -62,9 +60,11 @@ export const Leaderboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-2 text-lg">
-        <div className="text-gray-800">加载中...</div>
-        <div className="text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="text-xl text-gray-800">加载中...</div>
+          <div className="text-gray-600">Loading...</div>
+        </div>
       </div>
     );
   }
@@ -72,141 +72,148 @@ export const Leaderboard: React.FC = () => {
   if (showNamePrompt) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6 transition-colors"
-        >
-          <span>← 返回</span>
-          <span className="text-gray-600">Back</span>
-        </button>
-        <h1 className="text-2xl font-bold mb-8">
-          <div>加入排行榜</div>
-          <div className="text-gray-500 text-lg">Join Leaderboard</div>
-        </h1>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <p className="mb-4">
-            <div className="text-gray-800">请输入您的名字以加入排行榜</div>
-            <div className="text-gray-600">Please enter your name to join the leaderboard</div>
-          </p>
-          <input
-            type="text"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            placeholder="输入名字 / Enter name"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
-          <button
-            onClick={handleSubmitName}
-            disabled={!userName.trim() || isSubmitting}
-            className={`w-full py-2 rounded-md text-white transition-colors ${isSubmitting || !userName.trim() ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+        <div className="mb-8 flex items-center justify-between">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2"
           >
-            {isSubmitting ? (
-              <>
-                <div>提交中...</div>
-                <div className="text-white">Submitting...</div>
-              </>
-            ) : (
-              <>
-                <div>确认</div>
-                <div className="text-white">Confirm</div>
-              </>
-            )}
+            <span>←</span>
+            <span>返回 / Back</span>
           </button>
+        </div>
+        <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
+          <h2 className="text-2xl font-bold">
+            <div>加入排行榜</div>
+            <div className="text-gray-500 text-lg">Join Leaderboard</div>
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <div className="text-gray-800">请输入您的名字以加入排行榜</div>
+              <div className="text-gray-600">Please enter your name to join the leaderboard</div>
+            </div>
+            <input
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="输入名字 / Enter name"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={handleSubmitName}
+              disabled={!userName.trim() || isSubmitting}
+              className={`w-full py-3 rounded-md text-white font-medium transition-colors ${isSubmitting || !userName.trim() ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'}`}
+            >
+              {isSubmitting ? (
+                <>
+                  <div>提交中...</div>
+                  <div className="text-sm opacity-75">Submitting...</div>
+                </>
+              ) : (
+                <>
+                  <div>确认</div>
+                  <div className="text-sm opacity-75">Confirm</div>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <button 
-        onClick={() => navigate(-1)} 
-        className="absolute left-4 items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 transition-colors"
-      >
-        <span>←</span>
-      </button>
-      <h1 className="text-2xl font-bold mb-8 text-gray-800">
-        <div>排行榜</div>
-        <div className="text-gray-400 text-lg">Leaderboard</div>
-      </h1>
-      <div className="flex gap-2 mb-6 overflow-x-auto p-3">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50 p-8">
+      <div className="mb-8 flex items-center justify-between">
         <button 
-          onClick={() => setSelectedPeriod('all')}
-          className={`px-4 py-2 rounded-md transition-colors ${selectedPeriod === 'all' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+          onClick={() => navigate(-1)} 
+          className="text-gray-600 hover:text-gray-800 bg-transparent transition-colors flex items-center gap-2"
         >
-          <div>总排名</div>
-          <div className="text-sm opacity-75">All Time</div>
+          <span>←</span>
         </button>
-        <button 
-          onClick={() => setSelectedPeriod('week')}
-          className={`px-4 py-2 rounded-md transition-colors ${selectedPeriod === 'week' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-        >
-          <div>本周</div>
-          <div className="text-sm opacity-75">This Week</div>
-        </button>
-        <button 
-          onClick={() => setSelectedPeriod('month')}
-          className={`px-4 py-2 rounded-md transition-colors ${selectedPeriod === 'month' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-        >
-          <div>本月</div>
-          <div className="text-sm opacity-75">This Month</div>
-        </button>
+        <h1 className="text-center text-gray-500 text-2xl font-bold flex-1">
+          <div>排行榜</div>
+          <div className="text-gray-500 text-lg">Leaderboard</div>
+        </h1>
       </div>
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-lg overflow-hidden border border-gray-200">
-        {leaderboardData.map((entry, index) => {
-          const getMedalColor = (position: number) => {
-            switch (position) {
-              case 0: return 'text-yellow-500'; // Gold
-              case 1: return 'text-gray-400';  // Silver
-              case 2: return 'text-amber-600';  // Bronze
-              default: return 'text-gray-600';
-            }
-          };
 
-          const getMedalEmoji = (position: number) => {
-            switch (position) {
-              case 0: return '🥇';
-              case 1: return '🥈';
-              case 2: return '🥉';
-              default: return '';
-            }
-          };
-
-          return (
-            <div 
-              key={entry.id} 
-              className={`flex items-center justify-between p-6 border-b last:border-b-0 transition-colors ${entry.id === user?.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
-            >
-              <div className="flex items-center gap-6">
-                <div className={`flex items-center justify-center w-12 h-12 rounded-full ${index < 3 ? 'bg-gradient-to-br from-gray-100 to-white shadow-md' : ''} ${getMedalColor(index)}`}>
-                  {index < 3 ? (
-                    <span className="text-2xl">{getMedalEmoji(index)}</span>
-                  ) : (
-                    <span className="text-xl font-bold">{index + 1}</span>
-                  )}
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">{entry.name}</div>
-                  {entry.id === user?.id && (
-                    <div className="text-sm text-blue-600">You</div>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                  {entry.points}
-                </div>
-                <div className="text-sm text-gray-500">XP</div>
-              </div>
-            </div>
-          );
-        })}
-        {leaderboardData.length === 0 && (
-          <div className="p-8 text-center">
-            <div className="text-gray-800">暂无数据</div>
-            <div className="text-sm text-gray-600">No data available</div>
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex gap-3">
+            {[
+              { id: 'all', label: '总排名', labelEn: 'All Time' },
+              { id: 'week', label: '本周', labelEn: 'This Week' },
+              { id: 'month', label: '本月', labelEn: 'This Month' }
+            ].map((period) => (
+              <button
+                key={period.id}
+                onClick={() => setSelectedPeriod(period.id as Period)}
+                className={`px-4 py-2 rounded-md transition-colors ${selectedPeriod === period.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                <div>{period.label}</div>
+                <div className="text-sm opacity-75">{period.labelEn}</div>
+              </button>
+            ))}
           </div>
-        )}
+        </div>
+
+        <div className="divide-y divide-gray-200">
+          {leaderboardData.map((entry, index) => {
+            const getMedalColor = (position: number) => {
+              switch (position) {
+                case 0: return 'text-yellow-400';
+                case 1: return 'text-purple-400';
+                case 2: return 'text-pink-400';
+                default: return 'text-blue-400';
+              }
+            };
+
+            const getMedalEmoji = (position: number) => {
+              switch (position) {
+                case 0: return '🥇';
+                case 1: return '🥈';
+                case 2: return '🥉';
+                default: return '';
+              }
+            };
+
+            return (
+              <div 
+                key={entry.id} 
+                className={`p-6 transition-colors ${entry.id === user?.id ? 'bg-blue-50' : 'hover:bg-indigo-50'}`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`flex items-center justify-center w-12 h-12 rounded-full ${index < 3 ? 'bg-gradient-to-br from-gray-100 to-white shadow-md' : ''} ${getMedalColor(index)}`}>
+                      {index < 3 ? (
+                        <span className="text-2xl">{getMedalEmoji(index)}</span>
+                      ) : (
+                        <span className="text-xl font-bold">{index + 1}</span>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">{entry.name}</div>
+                      {entry.id === user?.id && (
+                        <div className="text-left text-sm text-blue-600">You</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 animate-gradient">
+                      {entry.points}
+                    </div>
+                    <div className="text-sm text-gray-500">XP</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {leaderboardData.length === 0 && (
+            <div className="p-8 text-center">
+              <div className="text-gray-800">暂无数据</div>
+              <div className="text-sm text-gray-600">No data available</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
