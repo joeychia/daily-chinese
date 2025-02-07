@@ -50,29 +50,28 @@ export default function Articles() {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-screen text-gray-600">Loading articles...</div>;
+    return <div className="flex justify-center items-center min-h-screen text-blue-600 font-medium">Loading articles...</div>;
   }
 
   if (error) {
-    return <div className="text-red-500 text-center p-4">{error}</div>;
+    return <div className="text-red-500 text-center p-4 font-medium rounded-lg bg-red-50 mx-auto mt-4 max-w-md">{error}</div>;
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-gray-900 min-h-screen flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <button
-          className="flex items-center justify-center w-8 h-8 bg-transparent text-gray-300 hover:text-white text-xl transition-colors"
-          onClick={() => navigate(-1)}
-          aria-label="Go back"
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50 py-6 px-2">
+      <div className="flex items-center justify-between mb-6">
+      <button 
+          onClick={() => navigate(-1)} 
+          className="text-gray-600 hover:text-gray-800 bg-transparent transition-colors flex items-center gap-2"
         >
-          ←
+          <span>←</span>
         </button>
         <h1 className="text-center flex-1 flex flex-col items-center">
-          <span className="text-xl font-bold text-white">文章列表</span>
-          <span className="text-xs text-gray-400">Article List</span>
+          <span className="text-2xl font-bold text-blue-800">文章列表</span>
+          <span className="text-sm text-blue-600">Article List</span>
         </h1>
         <button 
-          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex flex-col items-center text-sm"
+          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg hover:translate-y-[-1px] transition-all duration-200 flex flex-col items-center text-sm"
           onClick={() => navigate('/create-article')}
         >
           <span>创建文章</span>
@@ -80,16 +79,16 @@ export default function Articles() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-2 overflow-y-auto flex-1">
+      <div className="my-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4 pb-8 overflow-y-auto flex-1">
         {articles.map(article => (
           <div
             key={article.id}
-            className={`bg-gray-800 p-3 rounded-md shadow hover:shadow-md transition-shadow cursor-pointer border border-gray-700 hover:bg-gray-700 relative ${readStatus[article.id] ? 'opacity-75' : ''}`}
+            className={`bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer border border-blue-100 hover:border-blue-300 hover:translate-y-[-2px] relative ${readStatus[article.id] ? 'bg-opacity-75' : ''}`}
             onClick={() => handleArticleClick(article.id)}
           >
-            <h2 className="text-base font-medium text-white line-clamp-2 mb-2">{article.title}</h2>
+            <h2 className="text-base font-medium text-blue-900 line-clamp-2 mb-3">{article.title}</h2>
             <div className="flex items-center justify-between">
-              <div className="text-yellow-500 text-sm">
+              <div className="text-amber-400 text-sm">
                 {[...Array(Number(article.difficultyLevel) || 0)].map((_, i) => (
                   <span key={i} className="mr-0.5">★</span>
                 ))}
@@ -98,7 +97,7 @@ export default function Articles() {
                 ))}
               </div>
               {readStatus[article.id] && (
-                <div className="text-green-500" title="Already read">✓</div>
+                <div className="text-emerald-500 text-lg" title="Already read">✓</div>
               )}
             </div>
           </div>
