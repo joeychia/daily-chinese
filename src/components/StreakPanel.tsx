@@ -1,7 +1,6 @@
 import React from 'react';
 import Calendar from 'react-calendar';
 import { UserStreak } from '../services/streakService';
-import styles from './StreakPanel.module.css';
 import 'react-calendar/dist/Calendar.css';
 
 interface StreakPanelProps {
@@ -29,16 +28,13 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
     return streak.completedDates.includes(dateStr);
   };
 
-  const tileClassName = ({ date }: { date: Date }) => {
-    if (isDateCompleted(date)) {
-      return styles.completed;
-    }
-    return '';
+  const tileClassName = (_: { date: Date }) => {
+      return 'relative';
   };
 
   const tileContent = ({ date }: { date: Date }) => {
     if (isDateCompleted(date)) {
-      return <span data-testid="calendar-fire-emoji" className={styles.completedIcon}>🔥</span>;
+      return <span data-testid="calendar-fire-emoji" className="absolute  -translate-x-1/2 -translate-y-1/2">🔥</span>;
     }
     return null;
   };
@@ -51,25 +47,28 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
 
   return (
     <>
-      <div className={styles.overlay} onClick={onClose} data-testid="streak-panel-overlay" />
-      <div className={styles.panel}>
-        <div className={styles.header}>
-          <h2>阅读记录</h2>
-          <button className={styles.closeButton} onClick={onClose}>✕</button>
-        </div>
-
-        <div className={styles.stats}>
-          <div className={styles.statItem}>
-            <div className={styles.statValue}>{streak?.currentStreak || 0}</div>
-            <div className={styles.statLabel}>当前连续</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statValue}>{streak?.longestStreak || 0}</div>
-            <div className={styles.statLabel}>最长连续</div>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1000]" onClick={onClose} data-testid="streak-panel-overlay" />
+      <div className="fixed top-12 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px]  bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50  border border-theme-card-border rounded-2xl shadow-lg z-[1001] animate-slideDown">
+        <div className="p-4 border-b border-theme-card-border flex justify-between items-center">
+          <div className="flex-1" /> {/* Left spacer */}
+          <h2 className="m-0 text-xl text-theme-text flex-1 text-center">阅读记录</h2>
+          <div className="flex-1 flex justify-end"> {/* Right spacer with button alignment */}
+            <button className="bg-transparent border-none text-xl text-theme-secondary p-2 cursor-pointer" onClick={onClose}>✕</button>
           </div>
         </div>
 
-        <div className={styles.calendar}>
+        <div className="flex justify-around p-2 bg-theme-highlight rounded-xl mx-4 my-4">
+          <div className="text-center">
+            <div className="text-4xl font-bold text-theme-primary">{streak?.currentStreak || 0}</div>
+            <div className="text-sm text-theme-secondary mt-1">当前连续</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-theme-primary">{streak?.longestStreak || 0}</div>
+            <div className="text-sm text-theme-secondary mt-1">最长连续</div>
+          </div>
+        </div>
+
+        <div className="p-4">
           <Calendar
             value={today}
             maxDate={today}
@@ -90,21 +89,21 @@ export const StreakPanel: React.FC<StreakPanelProps> = ({ isOpen, onClose, strea
           />
         </div>
 
-        <div className={styles.footer}>
-          <div className={styles.legend}>
-            <div className={styles.legendItem}>
-              <div className={styles.completed}>
-                <span className={styles.completedIcon}>🔥</span>
+        <div className="p-4 border-t border-theme-card-border mt-4">
+          <div className="flex justify-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-theme-highlight rounded relative">
+                <span>🔥</span>
               </div>
-              <span>已完成</span>
+              <span className="text-theme-text">已完成</span>
             </div>
-            <div className={styles.legendItem}>
-              <div className={styles.incomplete}></div>
-              <span>未完成</span>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 border border-theme-card-border rounded"></div>
+              <span className="text-theme-text">未完成</span>
             </div>
           </div>
         </div>
       </div>
     </>
   );
-}; 
+};
