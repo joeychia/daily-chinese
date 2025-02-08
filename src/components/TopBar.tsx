@@ -63,18 +63,22 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
       </div>
       <div className={styles.rightSection}>
-        <PointsDisplay 
-          refreshTrigger={refreshTrigger} 
-          streakRefreshTrigger={streakRefreshTrigger} 
-        />
-        <StreakDisplay refreshTrigger={streakRefreshTrigger} />
-        <button className={styles.wordBankButton} onClick={handleWordBankClick} title="生词本">
-          📝 <span className={styles.count}>{wordCount}</span>
-        </button>
+        {user && user.id !== 'guest' && (
+          <>
+            <PointsDisplay 
+              refreshTrigger={refreshTrigger} 
+              streakRefreshTrigger={streakRefreshTrigger} 
+            />
+            <StreakDisplay refreshTrigger={streakRefreshTrigger} />
+            <button className={styles.wordBankButton} onClick={handleWordBankClick} title="生词本">
+              📝 <span className={styles.count}>{wordCount}</span>
+            </button>
+          </>
+        )}
         <button className={styles.themeButton} onClick={onThemeClick}>
           {themeEmoji}
         </button>
       </div>
     </div>
   );
-}; 
+};

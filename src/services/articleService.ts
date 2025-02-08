@@ -54,7 +54,18 @@ export const articleService = {
     const indexSnapshot = await get(indexRef);
     const articleIds = indexSnapshot.exists() ? indexSnapshot.val() : [];
     
-    // Get user's reading history
+    // For guest users, return the first public article without checking reading history
+    if (userId === 'guest') {
+      for (const articleMeta of articleIds) {
+        if (articleMeta.visibility === 'public') {
+          const article = await articleService.getArticleById(articleMeta.id);
+          if (article) return article;
+        }
+      }
+      return null;
+    }
+    
+    // For logged-in users, check reading history
     const userArticlesRef = ref(db, `users/${userId}/articles`);
     const historySnapshot = await get(userArticlesRef);
     const readArticles = historySnapshot.exists() ? Object.keys(historySnapshot.val()) : [];

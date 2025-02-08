@@ -29,6 +29,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UserMenu } from './UserMenu';
+import { useAuth } from '../contexts/AuthContext';
 
 interface MenuProps {
   isOpen: boolean;
@@ -40,6 +41,8 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
   const [showInstallButton, setShowInstallButton] = useState(false);
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const { user } = useAuth();
+  const isGuest = !user || user.uid === 'guest';
 
   useEffect(() => {
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -114,7 +117,7 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
               </span>
             </span>
           </Link>
-          <Link to="/create-article" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline">
+          <Link to="/create-article" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline relative">
             <span className="flex items-center gap-2">
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -124,8 +127,9 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
                 <span className="text-gray-500">Create</span>
               </span>
             </span>
+            {isGuest && <span className="absolute top-1 right-1 text-xs bg-red-100 text-red-600 px-1 py-0.5 rounded">需登录</span>}
           </Link>
-          <Link to="/wordbank" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline">
+          <Link to="/wordbank" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline relative">
             <span className="flex items-center gap-2">
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -135,8 +139,9 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
                 <span className="text-gray-500">Word Bank</span>
               </span>
             </span>
+            {isGuest && <span className="absolute top-1 right-1 text-xs bg-red-100 text-red-600 px-1 py-0.5 rounded">需登录</span>}
           </Link>
-          <Link to="/progress" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline">
+          <Link to="/progress" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline relative">
             <span className="flex items-center gap-2">
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -146,8 +151,9 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
                 <span className="text-gray-500">Progress</span>
               </span>
             </span>
+            {isGuest && <span className="absolute top-1 right-1 text-xs bg-red-100 text-red-600 px-1 py-0.5 rounded">需登录</span>}
           </Link>
-          <Link to="/leaderboard" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline">
+          <Link to="/leaderboard" onClick={onClose} className="p-3 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors no-underline relative">
             <span className="flex items-center gap-2">
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -157,6 +163,7 @@ export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
                 <span className="text-gray-500">Leaderboard</span>
               </span>
             </span>
+            {isGuest && <span className="absolute top-1 right-1 text-xs bg-red-100 text-red-600 px-1 py-0.5 rounded">需登录</span>}
           </Link>
           {showInstallButton && (
             <button 
