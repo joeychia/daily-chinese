@@ -5,7 +5,6 @@ import { ChineseWord } from '../data/sampleText';
 import { getWordBank, subscribeToWordBank, saveWordBank, getTheme } from '../services/userDataService';
 import { WordBankComponent } from './WordBankComponent';
 import { themes } from '../config/themes';
-import styles from './WordBank.module.css';
 import { getLocalStorageItem, setLocalStorageItem } from '../utils/localStorageUtils';
 
 export const WordBank: React.FC = () => {
@@ -110,9 +109,8 @@ export const WordBank: React.FC = () => {
   const theme = themes.find(t => t.id === currentTheme) || themes[0];
 
   return (
-    <div className="content word-bank-page">
-      <div className={styles.container} style={{
-        background: theme.colors.background,
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50 py-6 px-2">
+      <div className="" style={{
         color: theme.colors.text,
         '--theme-primary': theme.colors.primary,
         '--theme-secondary': theme.colors.secondary,
@@ -121,11 +119,17 @@ export const WordBank: React.FC = () => {
         '--theme-highlight': theme.colors.highlight,
         '--theme-text': theme.colors.text,
       } as React.CSSProperties}>
-        <div className={styles.header}>
-          <button className={styles.backButton} onClick={() => navigate(-1)}>
+        <div className="flex items-center justify-between mb-8 w-full">
+          <button 
+            className="bg-transparent border-none text-2xl cursor-pointer p-2 transition-opacity duration-200 hover:opacity-80"
+            onClick={() => navigate(-1)}
+            style={{ color: 'var(--theme-text)' }}
+          >
             ←
           </button>
-          <h1>我的生词本 ({wordBank.length})</h1>
+          <h1 className="m-0 text-2xl text-center flex-grow">我的生词本 ({wordBank.length})</h1>
+          {/* Empty div to balance the layout */}
+          <div className="w-[42px]"></div>
         </div>
         <WordBankComponent
           words={wordBank}
@@ -136,4 +140,4 @@ export const WordBank: React.FC = () => {
       </div>
     </div>
   );
-}; 
+};
