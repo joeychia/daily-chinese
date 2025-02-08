@@ -126,7 +126,7 @@ export const Leaderboard: React.FC = () => {
       <div className="mb-8 flex items-center justify-between">
         <button 
           onClick={() => navigate(-1)} 
-          className="text-gray-600 hover:text-gray-800 bg-transparent transition-colors flex items-center gap-2"
+          className="absolute text-gray-600 hover:text-gray-800 bg-transparent transition-colors flex items-center gap-2"
         >
           <span>←</span>
         </button>

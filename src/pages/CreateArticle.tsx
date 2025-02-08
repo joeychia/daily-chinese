@@ -511,7 +511,7 @@ export default function CreateArticle() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-yellow-50 to-blue-50 py-6 px-2">
          <div className="mb-8 flex items-center justify-between"><button 
           onClick={() => navigate(-1)} 
-          className="text-gray-600 hover:text-gray-800 bg-transparent transition-colors flex items-center gap-2"
+          className="absolute text-gray-600 hover:text-gray-800 bg-transparent transition-colors flex items-center gap-2"
         >
           <span>←</span>
         </button>
