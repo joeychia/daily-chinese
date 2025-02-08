@@ -120,3 +120,9 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
   background-color: #ffffff;
 }
+
+.react-calendar__tile:disabled {
+  background: transparent !important;
+  color: #ddd !important;
+  cursor: default !important;
+}
