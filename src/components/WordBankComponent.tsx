@@ -130,7 +130,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
+    <div className="mt-4 p-4 bg-white/80 rounded-lg shadow-md">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-800">{title}</h2>
         {showSavedIndicator && <span className="px-2 py-1 text-sm text-green-600 bg-green-100 rounded-md">已保存</span>}
