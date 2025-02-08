@@ -7,7 +7,6 @@ import { rewardsService } from '../services/rewardsService';
 import { useAuth } from '../contexts/AuthContext';
 import { ref, get } from 'firebase/database';
 import { db } from '../config/firebase';
-import styles from './WordBankComponent.module.css';
 
 export interface WordBankComponentProps {
   words: ChineseWord[];
@@ -137,7 +136,7 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
         {showSavedIndicator && <span className="px-2 py-1 text-sm text-green-600 bg-green-100 rounded-md">已保存</span>}
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-        {words.map((word) => {
+        {words.filter(word => (masteryData[word.characters] ?? 0) < 3).map((word) => {
           const mastery = masteryData[word.characters] ?? 0;
           const tested = testedToday[word.characters];
           return (
