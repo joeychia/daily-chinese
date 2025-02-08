@@ -184,7 +184,7 @@ export const TestWordModal: React.FC<TestWordModalProps> = ({
                     setError(false);
                   }}
                   onKeyDown={handleKeyDown}
-                  placeholder="输入拼音"
+                  placeholder="输入拼音（不用输入声调）"
                   className="w-full px-3 py-1.5 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                   autoFocus
                 />

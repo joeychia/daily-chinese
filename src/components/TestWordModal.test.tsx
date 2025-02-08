@@ -120,7 +120,7 @@ describe('TestWordModal', () => {
   it('should render character and mastery level', () => {
     renderWithAuth(<TestWordModal {...defaultProps} />);
     expect(screen.getByText('你')).toBeInTheDocument();
-    expect(screen.getByText('掌握程度：不熟')).toBeInTheDocument();
+    expect(screen.getByText('不熟')).toBeInTheDocument();
   });
 
   it('should show success message and remaining tests when answer is correct', async () => {
@@ -131,7 +131,7 @@ describe('TestWordModal', () => {
     await userEvent.click(screen.getByText('确认'));
 
     expect(screen.getByText('回答正确！')).toBeInTheDocument();
-    expect(screen.getByText('还需要在其他日子测试2次才能从生词本中移除')).toBeInTheDocument();
+    expect(screen.getByText('还需测试2次')).toBeInTheDocument();
     expect(defaultProps.onCorrect).toHaveBeenCalled();
   });
 
@@ -142,7 +142,7 @@ describe('TestWordModal', () => {
     await userEvent.type(input, 'wrong');
     await userEvent.click(screen.getByText('确认'));
 
-    expect(screen.getByText('拼音不正确，正确答案是：nǐ')).toBeInTheDocument();
+    expect(screen.getByText('正确答案：nǐ')).toBeInTheDocument();
     expect(defaultProps.onCorrect).not.toHaveBeenCalled();
   });
 
@@ -210,8 +210,8 @@ describe('TestWordModal', () => {
     renderWithAuth(<TestWordModal {...defaultProps} />);
     
     // Wait for the async checkIfTestedToday to complete
-    await screen.findByText('今天已经测试过这个字了！');
-    expect(screen.getByText('还需要在其他日子测试3次才能从生词本中移除')).toBeInTheDocument();
+    await screen.findByText('今天已测试');
+    expect(screen.getByText('还需改天再测试3次')).toBeInTheDocument();
   });
 
   it('should show congratulations message when mastery reaches 3', async () => {
@@ -221,7 +221,7 @@ describe('TestWordModal', () => {
     await userEvent.type(input, 'ni');
     await userEvent.click(screen.getByText('确认'));
 
-    expect(screen.getByText('恭喜！这个字已经掌握了，将从生词本中移除。')).toBeInTheDocument();
+    expect(screen.getByText('已掌握，将从生词本中移除')).toBeInTheDocument();
   });
 
   it('should show close button when answer is correct and not close until clicked', async () => {
@@ -252,4 +252,4 @@ describe('TestWordModal', () => {
     await userEvent.click(screen.getByText('×'));
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
-}); 
+});

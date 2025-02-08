@@ -327,8 +327,8 @@ export const Progress = () => {
                     未读 / Unread: {stats.unknown}
                   </div>
                   <button 
-                    className="px-4 py-2 rounded-md transition-colors text-sm
-                    ${showUnknownByGrade[grade] ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+                    className={`px-4 py-2 rounded-md transition-colors text-sm
+                    ${showUnknownByGrade[grade] ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                     onClick={() => toggleShowUnknown(grade)}
                   >
                     {showUnknownByGrade[grade] ? '隐藏未读 / Hide Unread' : '显示未读 / Show Unread'}

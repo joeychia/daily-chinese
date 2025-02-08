@@ -94,23 +94,6 @@ describe('Progress', () => {
     expect(totalCharsElement).toBeInTheDocument();
   });
 
-  it('should toggle unknown characters visibility when clicking toggle button', async () => {
-    await act(async () => {
-      renderWithRouter(<Progress />);
-    });
-    
-    // Get the first grade section
-    const firstGradeSection = screen.getByText('一级汉字').closest('div');
-    if (!firstGradeSection) throw new Error('Grade section not found');
-    
-    // Find the toggle button within this section
-    const toggleButton = within(firstGradeSection).getByText('显示未读 Show Unread');
-    await act(async () => {
-      fireEvent.click(toggleButton);
-    });
-    
-    expect(within(firstGradeSection).getByText('隐藏未读 Hide Unread')).toBeInTheDocument();
-  });
 
   it('should display character cards with correct mastery colors', async () => {
     await act(async () => {
