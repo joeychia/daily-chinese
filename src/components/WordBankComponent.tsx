@@ -123,32 +123,42 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
   const getMasteryColor = (mastery: number) => {
     switch (mastery) {
       case 0: return '#F56C6C'; // red
-      case 1: return '#E6A23C'; // orange
-      case 2: return '#F4E04D'; // yellow
+      case 1: return '#D68B1C'; // orange
+      case 2: return '#E6B800'; // yellow
       case 3: return '#67C23A'; // green
       default: return '#67C23A'; // green
     }
   };
 
   return (
-    <div className={styles.wordBankContainer}>
-      <div className={styles.header}>
-        <h2>{title}</h2>
-        {showSavedIndicator && <span className={styles.savedIndicator}>已保存</span>}
+    <div className="p-4 bg-white rounded-lg shadow-md">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+        {showSavedIndicator && <span className="px-2 py-1 text-sm text-green-600 bg-green-100 rounded-md">已保存</span>}
       </div>
-      <div className={styles.wordList}>
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
         {words.map((word) => {
           const mastery = masteryData[word.characters] ?? 0;
           const tested = testedToday[word.characters];
           return (
             <div 
               key={word.characters} 
-              className={styles.wordItem}
-              style={{ backgroundColor: tested ? '#f5f7fa' : undefined }}
+              className={`
+                rounded-lg border border-gray-200 
+                transition-all duration-200 
+                hover:shadow-md 
+                relative
+                ${tested 
+                  ? 'before:content-["✓"] before:absolute before:top-1 before:right-1 before:text-green-600 before:text-sm bg-gray-10' 
+                  : `bg-white`
+                }`}
             >
-              <div className={styles.wordContent} onClick={() => handleWordClick(word)}>
+              <div 
+                className="p-2 cursor-pointer flex items-center justify-center" 
+                onClick={() => handleWordClick(word)}
+              >
                 <span 
-                  className={styles.characters}
+                  className="text-xl font-medium"
                   style={{ color: getMasteryColor(mastery) }}
                 >
                   {word.characters}
@@ -159,7 +169,10 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
         })}
       </div>
       {words.length > 0 && (
-        <button className={styles.printButton} onClick={handlePrint}>
+        <button 
+          className="mt-6 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 shadow-md hover:shadow-lg"
+          onClick={handlePrint}
+        >
           打印生词卡
         </button>
       )}
@@ -173,4 +186,4 @@ export const WordBankComponent: React.FC<WordBankComponentProps> = ({
       {showPrintPreview && <PrintableCards words={words} />}
     </div>
   );
-}; 
+};
