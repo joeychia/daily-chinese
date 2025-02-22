@@ -96,7 +96,7 @@ export const Leaderboard: React.FC = () => {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="输入名字 / Enter name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             />
             <button
               onClick={handleSubmitName}
