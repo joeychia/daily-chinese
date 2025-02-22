@@ -1,12 +1,12 @@
-// Handle PWA updates and show loading spinner
+// Handle PWA loading and updates with spinner
 let newWorker = null;
 let refreshing = false;
 
-// Create update notification element
+// Create loading spinner element
 const updateSpinner = document.createElement('div');
 updateSpinner.id = 'pwa-update-spinner';
 updateSpinner.style.cssText = `
-  display: none;
+  display: flex;
   position: fixed;
   top: 0;
   left: 0;
@@ -30,7 +30,7 @@ spinner.style.cssText = `
 `;
 
 const updateText = document.createElement('p');
-updateText.textContent = 'Updating app...';
+updateText.textContent = 'Loading app...';
 updateText.style.marginTop = '20px';
 
 updateSpinner.appendChild(spinner);
@@ -49,7 +49,7 @@ document.head.appendChild(styleSheet);
 
 // Show spinner when update is ready
 function showUpdateSpinner() {
-  updateSpinner.style.display = 'flex';
+  updateText.textContent = 'Updating app...';
 }
 
 // Handle service worker registration and updates
