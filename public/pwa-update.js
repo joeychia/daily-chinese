@@ -6,7 +6,7 @@ let refreshing = false;
 const updateSpinner = document.createElement('div');
 updateSpinner.id = 'pwa-update-spinner';
 updateSpinner.style.cssText = `
-  display: flex;
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -48,9 +48,23 @@ styleSheet.textContent = `
 document.head.appendChild(styleSheet);
 
 // Show spinner when update is ready
-function showUpdateSpinner() {
-  updateText.textContent = 'Updating app...';
+function showUpdateSpinner(message = 'Updating app...') {
+  updateSpinner.style.display = 'flex';
+  updateText.textContent = message;
 }
+
+// Hide spinner
+function hideUpdateSpinner() {
+  updateSpinner.style.display = 'none';
+}
+
+// Show initial loading spinner
+showUpdateSpinner('Loading app...');
+
+// Hide spinner when the page is fully loaded
+window.addEventListener('load', () => {
+  hideUpdateSpinner();
+});
 
 // Handle service worker registration and updates
 if ('serviceWorker' in navigator) {
