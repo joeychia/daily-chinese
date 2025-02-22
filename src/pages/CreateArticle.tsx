@@ -324,7 +324,7 @@ export default function CreateArticle() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="可以输入额外的要求，比如文章主题、风格等..."
-              className="w-full p-3 bg-white/95 border-2 border-blue-200 rounded-xl focus:border-blue-400 focus:ring focus:ring-blue-200 text-gray-700 focus:ring-opacity-50 transition-colors duration-200 shadow-sm"
+              className="w-full p-3 bg-white/95 border-2 border-blue-200 rounded-xl focus:border-blue-400 focus:ring focus:ring-blue-200 text-gray-700 focus:ring-opacity-50 transition-colors duration-200 shadow-sm text-gray-800"
             />
           </div>
         </>
@@ -347,7 +347,7 @@ export default function CreateArticle() {
             value={sourceText}
             onChange={(e) => setSourceText(e.target.value)}
             placeholder="请输入要处理的文章..."
-            className="w-full p-3 bg-white/95 border-2 border-blue-200 rounded-xl focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-colors duration-200 shadow-sm"
+            className="w-full p-3 bg-white/95 border-2 border-blue-200 rounded-xl focus:border-blue-400 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-colors duration-200 shadow-sm text-gray-800"
           />
         </div>
       )}
