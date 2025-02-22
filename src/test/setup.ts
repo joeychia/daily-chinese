@@ -7,8 +7,10 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 expect.extend(matchers);
 
 // Mock window.matchMedia
+import { vi } from 'vitest';
+
 beforeAll(() => {
-  window.matchMedia = vi.fn().mockImplementation(query => ({
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,

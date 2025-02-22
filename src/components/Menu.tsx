@@ -39,10 +39,10 @@ interface MenuProps {
 export const Menu: React.FC<MenuProps> = ({ isOpen, onClose }): JSX.Element => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   const { user } = useAuth();
-  const isGuest = !user || user.uid === 'guest';
+  const isGuest = !user || (user as any).uid === 'guest';
 
   useEffect(() => {
     if (window.matchMedia('(display-mode: standalone)').matches) {
