@@ -27,8 +27,8 @@ self.addEventListener('fetch', (event) => {
         // For other requests, try network first, then fall back to cache
         return fetch(event.request)
           .then(networkResponse => {
-            // Cache successful responses
-            if (networkResponse.ok) {
+            // Cache successful GET responses only
+            if (networkResponse.ok && event.request.method === 'GET') {
               const responseToCache = networkResponse.clone();
               caches.open(CACHE_NAME)
                 .then(cache => cache.put(event.request, responseToCache));
