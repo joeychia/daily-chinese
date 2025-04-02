@@ -1,7 +1,7 @@
 {
-  "name": "Daily Chinese",
+  "name": "每日一读",
   "short_name": "每日一读",
-  "description": "Learn Chinese through daily reading and vocabulary practice",
+  "description": "沉浸式学习，每天读一篇文章：点击看拼音，生字表，学习曲线",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
