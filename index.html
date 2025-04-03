@@ -14,7 +14,14 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-E282N33L4J');
+      gtag('config', 'G-E282N33L4J', {
+        'custom_map': {'dimension1': 'app_mode'}
+      });
+      // Detect PWA installation status
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || !!navigator.serviceWorker.controller;
+      gtag('event', 'app_mode', {
+        'app_mode': isPWA ? 'pwa' : 'browser'
+      });
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
