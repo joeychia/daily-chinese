@@ -7,9 +7,36 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="每日一读提供精选中文阅读材料，并使用AI生成个性化材料，适合中文学习者提升阅读能力，保持阅读热度和兴趣。包含分级文章、汉字练习和进度追踪等功能。" />
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="每日一读 - 中文学习阅读平台" />
+    <meta property="og:description" content="每日一读提供精选中文阅读材料，并使用AI生成个性化材料，适合中文学习者提升阅读能力，保持阅读热度和兴趣。包含分级文章、汉字练习和进度追踪等功能。" />
+    <meta property="og:image" content="https://meiriyidu.org/rooster.png" />
+    <meta property="og:url" content="https://meiriyidu.org/" />
     <link rel="manifest" href="/manifest.json" />
     <title>每日一读</title>
     <script src="/pwa-update.js"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://meiriyidu.org/#website",
+          "url": "https://meiriyidu.org/",
+          "name": "每日一读",
+          "description": "每日一读提供精选中文阅读材料，并使用AI生成个性化材料，适合中文学习者提升阅读能力，保持阅读热度和兴趣。包含分级文章、汉字练习和进度追踪等功能。",
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://meiriyidu.org/#organization",
+          "name": "每日一读",
+          "url": "https://meiriyidu.org/",
+          "logo": "https://meiriyidu.org/rooster.png",
+        }
+      ]
+    }
+    </script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
