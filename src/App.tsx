@@ -9,7 +9,7 @@ import Articles from './components/Articles'
 import { ChineseWord } from './data/sampleText'
 import { themes } from './config/themes'
 import { processChineseText } from './utils/textProcessor'
-import sampleReading from './data/readings/sample.json'
+
 import { initializeDatabase } from './scripts/initializeDb'
 import { articleService, DatabaseArticle } from './services/articleService'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -27,6 +27,7 @@ import { characterGrades } from './data/characterGrades'
 import { calculateStats } from './pages/Progress'
 import { ArticleFeedbackPanel } from './components/ArticleFeedbackPanel'
 import { Leaderboard } from './pages/Leaderboard'
+import { Spinner } from './components/Spinner';
 
 
 interface ProtectedRouteProps {
@@ -55,7 +56,7 @@ function MainContent() {
   const [currentTheme, setCurrentTheme] = useState<string | null>(null);
   const [isThemePanelOpen, setIsThemePanelOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [reading, setReading] = useState<DatabaseArticle>(sampleReading);
+  const [reading, setReading] = useState<DatabaseArticle | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
@@ -68,7 +69,7 @@ function MainContent() {
   const [pointsRefreshTrigger, setPointsRefreshTrigger] = useState(0);
 
   // Process title for pinyin support
-  const processedTitle = processChineseText(reading.title);
+  const processedTitle = processChineseText(reading?.title || '');
 
   // Filter word bank for current article
   const articleWords = processedText.map(word => word.characters);
@@ -135,7 +136,7 @@ function MainContent() {
   // Reset start time when article changes
   useEffect(() => {
     setStartTime(Date.now());
-  }, [articleId, reading.id]);
+  }, [articleId, reading?.id]);
 
   // Initialize database first
   useEffect(() => {
@@ -154,10 +155,13 @@ function MainContent() {
   useEffect(() => {
     const loadArticle = async () => {
       try {
+        setIsLoading(true);
+        
         if (articleId) {
           const article = await articleService.getArticleById(articleId);
           if (!article) {
             setError('Article not found');
+            setIsLoading(false);
             return;
           }
           setReading(article);
@@ -189,6 +193,8 @@ function MainContent() {
       } catch (error) {
         console.error('Error loading article:', error);
         setError('Failed to load article');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -197,11 +203,11 @@ function MainContent() {
 
   useEffect(() => {
     console.log('Loading reading content:', { 
-      title: reading.title, 
-      author: reading.author,
-      tags: reading.tags,
-      contentLength: reading.content.length,
-      quizCount: reading.quizzes.length
+      title: reading?.title || '', 
+      author: reading?.author || 'Unknown',
+      tags: reading?.tags || [],
+      contentLength: reading?.content?.length || 0,
+      quizCount: reading?.quizzes?.length || 0
     });
     
     setIsLoading(true);
@@ -209,7 +215,7 @@ function MainContent() {
     
     try {
       console.log('Processing text content...');
-      const processed = processChineseText(reading.content);
+      const processed = processChineseText(reading?.content || '');
       console.log('Text processed successfully:', {
         totalWords: processed.length,
         chineseCharacters: processed.filter(word => /[\u4e00-\u9fa5]/.test(word.characters)).length,
@@ -294,7 +300,7 @@ function MainContent() {
 
   const toggleQuiz = () => {
     console.log(showQuiz ? 'Hiding quiz panel' : 'Showing quiz panel', {
-      quizCount: reading.quizzes.length
+      quizCount: reading?.quizzes?.length || 0
     });
     setShowQuiz(prev => !prev);
   };
@@ -377,7 +383,7 @@ function MainContent() {
     analyticsService.trackArticleFeedback(articleId!, feedback);
   };
 
-  return (
+  return !isLoading && reading && (
     <div className="app" style={{
       background: theme.colors.background,
       color: theme.colors.text,
@@ -395,10 +401,12 @@ function MainContent() {
         streakRefreshTrigger={streakRefreshCounter}
       />
       <div className="content">
-        <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
-        <div className="article-metadata">
-          <span>作者: {reading.author}</span>
-        </div>
+          <>
+            <h1 style={{ margin: 0 }}><ChineseText text={processedTitle} onWordPeek={() => {}} /></h1>
+            <div className="article-metadata">
+              <span>作者: {reading.author}</span>
+            </div>
+          </>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', margin: '0.5rem 0' }}>
           <Timer 
             startTime={startTime}
@@ -407,13 +415,20 @@ function MainContent() {
           />
           <span 
             className="difficulty-level" 
-            data-level={reading.difficultyLevel}
+            data-level={reading?.difficultyLevel || ''}
           >
-            难度: {reading.difficultyLevel}
+            难度: {reading?.difficultyLevel || 'Unknown'}
             <div className="difficulty-tooltip">
               <DifficultyDisplay 
-                difficultyLevel={reading.difficultyLevel}
-                characterLevels={reading.characterLevels}
+                difficultyLevel={reading?.difficultyLevel || 0}
+                characterLevels={reading?.characterLevels || {
+                  LEVEL_1: 0,
+                  LEVEL_2: 0,
+                  LEVEL_3: 0,
+                  LEVEL_4: 0,
+                  LEVEL_5: 0,
+                  LEVEL_6: 0
+                }}
               />
             </div>
           </span>
@@ -424,7 +439,7 @@ function MainContent() {
         
         {isLoading && <div>Loading...</div>}
         {error && <div style={{ color: 'red' }}>Error: {error}</div>}
-        {!isLoading && !error && processedText.length > 0 && (
+        {!isLoading && !error && reading && processedText.length > 0 && (
           <>
             <ChineseText 
               text={processedText} 
@@ -513,9 +528,15 @@ function MainContent() {
 }
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     console.log('App: Initializing database...');
-    initializeDatabase();
+    
+    // Initialize database and auth state
+    initializeDatabase().then(() => {
+      setLoading(false);
+    });
 
     // Disable right-click context menu
     const handleContextMenu = (e: MouseEvent) => {
@@ -527,6 +548,10 @@ function App() {
       document.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   console.log('App: Rendering');
   return (
